@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تجربة ذكاء Gemini الاصطناعي</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #121214;
+            color: #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            align-content: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .chat-container {
+            background-color: #1a1a1e;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            height: 80vh;
+            border: 1px solid #2d2d34;
+        }
+
+        .chat-header {
+            padding: 20px;
+            background-color: #252529;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+            border-bottom: 1px solid #2d2d34;
+            text-align: center;
+        }
+
+        .chat-header h1 {
+            font-size: 1.2rem;
+            color: #38bdf8;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 8px;
+            line-height: 1.5;
+            font-size: 0.95rem;
+            word-wrap: break-word;
+        }
+
+        .user-message {
+            background-color: #0284c7;
+            color: white;
+            align-self: flex-start;
+            border-bottom-right-radius: 2px;
+        }
+
+        .ai-message {
+            background-color: #2d2d34;
+            color: #e2e8f0;
+            align-self: flex-end;
+            border-bottom-left-radius: 2px;
+        }
+
+        .chat-input-area {
+            padding: 15px;
+            background-color: #1a1a1e;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+            border-top: 1px solid #2d2d34;
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #40404c;
+            background-color: #252529;
+            color: white;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: #38bdf8;
+        }
+
+        button {
+            padding: 12px 24px;
+            background-color: #38bdf8;
+            color: #121214;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: #0ea5e9;
+        }
+
+        button:disabled {
+            background-color: #40404c;
+            color: #8e8e93;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            font-style: italic;
+            color: #a1a1aa;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>تجربة ذكاء Gemini الاصطناعي 🤖</h1>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="message ai-message">هلا بيك عيوني! اكتبلي أي شيء وتريدني أجاوبك عليه؟</div>
+        </div>
+
+        <div class="chat-input-area">
+            <input type="text" id="userInput" placeholder="اكتب سؤالك هنا..." onkeypress="handleKeyPress(event)">
+            <button id="sendBtn" onclick="sendMessage()">إرسال</button>
+        </div>
+    </div>
+
+    <script>
+        // مفتاح الـ API الخاص بك المدمج مباشرة بالكود
+        const API_KEY = "AIzaSyDjcLNJLLvn8iMIV7b3qtk8xm2mTgpN00o";
+        // الرابط الرسمي لاستدعاء موديل جيميناي فلاش المستقر والسريع
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+
+        async function sendMessage() {
+            const inputField = document.getElementById('userInput');
+            const sendButton = document.getElementById('sendBtn');
+            const chatMessages = document.getElementById('chatMessages');
+            const text = inputField.value.trim();
+
+            if (!text) return;
+
+            // إيقاف الإدخال أثناء المعالجة
+            inputField.disabled = true;
+            sendButton.disabled = true;
+
+            // عرض رسالة المستخدم
+            appendMessage(text, 'user-message');
+            inputField.value = '';
+
+            // عرض رسالة مؤقتة "جاري التفكير..."
+            const loadingId = 'loading-' + Date.now();
+            appendMessage('جاري التفكير...', 'ai-message loading', loadingId);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            try {
+                // إرسال الطلب إلى سيرفرات جوجل مباشرة
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: text }]
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                
+                // حذف رسالة التحميل
+                document.getElementById(loadingId).remove();
+
+                if (response.ok && data.candidates && data.candidates[0].content.parts[0].text) {
+                    const aiResponse = data.candidates[0].content.parts[0].text;
+                    appendMessage(aiResponse, 'ai-message');
+                } else {
+                    console.error(data);
+                    appendMessage('صار خطأ بالطلب، تأكد من إعدادات المفتاح أو المحاولة لاحقاً.', 'ai-message');
+                }
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById(loadingId).remove();
+                appendMessage('فشل الاتصال بالسيرفر. تأكد من الإنترنت.', 'ai-message');
+            }
+
+            // إعادة تفعيل الإدخال
+            inputField.disabled = false;
+            sendButton.disabled = false;
+            inputField.focus();
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function appendMessage(text, className, id = null) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${className}`;
+            if (id) messageDiv.id = id;
+            
+            // تحويل السطور الجديدة لـ <br> لترتيب النص
+            messageDiv.innerHTML = text.replace(/\n/g, '<br>');
+            chatMessages.appendChild(messageDiv);
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+    </script>
+</body>
+</html>
