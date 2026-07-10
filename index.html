@@ -152,10 +152,11 @@
     </div>
 
     <script>
-        // مفتاح الـ API الخاص بك المدمج مباشرة بالكود
+        // مفتاح الـ API الخاص بك
         const API_KEY = "AIzaSyDjcLNJLLvn8iMIV7b3qtk8xm2mTgpN00o";
-        // الرابط الرسمي لاستدعاء موديل جيميناي فلاش المستقر والسريع
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+        
+        // الرابط المحدث والمدعوم بشكل كامل للإصدار المستقر القياسي v1
+        const API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 
         async function sendMessage() {
             const inputField = document.getElementById('userInput');
@@ -179,7 +180,7 @@
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
             try {
-                // إرسال الطلب إلى سيرفرات جوجل مباشرة
+                // إرسال الطلب بالصيغة الهيكلية الصحيحة (role و contents)
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: {
@@ -187,6 +188,7 @@
                     },
                     body: JSON.stringify({
                         contents: [{
+                            role: "user",
                             parts: [{ text: text }]
                         }]
                     })
@@ -195,19 +197,21 @@
                 const data = await response.json();
                 
                 // حذف رسالة التحميل
-                document.getElementById(loadingId).remove();
+                const loadingElement = document.getElementById(loadingId);
+                if (loadingElement) loadingElement.remove();
 
                 if (response.ok && data.candidates && data.candidates[0].content.parts[0].text) {
                     const aiResponse = data.candidates[0].content.parts[0].text;
                     appendMessage(aiResponse, 'ai-message');
                 } else {
-                    console.error(data);
+                    console.error("جوجل رجعت خطأ:", data);
                     appendMessage('صار خطأ بالطلب، تأكد من إعدادات المفتاح أو المحاولة لاحقاً.', 'ai-message');
                 }
 
             } catch (error) {
-                console.error(error);
-                document.getElementById(loadingId).remove();
+                console.error("فشل الاتصال:", error);
+                const loadingElement = document.getElementById(loadingId);
+                if (loadingElement) loadingElement.remove();
                 appendMessage('فشل الاتصال بالسيرفر. تأكد من الإنترنت.', 'ai-message');
             }
 
@@ -224,7 +228,7 @@
             messageDiv.className = `message ${className}`;
             if (id) messageDiv.id = id;
             
-            // تحويل السطور الجديدة لـ <br> لترتيب النص
+            // ترتيب الأسطر البرمجية والنزول لسطر جديد بشكل صحيح
             messageDiv.innerHTML = text.replace(/\n/g, '<br>');
             chatMessages.appendChild(messageDiv);
         }
