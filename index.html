@@ -3,241 +3,604 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تجربة ذكاء Gemini الاصطناعي</title>
+    <title>يارا - منصة الخطوط الاحترافية</title>
+    
+    <!-- استدعاء باقة من أشهر الخطوط العربية والإنجليزية من Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Tajawal:wght@400;700&family=Almarai:wght@400;700&family=Jomhuria&family=Changa:wght@400;700&family=El+Messiri:wght@700&family=Kufam:wght@700&family=Reem+Kufi:wght@700&family=Aref+Ruqaa:wght@700&family=Amiri:wght@700&family=Readex+Pro:wght@400;700&family=Lateef&family=Lalezar&family=Scheherazade+New:wght@700&family=Markazi+Text:wght@700&family=Harmattan:wght@700&family=Katibeh&family=Qahiri&family=Mada:wght@700&family=Noto+Sans+Arabic:wght@700&family=Noto+Kufi+Arabic:wght@700&family=Bebas+Neue&family=Montserrat:wght@400;900&family=Poppins:wght@400;800&family=Playfair+Display:ital,wght@0,700;1,700&family=Cinzel:wght@700&family=Outfit:wght@400;900&family=Fascinate+Inline&family=Anton&family=Lobster&family=Pacifico&family=Righteous&family=Abril+Fatface&family=Fredoka:wght@700&family=Russo+One&family=Orbitron:wght@700&family=Great+Vibes&display=swap" rel="stylesheet">
+
     <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #151f32;
+            --text-color: #f8fafc;
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --border-color: #24334d;
+        }
+
         * {
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
+            font-family: 'Cairo', sans-serif;
         }
 
         body {
-            background-color: #121214;
-            color: #e2e8f0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 30px 15px;
             display: flex;
             flex-direction: column;
-            align-content: center;
-            justify-content: center;
+            align-items: center;
             min-height: 100vh;
-            padding: 20px;
         }
 
-        .chat-container {
-            background-color: #1a1a1e;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        .container {
+            max-width: 1100px;
             width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            height: 80vh;
-            border: 1px solid #2d2d34;
         }
 
-        .chat-header {
-            padding: 20px;
-            background-color: #252529;
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
-            border-bottom: 1px solid #2d2d34;
+        header {
             text-align: center;
+            margin-bottom: 25px;
         }
 
-        .chat-header h1 {
-            font-size: 1.2rem;
-            color: #38bdf8;
+        .logo-container {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 8px;
         }
 
-        .chat-messages {
-            flex: 1;
+        .logo-svg {
+            width: 45px;
+            height: 45px;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            color: #fff;
+            font-weight: 700;
+        }
+
+        header p {
+            color: #64748b;
+            font-size: 0.95rem;
+            margin-top: 5px;
+        }
+
+        .workspace {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+        }
+
+        .main-display {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+        }
+
+        .preview-zone-wrapper {
+            background-image: linear-gradient(45deg, #1e293b 25%, transparent 25%), 
+                              linear-gradient(-45deg, #1e293b 25%, transparent 25%), 
+                              linear-gradient(45deg, transparent 75%, #1e293b 75%), 
+                              linear-gradient(-45deg, transparent 75%, #1e293b 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            border-radius: 12px;
+            min-height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            border: 2px solid var(--border-color);
         }
 
-        .message {
-            max-width: 85%;
-            padding: 12px 16px;
-            border-radius: 8px;
-            line-height: 1.5;
-            font-size: 0.95rem;
-            word-wrap: break-word;
-        }
-
-        .user-message {
-            background-color: #0284c7;
-            color: white;
-            align-self: flex-start;
-            border-bottom-right-radius: 2px;
-        }
-
-        .ai-message {
-            background-color: #2d2d34;
-            color: #e2e8f0;
-            align-self: flex-end;
-            border-bottom-left-radius: 2px;
-        }
-
-        .chat-input-area {
-            padding: 15px;
-            background-color: #1a1a1e;
-            border-bottom-left-radius: 12px;
-            border-bottom-right-radius: 12px;
-            border-top: 1px solid #2d2d34;
-            display: flex;
-            gap: 10px;
-        }
-
-        input[type="text"] {
-            flex: 1;
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid #40404c;
-            background-color: #252529;
-            color: white;
-            font-size: 0.95rem;
+        #main-preview-text {
+            text-align: center;
+            word-break: break-word;
+            white-space: pre-wrap;
+            line-height: 1.4;
+            width: 100%;
             outline: none;
         }
 
+        .editor-controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            background: #0b0f19;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .control-box {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .control-box.text-input-box {
+            flex: 2;
+            min-width: 280px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px 14px;
+            background: #151f32;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1.05rem;
+        }
+
         input[type="text"]:focus {
-            border-color: #38bdf8;
+            outline: none;
+            border-color: var(--accent-color);
         }
 
-        button {
-            padding: 12px 24px;
-            background-color: #38bdf8;
-            color: #121214;
+        input[type="color"] {
+            -webkit-appearance: none;
             border: none;
-            border-radius: 6px;
-            font-weight: bold;
+            width: 100%;
+            height: 42px;
             cursor: pointer;
+            background: none;
+        }
+
+        input[type="color"]::-webkit-color-swatch {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 42px;
+            accent-color: var(--accent-color);
+        }
+
+        .download-action-btn {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.05rem;
             transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            height: 44px;
+            align-self: flex-end;
+            min-width: 180px;
         }
 
-        button:hover {
-            background-color: #0ea5e9;
+        .download-action-btn:hover {
+            background-color: #059669;
         }
 
-        button:disabled {
-            background-color: #40404c;
-            color: #8e8e93;
-            cursor: not-allowed;
+        .fonts-selector-section {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid var(--border-color);
         }
 
-        .loading {
-            font-style: italic;
-            color: #a1a1aa;
+        .section-title {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            color: #cbd5e1;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .tab-btn {
+            background: #0b0f19;
+            border: 1px solid var(--border-color);
+            color: #94a3b8;
+            padding: 6px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .tab-btn.active {
+            background: var(--accent-color);
+            color: #fff;
+            border-color: var(--accent-color);
+        }
+
+        .fonts-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .fonts-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .fonts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .font-item-btn {
+            background: #0b0f19;
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            justify-content: center;
+            align-items: center;
+            min-height: 65px;
+            position: relative;
+        }
+
+        .font-item-btn:hover {
+            border-color: #475569;
+            transform: translateY(-2px);
+        }
+
+        .font-item-btn.selected {
+            border-color: var(--accent-color);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        /* تنسيق زر النجمة للمفضلة */
+        .fav-star-btn {
+            position: absolute;
+            top: 4px;
+            right: 6px;
+            background: none;
+            border: none;
+            color: #475569;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: color 0.2s, transform 0.1s;
+            z-index: 5;
+            padding: 2px;
+        }
+
+        .fav-star-btn:hover {
+            transform: scale(1.2);
+        }
+
+        .fav-star-btn.active {
+            color: #eab308;
+        }
+
+        .font-label {
+            font-size: 0.7rem;
+            color: #64748b;
+            font-family: 'Cairo', sans-serif !important;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+            margin-top: 2px;
+        }
+
+        .font-specimen {
+            font-size: 1.1rem;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+        }
+
+        /* تنسيق رسالة تنبيه عند خلو المفضلة */
+        .empty-fav-message {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: #64748b;
+            padding: 30px 10px;
+            font-size: 0.95rem;
         }
     </style>
 </head>
 <body>
 
-    <div class="chat-container">
-        <div class="chat-header">
-            <h1>تجربة ذكاء Gemini الاصطناعي 🤖</h1>
-        </div>
-        
-        <div class="chat-messages" id="chatMessages">
-            <div class="message ai-message">هلا بيك عيوني! اكتبلي أي شيء وتريدني أجاوبك عليه؟</div>
-        </div>
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <svg class="logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#3b82f6" />
+                            <stop offset="100%" stop-color="#60a5fa" />
+                        </linearGradient>
+                    </defs>
+                    <circle cx="50" cy="50" r="45" fill="#151f32" stroke="#24334d" stroke-width="3" />
+                    <path d="M32 28 L46 54 L46 75 C46 77.2 47.8 79 50 79 C52.2 79 54 77.2 54 75 L54 54 L68 28" stroke="url(#logo-grad)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+                    <circle cx="50" cy="46" r="4.5" fill="#f8fafc" />
+                </svg>
+                <h1>يارا</h1>
+            </div>
+            <p>توليد النصوص وتصديرها بصيغة PNG شفافة عالية الدقة لاستخدامها في برامج التصميم</p>
+        </header>
 
-        <div class="chat-input-area">
-            <input type="text" id="userInput" placeholder="اكتب سؤالك هنا..." onkeypress="handleKeyPress(event)">
-            <button id="sendBtn" onclick="sendMessage()">إرسال</button>
+        <div class="workspace">
+            <div class="main-display">
+                <div class="preview-zone-wrapper">
+                    <div id="main-preview-text">اكتب النص هنا</div>
+                </div>
+
+                <div class="editor-controls">
+                    <div class="control-box text-input-box">
+                        <label for="text-field">ادخل النص:</label>
+                        <input type="text" id="text-field" placeholder="اكتب النص هنا..." value="اكتب النص هنا">
+                    </div>
+                    <div class="control-box">
+                        <label for="color-picker">اللون:</label>
+                        <input type="color" id="color-picker" value="#ffffff">
+                    </div>
+                    <div class="control-box">
+                        <label for="size-slider">الحجم:</label>
+                        <input type="range" id="size-slider" min="24" max="100" value="50">
+                    </div>
+                    <button class="download-action-btn" id="download-btn">
+                        تصدير PNG شفافة ↓
+                    </button>
+                </div>
+            </div>
+
+            <div class="fonts-selector-section">
+                <div class="section-title">
+                    <span>قائمة الخطوط المتاحة:</span>
+                    <div class="tabs">
+                        <button class="tab-btn active" id="tab-all" onclick="filterFonts('all', this)">الكل</button>
+                        <button class="tab-btn" id="tab-fav" onclick="filterFonts('fav', this)">المفضلة ⭐</button>
+                        <button class="tab-btn" id="tab-ar" onclick="filterFonts('ar', this)">العربية</button>
+                        <button class="tab-btn" id="tab-en" onclick="filterFonts('en', this)">English</button>
+                    </div>
+                </div>
+
+                <div class="fonts-grid" id="fonts-box-grid">
+                    <!-- المستطيلات الصغيرة تتولد هنا تلقائياً -->
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // مفتاح الـ API الخاص بك
-        const API_KEY = "AIzaSyDjcLNJLLvn8iMIV7b3qtk8xm2mTgpN00o";
+        const fontDatabase = [
+            // === خطوط عربية ===
+            { id: 'Cairo', name: 'خط القاهرة', lang: 'ar', sample: 'خط القاهرة' },
+            { id: 'Tajawal', name: 'خط تجول', lang: 'ar', sample: 'خط تجول' },
+            { id: 'Almarai', name: 'خط المراعي', lang: 'ar', sample: 'خط المراعي' },
+            { id: 'Jomhuria', name: 'خط جمهورية', lang: 'ar', sample: 'خط جمهورية' },
+            { id: 'Changa', name: 'خط شانغا', lang: 'ar', sample: 'خط شانغا' },
+            { id: 'El Messiri', name: 'خط المسيري', lang: 'ar', sample: 'خط المسيري' },
+            { id: 'Kufam', name: 'خط كوفام', lang: 'ar', sample: 'خط كوفام' },
+            { id: 'Reem Kufi', name: 'خط ريم كوفي', lang: 'ar', sample: 'ريم كوفي' },
+            { id: 'Aref Ruqaa', name: 'خط الرقعة', lang: 'ar', sample: 'خط الرقعة' },
+            { id: 'Amiri', name: 'الخط الأميري', lang: 'ar', sample: 'الخط الأميري' },
+            { id: 'Readex Pro', name: 'ريدكس برو', lang: 'ar', sample: 'ريدكس برو' },
+            { id: 'Lateef', name: 'خط لطيف', lang: 'ar', sample: 'خط لطيف' },
+            { id: 'Lalezar', name: 'خط لاليزار', lang: 'ar', sample: 'خط لاليزار' },
+            { id: 'Scheherazade New', name: 'خط شهرزاد', lang: 'ar', sample: 'خط شهرزاد' },
+            { id: 'Markazi Text', name: 'الخط المركزي', lang: 'ar', sample: 'الخط المركزي' },
+            { id: 'Harmattan', name: 'خط هرمتان', lang: 'ar', sample: 'خط هرمتان' },
+            { id: 'Katibeh', name: 'خط كتيبة', lang: 'ar', sample: 'خط كتيبة' },
+            { id: 'Qahiri', name: 'خط قاهيري', lang: 'ar', sample: 'خط قاهيري' },
+            { id: 'Mada', name: 'خط مدى', lang: 'ar', sample: 'خط مدى' },
+            { id: 'Noto Kufi Arabic', name: 'نوتو كوفي', lang: 'ar', sample: 'نوتو كوفي' },
+
+            // === خطوط إنجليزية ===
+            { id: 'Bebas Neue', name: 'Bebas Neue', lang: 'en', sample: 'BEBAS NEUE' },
+            { id: 'Montserrat', name: 'Montserrat', lang: 'en', sample: 'MONTSERRAT' },
+            { id: 'Poppins', name: 'Poppins', lang: 'en', sample: 'POPPINS' },
+            { id: 'Playfair Display', name: 'Playfair Display', lang: 'en', sample: 'PLAYFAIR' },
+            { id: 'Cinzel', name: 'Cinzel', lang: 'en', sample: 'CINZEL' },
+            { id: 'Outfit', name: 'Outfit', lang: 'en', sample: 'OUTFIT' },
+            { id: 'Fascinate Inline', name: 'Fascinate', lang: 'en', sample: 'FASCINATE' },
+            { id: 'Anton', name: 'Anton', lang: 'en', sample: 'ANTON' },
+            { id: 'Lobster', name: 'Lobster', lang: 'en', sample: 'LOBSTER' },
+            { id: 'Pacifico', name: 'Pacifico', lang: 'en', sample: 'PACIFICO' },
+            { id: 'Righteous', name: 'Righteous', lang: 'en', sample: 'RIGHTEOUS' },
+            { id: 'Abril Fatface', name: 'Abril Fatface', lang: 'en', sample: 'ABRIL FATFACE' },
+            { id: 'Fredoka', name: 'Fredoka', lang: 'en', sample: 'FREDOKA' },
+            { id: 'Russo One', name: 'Russo One', lang: 'en', sample: 'RUSSO ONE' },
+            { id: 'Orbitron', name: 'Orbitron', lang: 'en', sample: 'ORBITRON' },
+            { id: 'Great Vibes', name: 'Great Vibes', lang: 'en', sample: 'GREAT VIBES' }
+        ];
+
+        let currentSelectedFont = 'Cairo';
+        let currentFilter = 'all';
         
-        // الرابط المحدث والمدعوم بشكل كامل للإصدار المستقر القياسي v1
-        const API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+        // جلب قائمة المفضلة المخزنة في المتصفح أو إنشائها
+        let favoriteFonts = JSON.parse(localStorage.getItem('yara_favorites')) || [];
 
-        async function sendMessage() {
-            const inputField = document.getElementById('userInput');
-            const sendButton = document.getElementById('sendBtn');
-            const chatMessages = document.getElementById('chatMessages');
-            const text = inputField.value.trim();
+        const textField = document.getElementById('text-field');
+        const colorPicker = document.getElementById('color-picker');
+        const sizeSlider = document.getElementById('size-slider');
+        const mainPreviewText = document.getElementById('main-preview-text');
+        const fontsBoxGrid = document.getElementById('fonts-box-grid');
+        const downloadBtn = document.getElementById('download-btn');
 
-            if (!text) return;
+        // توليد مستطيلات الخطوط الصغيرة تلقائياً بالصفحة
+        function buildFontsGrid(filter = 'all') {
+            fontsBoxGrid.innerHTML = '';
+            currentFilter = filter;
+            
+            let filteredArray = fontDatabase.filter(font => {
+                if (filter === 'all') return true;
+                if (filter === 'fav') return favoriteFonts.includes(font.id);
+                return font.lang === filter;
+            });
 
-            // إيقاف الإدخال أثناء المعالجة
-            inputField.disabled = true;
-            sendButton.disabled = true;
+            if (filter === 'fav' && filteredArray.length === 0) {
+                fontsBoxGrid.innerHTML = '<div class="empty-fav-message">لم تقم بإضافة أي خطوط للمفضلة بعد. اضغط على نجمة الخط لحفظه هنا.</div>';
+                return;
+            }
 
-            // عرض رسالة المستخدم
-            appendMessage(text, 'user-message');
-            inputField.value = '';
-
-            // عرض رسالة مؤقتة "جاري التفكير..."
-            const loadingId = 'loading-' + Date.now();
-            appendMessage('جاري التفكير...', 'ai-message loading', loadingId);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-
-            try {
-                // إرسال الطلب بالصيغة الهيكلية الصحيحة (role و contents)
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        contents: [{
-                            role: "user",
-                            parts: [{ text: text }]
-                        }]
-                    })
+            filteredArray.forEach(font => {
+                const btn = document.createElement('div');
+                btn.className = `font-item-btn ${font.id === currentSelectedFont ? 'selected' : ''}`;
+                btn.setAttribute('data-font-id', font.id);
+                
+                const isFav = favoriteFonts.includes(font.id);
+                
+                btn.innerHTML = `
+                    <button class="fav-star-btn ${isFav ? 'active' : ''}" title="إضافة للمفضلة">★</button>
+                    <div class="font-specimen" style="font-family: '${font.id}', sans-serif;">${font.sample}</div>
+                    <div class="font-label">${font.name}</div>
+                `;
+                
+                // مستمع حدث الضغط على مستطيل الخط نفسه للاختيار
+                btn.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('fav-star-btn')) return;
+                    
+                    document.querySelectorAll('.font-item-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    
+                    currentSelectedFont = font.id;
+                    applyStylesToMainPreview();
                 });
 
-                const data = await response.json();
-                
-                // حذف رسالة التحميل
-                const loadingElement = document.getElementById(loadingId);
-                if (loadingElement) loadingElement.remove();
+                // مستمع حدث زر النجمة
+                const starBtn = btn.querySelector('.fav-star-btn');
+                starBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); 
+                    toggleFavorite(font.id, starBtn);
+                });
 
-                if (response.ok && data.candidates && data.candidates[0].content.parts[0].text) {
-                    const aiResponse = data.candidates[0].content.parts[0].text;
-                    appendMessage(aiResponse, 'ai-message');
-                } else {
-                    console.error("جوجل رجعت خطأ:", data);
-                    appendMessage('صار خطأ بالطلب، تأكد من إعدادات المفتاح أو المحاولة لاحقاً.', 'ai-message');
-                }
-
-            } catch (error) {
-                console.error("فشل الاتصال:", error);
-                const loadingElement = document.getElementById(loadingId);
-                if (loadingElement) loadingElement.remove();
-                appendMessage('فشل الاتصال بالسيرفر. تأكد من الإنترنت.', 'ai-message');
-            }
-
-            // إعادة تفعيل الإدخال
-            inputField.disabled = false;
-            sendButton.disabled = false;
-            inputField.focus();
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+                fontsBoxGrid.appendChild(btn);
+            });
         }
 
-        function appendMessage(text, className, id = null) {
-            const chatMessages = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${className}`;
-            if (id) messageDiv.id = id;
+        // دالة إضافة/إزالة الخط من المفضلة
+        function toggleFavorite(fontId, starElement) {
+            if (favoriteFonts.includes(fontId)) {
+                favoriteFonts = favoriteFonts.filter(id => id !== fontId);
+                starElement.classList.remove('active');
+            } else {
+                favoriteFonts.push(fontId);
+                starElement.classList.add('active');
+            }
+            localStorage.setItem('yara_favorites', JSON.stringify(favoriteFonts));
             
-            // ترتيب الأسطر البرمجية والنزول لسطر جديد بشكل صحيح
-            messageDiv.innerHTML = text.replace(/\n/g, '<br>');
-            chatMessages.appendChild(messageDiv);
-        }
-
-        function handleKeyPress(event) {
-            if (event.key === 'Enter') {
-                sendMessage();
+            // إذا كنا بداخل تبويب المفضلة، نعيد بناء الشبكة مباشرة لتحديث الخطوط المحذوفة
+            if (currentFilter === 'fav') {
+                buildFontsGrid('fav');
             }
         }
+
+        // تطبيق المدخلات والألوان على المربع الكبير
+        function applyStylesToMainPreview() {
+            const textValue = textField.value || (currentSelectedFont === 'en' ? 'Type text here' : 'اكتب النص هنا');
+            mainPreviewText.innerText = textValue;
+            mainPreviewText.style.color = colorPicker.value;
+            mainPreviewText.style.fontSize = sizeSlider.value + 'px';
+            mainPreviewText.style.fontFamily = `'${currentSelectedFont}', sans-serif`;
+        }
+
+        // تصفية الكتالوج (الكل / المفضلة / العربية / English)
+        function filterFonts(lang, btnElement) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+            buildFontsGrid(lang);
+        }
+
+        // دالة الحفظ الذكية كـ PNG شفاف عالي الدقة
+        downloadBtn.addEventListener('click', () => {
+            const text = textField.value || 'اكتب النص هنا';
+            const color = colorPicker.value;
+            const originalBtnText = downloadBtn.innerText;
+            
+            downloadBtn.innerText = "جاري الحفظ...";
+
+            document.fonts.load(`100px "${currentSelectedFont}"`).then(() => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                const baseFontSize = 130; 
+                ctx.font = `bold ${baseFontSize}px "${currentSelectedFont}", sans-serif`;
+                
+                const lines = text.split('\n');
+                let maxLineWidth = 0;
+                
+                lines.forEach(line => {
+                    const metrics = ctx.measureText(line);
+                    if (metrics.width > maxLineWidth) maxLineWidth = metrics.width;
+                });
+
+                const padding = 50;
+                canvas.width = maxLineWidth + padding * 2;
+                canvas.height = (baseFontSize * 1.35 * lines.length) + padding;
+
+                ctx.font = `bold ${baseFontSize}px "${currentSelectedFont}", sans-serif`;
+                ctx.textBaseline = 'top';
+                ctx.textAlign = 'center';
+                
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = color;
+
+                const lineHeight = baseFontSize * 1.3;
+                lines.forEach((line, index) => {
+                    ctx.fillText(line, canvas.width / 2, padding + (index * lineHeight));
+                });
+
+                const imageLink = canvas.toDataURL("image/png");
+                const downloadAnchor = document.createElement('a');
+                downloadAnchor.download = `text-${currentSelectedFont}-${Date.now()}.png`;
+                downloadAnchor.href = imageLink;
+                downloadAnchor.click();
+
+                downloadBtn.innerText = originalBtnText;
+            });
+        });
+
+        // تشغيل مستمعي الأحداث الفورية
+        textField.addEventListener('input', applyStylesToMainPreview);
+        colorPicker.addEventListener('input', applyStylesToMainPreview);
+        sizeSlider.addEventListener('input', applyStylesToMainPreview);
+
+        // تشغيل البناء الأولي للموقع عند الفتح
+        buildFontsGrid();
+        applyStylesToMainPreview();
     </script>
 </body>
 </html>
