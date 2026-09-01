@@ -1,606 +1,383 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>يارا - منصة الخطوط الاحترافية</title>
-    
-    <!-- استدعاء باقة من أشهر الخطوط العربية والإنجليزية من Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Tajawal:wght@400;700&family=Almarai:wght@400;700&family=Jomhuria&family=Changa:wght@400;700&family=El+Messiri:wght@700&family=Kufam:wght@700&family=Reem+Kufi:wght@700&family=Aref+Ruqaa:wght@700&family=Amiri:wght@700&family=Readex+Pro:wght@400;700&family=Lateef&family=Lalezar&family=Scheherazade+New:wght@700&family=Markazi+Text:wght@700&family=Harmattan:wght@700&family=Katibeh&family=Qahiri&family=Mada:wght@700&family=Noto+Sans+Arabic:wght@700&family=Noto+Kufi+Arabic:wght@700&family=Bebas+Neue&family=Montserrat:wght@400;900&family=Poppins:wght@400;800&family=Playfair+Display:ital,wght@0,700;1,700&family=Cinzel:wght@700&family=Outfit:wght@400;900&family=Fascinate+Inline&family=Anton&family=Lobster&family=Pacifico&family=Righteous&family=Abril+Fatface&family=Fredoka:wght@700&family=Russo+One&family=Orbitron:wght@700&family=Great+Vibes&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Globle 3D - لعبة تخمين الدول</title>
+  
+  <script src="//unpkg.com/three"></script>
+  <script src="//unpkg.com/globe.gl"></script>
 
-    <style>
-        :root {
-            --bg-color: #0b0f19;
-            --card-bg: #151f32;
-            --text-color: #f8fafc;
-            --accent-color: #3b82f6;
-            --accent-hover: #2563eb;
-            --border-color: #24334d;
-        }
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Cairo', sans-serif;
-        }
+    body {
+      background-color: #0d1117;
+      color: #ffffff;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            padding: 30px 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
+    #globeViz {
+      width: 100%;
+      height: 100vh;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
 
-        .container {
-            max-width: 1100px;
-            width: 100%;
-        }
+    .ui-container {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      width: 92%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
 
-        header {
-            text-align: center;
-            margin-bottom: 25px;
-        }
+    .card {
+      pointer-events: auto;
+      background: rgba(22, 27, 34, 0.88);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      padding: 12px 14px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+      text-align: center;
+    }
 
-        .logo-container {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 8px;
-        }
+    h1 {
+      font-size: 1.3rem;
+      color: #58a6ff;
+      letter-spacing: 1px;
+    }
 
-        .logo-svg {
-            width: 45px;
-            height: 45px;
-        }
+    p.subtitle {
+      font-size: 0.75rem;
+      color: #8b949e;
+      margin-bottom: 8px;
+    }
 
-        header h1 {
-            font-size: 2.2rem;
-            color: #fff;
-            font-weight: 700;
-        }
+    .input-group {
+      display: flex;
+      gap: 6px;
+    }
 
-        header p {
-            color: #64748b;
-            font-size: 0.95rem;
-            margin-top: 5px;
-        }
+    input[type="text"] {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid #30363d;
+      background: #0d1117;
+      color: #fff;
+      font-size: 0.95rem;
+      outline: none;
+      autocomplete: off;
+    }
 
-        .workspace {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 25px;
-        }
+    input[type="text"]:focus {
+      border-color: #58a6ff;
+    }
 
-        .main-display {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 25px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
-        }
+    button {
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: none;
+      background: #238636;
+      color: #fff;
+      font-weight: bold;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
 
-        .preview-zone-wrapper {
-            background-image: linear-gradient(45deg, #1e293b 25%, transparent 25%), 
-                              linear-gradient(-45deg, #1e293b 25%, transparent 25%), 
-                              linear-gradient(45deg, transparent 75%, #1e293b 75%), 
-                              linear-gradient(-45deg, transparent 75%, #1e293b 75%);
-            background-size: 20px 20px;
-            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-            border-radius: 12px;
-            min-height: 220px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            margin-bottom: 20px;
-            overflow: hidden;
-            border: 2px solid var(--border-color);
-        }
+    button:active {
+      background: #2ea043;
+    }
 
-        #main-preview-text {
-            text-align: center;
-            word-break: break-word;
-            white-space: pre-wrap;
-            line-height: 1.4;
-            width: 100%;
-            outline: none;
-        }
+    .closest-card {
+      max-height: 160px;
+      overflow-y: auto;
+      text-align: right;
+      padding: 8px 12px;
+    }
 
-        .editor-controls {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            align-items: center;
-            background: #0b0f19;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-        }
+    .closest-card h3 {
+      font-size: 0.8rem;
+      color: #8b949e;
+      margin-bottom: 6px;
+      border-bottom: 1px solid #30363d;
+      padding-bottom: 4px;
+    }
 
-        .control-box {
-            flex: 1;
-            min-width: 150px;
-        }
+    .guess-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 8px;
+      margin-bottom: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      font-size: 0.85rem;
+    }
 
-        .control-box.text-input-box {
-            flex: 2;
-            min-width: 280px;
-        }
+    .country-names {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
 
-        label {
-            display: block;
-            font-size: 0.85rem;
-            color: #94a3b8;
-            margin-bottom: 6px;
-            font-weight: 600;
-        }
+    .color-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
 
-        input[type="text"] {
-            width: 100%;
-            padding: 10px 14px;
-            background: #151f32;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            color: #fff;
-            font-size: 1.05rem;
-        }
-
-        input[type="text"]:focus {
-            outline: none;
-            border-color: var(--accent-color);
-        }
-
-        input[type="color"] {
-            -webkit-appearance: none;
-            border: none;
-            width: 100%;
-            height: 42px;
-            cursor: pointer;
-            background: none;
-        }
-
-        input[type="color"]::-webkit-color-swatch {
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-        }
-
-        input[type="range"] {
-            width: 100%;
-            height: 42px;
-            accent-color: var(--accent-color);
-        }
-
-        .download-action-btn {
-            background-color: #10b981;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 1.05rem;
-            transition: background 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            height: 44px;
-            align-self: flex-end;
-            min-width: 180px;
-        }
-
-        .download-action-btn:hover {
-            background-color: #059669;
-        }
-
-        .fonts-selector-section {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 25px;
-            border: 1px solid var(--border-color);
-        }
-
-        .section-title {
-            font-size: 1.1rem;
-            margin-bottom: 20px;
-            color: #cbd5e1;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 8px;
-        }
-
-        .tab-btn {
-            background: #0b0f19;
-            border: 1px solid var(--border-color);
-            color: #94a3b8;
-            padding: 6px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-
-        .tab-btn.active {
-            background: var(--accent-color);
-            color: #fff;
-            border-color: var(--accent-color);
-        }
-
-        .fonts-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-        }
-
-        @media (max-width: 768px) {
-            .fonts-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 480px) {
-            .fonts-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .font-item-btn {
-            background: #0b0f19;
-            border: 1.5px solid var(--border-color);
-            border-radius: 8px;
-            padding: 8px 10px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-            justify-content: center;
-            align-items: center;
-            min-height: 65px;
-            position: relative;
-        }
-
-        .font-item-btn:hover {
-            border-color: #475569;
-            transform: translateY(-2px);
-        }
-
-        .font-item-btn.selected {
-            border-color: var(--accent-color);
-            background: rgba(59, 130, 246, 0.1);
-        }
-
-        /* تنسيق زر النجمة للمفضلة */
-        .fav-star-btn {
-            position: absolute;
-            top: 4px;
-            right: 6px;
-            background: none;
-            border: none;
-            color: #475569;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: color 0.2s, transform 0.1s;
-            z-index: 5;
-            padding: 2px;
-        }
-
-        .fav-star-btn:hover {
-            transform: scale(1.2);
-        }
-
-        .fav-star-btn.active {
-            color: #eab308;
-        }
-
-        .font-label {
-            font-size: 0.7rem;
-            color: #64748b;
-            font-family: 'Cairo', sans-serif !important;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            width: 100%;
-            margin-top: 2px;
-        }
-
-        .font-specimen {
-            font-size: 1.1rem;
-            color: #fff;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            width: 100%;
-        }
-
-        /* تنسيق رسالة تنبيه عند خلو المفضلة */
-        .empty-fav-message {
-            grid-column: 1 / -1;
-            text-align: center;
-            color: #64748b;
-            padding: 30px 10px;
-            font-size: 0.95rem;
-        }
-    </style>
+    .win-msg {
+      color: #3fb950;
+      font-size: 0.95rem;
+      font-weight: bold;
+      margin-top: 6px;
+    }
+  </style>
 </head>
 <body>
 
-    <div class="container">
-        <header>
-            <div class="logo-container">
-                <svg class="logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#3b82f6" />
-                            <stop offset="100%" stop-color="#60a5fa" />
-                        </linearGradient>
-                    </defs>
-                    <circle cx="50" cy="50" r="45" fill="#151f32" stroke="#24334d" stroke-width="3" />
-                    <path d="M32 28 L46 54 L46 75 C46 77.2 47.8 79 50 79 C52.2 79 54 77.2 54 75 L54 54 L68 28" stroke="url(#logo-grad)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
-                    <circle cx="50" cy="46" r="4.5" fill="#f8fafc" />
-                </svg>
-                <h1>يارا</h1>
-            </div>
-            <p>توليد النصوص وتصديرها بصيغة PNG شفافة عالية الدقة لاستخدامها في برامج التصميم</p>
-        </header>
+  <div id="globeViz"></div>
 
-        <div class="workspace">
-            <div class="main-display">
-                <div class="preview-zone-wrapper">
-                    <div id="main-preview-text">اكتب النص هنا</div>
-                </div>
+  <div class="ui-container">
+    <div class="card">
+      <h1>🌍 G L O B L E</h1>
+      <p class="subtitle">خمن الدولة المجهولة بأقل عدد محاولات</p>
 
-                <div class="editor-controls">
-                    <div class="control-box text-input-box">
-                        <label for="text-field">ادخل النص:</label>
-                        <input type="text" id="text-field" placeholder="اكتب النص هنا..." value="اكتب النص هنا">
-                    </div>
-                    <div class="control-box">
-                        <label for="color-picker">اللون:</label>
-                        <input type="color" id="color-picker" value="#ffffff">
-                    </div>
-                    <div class="control-box">
-                        <label for="size-slider">الحجم:</label>
-                        <input type="range" id="size-slider" min="24" max="100" value="50">
-                    </div>
-                    <button class="download-action-btn" id="download-btn">
-                        تصدير PNG شفافة ↓
-                    </button>
-                </div>
-            </div>
-
-            <div class="fonts-selector-section">
-                <div class="section-title">
-                    <span>قائمة الخطوط المتاحة:</span>
-                    <div class="tabs">
-                        <button class="tab-btn active" id="tab-all" onclick="filterFonts('all', this)">الكل</button>
-                        <button class="tab-btn" id="tab-fav" onclick="filterFonts('fav', this)">المفضلة ⭐</button>
-                        <button class="tab-btn" id="tab-ar" onclick="filterFonts('ar', this)">العربية</button>
-                        <button class="tab-btn" id="tab-en" onclick="filterFonts('en', this)">English</button>
-                    </div>
-                </div>
-
-                <div class="fonts-grid" id="fonts-box-grid">
-                    <!-- المستطيلات الصغيرة تتولد هنا تلقائياً -->
-                </div>
-            </div>
-        </div>
+      <div class="input-group">
+        <input type="text" id="countryInput" placeholder="اكتب اسم الدولة (عربي / English)..." autocomplete="off">
+        <button onclick="makeGuess()">تخمين</button>
+      </div>
+      <div id="status"></div>
     </div>
 
-    <script>
-        const fontDatabase = [
-            // === خطوط عربية ===
-            { id: 'Cairo', name: 'خط القاهرة', lang: 'ar', sample: 'خط القاهرة' },
-            { id: 'Tajawal', name: 'خط تجول', lang: 'ar', sample: 'خط تجول' },
-            { id: 'Almarai', name: 'خط المراعي', lang: 'ar', sample: 'خط المراعي' },
-            { id: 'Jomhuria', name: 'خط جمهورية', lang: 'ar', sample: 'خط جمهورية' },
-            { id: 'Changa', name: 'خط شانغا', lang: 'ar', sample: 'خط شانغا' },
-            { id: 'El Messiri', name: 'خط المسيري', lang: 'ar', sample: 'خط المسيري' },
-            { id: 'Kufam', name: 'خط كوفام', lang: 'ar', sample: 'خط كوفام' },
-            { id: 'Reem Kufi', name: 'خط ريم كوفي', lang: 'ar', sample: 'ريم كوفي' },
-            { id: 'Aref Ruqaa', name: 'خط الرقعة', lang: 'ar', sample: 'خط الرقعة' },
-            { id: 'Amiri', name: 'الخط الأميري', lang: 'ar', sample: 'الخط الأميري' },
-            { id: 'Readex Pro', name: 'ريدكس برو', lang: 'ar', sample: 'ريدكس برو' },
-            { id: 'Lateef', name: 'خط لطيف', lang: 'ar', sample: 'خط لطيف' },
-            { id: 'Lalezar', name: 'خط لاليزار', lang: 'ar', sample: 'خط لاليزار' },
-            { id: 'Scheherazade New', name: 'خط شهرزاد', lang: 'ar', sample: 'خط شهرزاد' },
-            { id: 'Markazi Text', name: 'الخط المركزي', lang: 'ar', sample: 'الخط المركزي' },
-            { id: 'Harmattan', name: 'خط هرمتان', lang: 'ar', sample: 'خط هرمتان' },
-            { id: 'Katibeh', name: 'خط كتيبة', lang: 'ar', sample: 'خط كتيبة' },
-            { id: 'Qahiri', name: 'خط قاهيري', lang: 'ar', sample: 'خط قاهيري' },
-            { id: 'Mada', name: 'خط مدى', lang: 'ar', sample: 'خط مدى' },
-            { id: 'Noto Kufi Arabic', name: 'نوتو كوفي', lang: 'ar', sample: 'نوتو كوفي' },
+    <div class="card closest-card" id="guessesCard" style="display: none;">
+      <h3>أقرب المحاولات:</h3>
+      <div id="guessesList"></div>
+    </div>
+  </div>
 
-            // === خطوط إنجليزية ===
-            { id: 'Bebas Neue', name: 'Bebas Neue', lang: 'en', sample: 'BEBAS NEUE' },
-            { id: 'Montserrat', name: 'Montserrat', lang: 'en', sample: 'MONTSERRAT' },
-            { id: 'Poppins', name: 'Poppins', lang: 'en', sample: 'POPPINS' },
-            { id: 'Playfair Display', name: 'Playfair Display', lang: 'en', sample: 'PLAYFAIR' },
-            { id: 'Cinzel', name: 'Cinzel', lang: 'en', sample: 'CINZEL' },
-            { id: 'Outfit', name: 'Outfit', lang: 'en', sample: 'OUTFIT' },
-            { id: 'Fascinate Inline', name: 'Fascinate', lang: 'en', sample: 'FASCINATE' },
-            { id: 'Anton', name: 'Anton', lang: 'en', sample: 'ANTON' },
-            { id: 'Lobster', name: 'Lobster', lang: 'en', sample: 'LOBSTER' },
-            { id: 'Pacifico', name: 'Pacifico', lang: 'en', sample: 'PACIFICO' },
-            { id: 'Righteous', name: 'Righteous', lang: 'en', sample: 'RIGHTEOUS' },
-            { id: 'Abril Fatface', name: 'Abril Fatface', lang: 'en', sample: 'ABRIL FATFACE' },
-            { id: 'Fredoka', name: 'Fredoka', lang: 'en', sample: 'FREDOKA' },
-            { id: 'Russo One', name: 'Russo One', lang: 'en', sample: 'RUSSO ONE' },
-            { id: 'Orbitron', name: 'Orbitron', lang: 'en', sample: 'ORBITRON' },
-            { id: 'Great Vibes', name: 'Great Vibes', lang: 'en', sample: 'GREAT VIBES' }
-        ];
+  <script>
+    let worldData = [];
+    let targetCountry = null;
+    let guessedCountries = [];
+    let globe;
 
-        let currentSelectedFont = 'Cairo';
-        let currentFilter = 'all';
-        
-        // جلب قائمة المفضلة المخزنة في المتصفح أو إنشائها
-        let favoriteFonts = JSON.parse(localStorage.getItem('yara_favorites')) || [];
+    // ترجمة كاملة وشاملة لجميع دول العالم
+    const arabicNames = {
+      "Afghanistan": "أفغانستان", "Albania": "ألبانيا", "Algeria": "الجزائر", "Andorra": "أندورا",
+      "Angola": "أنغولا", "Antigua and Barbuda": "أنتيغوا وباربودا", "Argentina": "الأرجنتين",
+      "Armenia": "أرمينيا", "Australia": "أستراليا", "Austria": "النمسا", "Azerbaijan": "أذربيجان",
+      "Bahamas": "جزر البهاماس", "Bahrain": "البحرين", "Bangladesh": "بنغلاديش", "Barbados": "باربادوس",
+      "Belarus": "بيلاروسيا", "Belgium": "بلجيكا", "Belize": "بليز", "Benin": "بنين", "Bhutan": "بوتان",
+      "Bolivia": "بوليفيا", "Bosnia and Herzegovina": "البوسنة والهرسك", "Botswana": "بوتسوانا",
+      "Brazil": "البرازيل", "Brunei": "بروناي", "Bulgaria": "بلغاريا", "Burkina Faso": "بوركينا فاسو",
+      "Burundi": "بوروندي", "Cambodia": "كمبوديا", "Cameroon": "الكاميرون", "Canada": "كندا",
+      "Cape Verde": "الرأس الأخضر", "Central African Republic": "جمهورية أفريقيا الوسطى",
+      "Chad": "تشاد", "Chile": "تشيلي", "China": "الصين", "Colombia": "كولومبيا", "Comoros": "جزر القمر",
+      "Congo": "الكونغو", "Costa Rica": "كوستاريكا", "Croatia": "كرواتيا", "Cuba": "كوبا",
+      "Cyprus": "قبرص", "Czechia": "تشيكيا", "Czech Republic": "جمهورية التشيك",
+      "Democratic Republic of the Congo": "الكونغو الديمقراطية", "Denmark": "الدنمارك",
+      "Djibouti": "جيبوتي", "Dominica": "دومينيكا", "Dominican Republic": "جمهورية الدومينيكان",
+      "Ecuador": "إكوادور", "Egypt": "مصر", "El Salvador": "السلفادور", "Equatorial Guinea": "غينيا الاستوائية",
+      "Eritrea": "إريتريا", "Estonia": "إستونيا", "Eswatini": "إسواتيني", "Ethiopia": "إثيوبيا",
+      "Fiji": "فيجي", "Finland": "فنلندا", "France": "فرنسا", "Gabon": "الغابون", "Gambia": "غامبيا",
+      "Georgia": "جورجيا", "Germany": "ألمانيا", "Ghana": "غانا", "Greece": "اليونان",
+      "Grenada": "غرينادا", "Guatemala": "غواتيمالا", "Guinea": "غينيا", "Guinea-Bissau": "غينيا بيساو",
+      "Guyana": "غيانا", "Haiti": "هايتي", "Honduras": "هندوراس", "Hungary": "المجر",
+      "Iceland": "آيسلندا", "India": "الهند", "Indonesia": "إندونيسيا", "Iran": "إيران",
+      "Iraq": "العراق", "Ireland": "أيرلندا", "Israel": "إسرائيل", "Italy": "إيطاليا",
+      "Ivory Coast": "ساحل العاج", "Jamaica": "جامايوكا", "Japan": "اليابان", "Jordan": "الأردن",
+      "Kazakhstan": "كازاخستان", "Kenya": "كينيا", "Kuwait": "الكويت", "Kyrgyzstan": "قيرغيزستان",
+      "Laos": "لاوس", "Latvia": "لاتفيا", "Lebanon": "لبنان", "Lesotho": "ليسوتو",
+      "Liberia": "ليبيريا", "Libya": "ليبيا", "Liechtenstein": "ليختنشتاين", "Lithuania": "ليتوانيا",
+      "Luxembourg": "لوكسمبورغ", "Madagascar": "مدغشقر", "Malawi": "مالاوي", "Malaysia": "ماليزيا",
+      "Maldives": "جزر المالديف", "Mali": "مالي", "Malta": "مالطا", "Mauritania": "موريتانيا",
+      "Mauritius": "موريشيوس", "Mexico": "المكسيك", "Moldova": "مولدوفا", "Monaco": "موناكو",
+      "Mongolia": "منغوليا", "Montenegro": "الجبل الأسود", "Morocco": "المغرب", "Mozambique": "موزمبيق",
+      "Myanmar": "ميانمار", "Namibia": "ناميبيا", "Nepal": "نيبال", "Netherlands": "هولندا",
+      "New Zealand": "نيوزيلندا", "Nicaragua": "نيكاراغوا", "Niger": "النيجر", "Nigeria": "نيجيريا",
+      "North Korea": "كوريا الشمالية", "North Macedonia": "مقدونيا الشمالية", "Norway": "النرويج",
+      "Oman": "عُمان", "Pakistan": "باكستان", "Palestine": "فلسطين", "Panama": "بنما",
+      "Papua New Guinea": "بابوا غينيا الجديدة", "Paraguay": "باراغواي", "Peru": "بيرو",
+      "Philippines": "الفلبين", "Poland": "بولندا", "Portugal": "البرتغال", "Qatar": "قطر",
+      "Romania": "رومانيا", "Russia": "روسيا", "Rwanda": "رواندا", "Saudi Arabia": "السعودية",
+      "Senegal": "السنغال", "Serbia": "صربيا", "Sierra Leone": "سيراليون", "Singapore": "سنغافورة",
+      "Slovakia": "سلوفاكيا", "Slovenia": "سلوفينيا", "Somalia": "الصومال", "South Africa": "جنوب أفريقيا",
+      "South Korea": "كوريا الجنوبية", "South Sudan": "جنوب السودان", "Spain": "إسبانيا",
+      "Sri Lanka": "سريلانكا", "Sudan": "السودان", "Suriname": "سورينام", "Sweden": "السويد",
+      "Switzerland": "سويسرا", "Syria": "سوريا", "Taiwan": "تايوان", "Tajikistan": "طاجيكستان",
+      "Tanzania": "تنزانيا", "United Republic of Tanzania": "تنزانيا", "Thailand": "تايلاند",
+      "Togo": "توغو", "Tunisia": "تونس", "Turkey": "تركيا", "Turkmenistan": "تركمانستان",
+      "Uganda": "أوغندا", "Ukraine": "أوكرانيا", "United Arab Emirates": "الإمارات",
+      "United Kingdom": "المملكة المتحدة", "United States of America": "أمريكا",
+      "Uruguay": "أوروغواي", "Uzbekistan": "أوزبكستان", "Vatican City": "الفاتيكان",
+      "Venezuela": "فنزويلا", "Vietnam": "فيتنام", "Western Sahara": "الصحراء الغربية",
+      "Yemen": "اليمن", "Zambia": "زامبيا", "Zimbabwe": "زيمبابوي"
+    };
 
-        const textField = document.getElementById('text-field');
-        const colorPicker = document.getElementById('color-picker');
-        const sizeSlider = document.getElementById('size-slider');
-        const mainPreviewText = document.getElementById('main-preview-text');
-        const fontsBoxGrid = document.getElementById('fonts-box-grid');
-        const downloadBtn = document.getElementById('download-btn');
+    // توحيد الهمزات والرموز
+    function normalizeText(str) {
+      if (!str) return "";
+      return str
+        .toLowerCase()
+        .replace(/[أإآء]/g, 'ا')
+        .replace(/ة/g, 'ه')
+        .replace(/\s+/g, '')
+        .trim();
+    }
 
-        // توليد مستطيلات الخطوط الصغيرة تلقائياً بالصفحة
-        function buildFontsGrid(filter = 'all') {
-            fontsBoxGrid.innerHTML = '';
-            currentFilter = filter;
-            
-            let filteredArray = fontDatabase.filter(font => {
-                if (filter === 'all') return true;
-                if (filter === 'fav') return favoriteFonts.includes(font.id);
-                return font.lang === filter;
-            });
+    function getArName(enName) {
+      return arabicNames[enName] || enName;
+    }
 
-            if (filter === 'fav' && filteredArray.length === 0) {
-                fontsBoxGrid.innerHTML = '<div class="empty-fav-message">لم تقم بإضافة أي خطوط للمفضلة بعد. اضغط على نجمة الخط لحفظه هنا.</div>';
-                return;
-            }
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+      return Math.round(R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))));
+    }
 
-            filteredArray.forEach(font => {
-                const btn = document.createElement('div');
-                btn.className = `font-item-btn ${font.id === currentSelectedFont ? 'selected' : ''}`;
-                btn.setAttribute('data-font-id', font.id);
-                
-                const isFav = favoriteFonts.includes(font.id);
-                
-                btn.innerHTML = `
-                    <button class="fav-star-btn ${isFav ? 'active' : ''}" title="إضافة للمفضلة">★</button>
-                    <div class="font-specimen" style="font-family: '${font.id}', sans-serif;">${font.sample}</div>
-                    <div class="font-label">${font.name}</div>
-                `;
-                
-                // مستمع حدث الضغط على مستطيل الخط نفسه للاختيار
-                btn.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('fav-star-btn')) return;
-                    
-                    document.querySelectorAll('.font-item-btn').forEach(b => b.classList.remove('selected'));
-                    btn.classList.add('selected');
-                    
-                    currentSelectedFont = font.id;
-                    applyStylesToMainPreview();
-                });
+    function getHeatColor(distance) {
+      if (distance === 0) return '#ff0000';
+      if (distance < 1000) return '#b30000';
+      if (distance < 2500) return '#ff4500';
+      if (distance < 5000) return '#ffa500';
+      if (distance < 8000) return '#ffde59';
+      return '#3a5a40';
+    }
 
-                // مستمع حدث زر النجمة
-                const starBtn = btn.querySelector('.fav-star-btn');
-                starBtn.addEventListener('click', (e) => {
-                    e.stopPropagation(); 
-                    toggleFavorite(font.id, starBtn);
-                });
+    function initGlobe() {
+      globe = Globe()
+        (document.getElementById('globeViz'))
+        .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+        .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
+        .polygonSideColor(() => 'rgba(0, 30, 60, 0.5)')
+        .polygonStrokeColor(() => '#111')
+        .polygonAltitude(0.01)
+        .polygonCapColor(feat => {
+          const guess = guessedCountries.find(g => g.nameEn === feat.properties.ADMIN);
+          return guess ? guess.color : 'rgba(200, 200, 200, 0.15)';
+        })
+        .polygonLabel(({ properties: d }) => `<b>${getArName(d.ADMIN)} (${d.ADMIN})</b>`);
 
-                fontsBoxGrid.appendChild(btn);
-            });
-        }
+      globe.controls().autoRotate = true;
+      globe.controls().autoRotateSpeed = 0.4;
+    }
 
-        // دالة إضافة/إزالة الخط من المفضلة
-        function toggleFavorite(fontId, starElement) {
-            if (favoriteFonts.includes(fontId)) {
-                favoriteFonts = favoriteFonts.filter(id => id !== fontId);
-                starElement.classList.remove('active');
-            } else {
-                favoriteFonts.push(fontId);
-                starElement.classList.add('active');
-            }
-            localStorage.setItem('yara_favorites', JSON.stringify(favoriteFonts));
-            
-            // إذا كنا بداخل تبويب المفضلة، نعيد بناء الشبكة مباشرة لتحديث الخطوط المحذوفة
-            if (currentFilter === 'fav') {
-                buildFontsGrid('fav');
-            }
-        }
+    fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson')
+      .then(res => res.json())
+      .then(countries => {
+        worldData = countries.features;
+        targetCountry = worldData[Math.floor(Math.random() * worldData.length)];
+        initGlobe();
+        globe.polygonsData(worldData);
+      });
 
-        // تطبيق المدخلات والألوان على المربع الكبير
-        function applyStylesToMainPreview() {
-            const textValue = textField.value || (currentSelectedFont === 'en' ? 'Type text here' : 'اكتب النص هنا');
-            mainPreviewText.innerText = textValue;
-            mainPreviewText.style.color = colorPicker.value;
-            mainPreviewText.style.fontSize = sizeSlider.value + 'px';
-            mainPreviewText.style.fontFamily = `'${currentSelectedFont}', sans-serif`;
-        }
+    // التخمين مع المعالجة الذكية لجميع انواع الألف
+    function makeGuess() {
+      const input = document.getElementById('countryInput');
+      const rawVal = input.value.trim();
+      const val = normalizeText(rawVal);
+      
+      input.value = '';
 
-        // تصفية الكتالوج (الكل / المفضلة / العربية / English)
-        function filterFonts(lang, btnElement) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            btnElement.classList.add('active');
-            buildFontsGrid(lang);
-        }
+      if (!val) return;
 
-        // دالة الحفظ الذكية كـ PNG شفاف عالي الدقة
-        downloadBtn.addEventListener('click', () => {
-            const text = textField.value || 'اكتب النص هنا';
-            const color = colorPicker.value;
-            const originalBtnText = downloadBtn.innerText;
-            
-            downloadBtn.innerText = "جاري الحفظ...";
+      const guessedFeature = worldData.find(c => {
+        const en = normalizeText(c.properties.ADMIN);
+        const ar = normalizeText(getArName(c.properties.ADMIN));
+        return val === en || val === ar || en.includes(val) || ar.includes(val);
+      });
 
-            document.fonts.load(`100px "${currentSelectedFont}"`).then(() => {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                
-                const baseFontSize = 130; 
-                ctx.font = `bold ${baseFontSize}px "${currentSelectedFont}", sans-serif`;
-                
-                const lines = text.split('\n');
-                let maxLineWidth = 0;
-                
-                lines.forEach(line => {
-                    const metrics = ctx.measureText(line);
-                    if (metrics.width > maxLineWidth) maxLineWidth = metrics.width;
-                });
+      if (!guessedFeature) {
+        alert("تأكد من اسم الدولة بشكل صحيح!");
+        return;
+      }
 
-                const padding = 50;
-                canvas.width = maxLineWidth + padding * 2;
-                canvas.height = (baseFontSize * 1.35 * lines.length) + padding;
+      const enName = guessedFeature.properties.ADMIN;
+      if (guessedCountries.some(g => g.nameEn === enName)) {
+        alert("خمنت هذه الدولة سابقاً!");
+        return;
+      }
 
-                ctx.font = `bold ${baseFontSize}px "${currentSelectedFont}", sans-serif`;
-                ctx.textBaseline = 'top';
-                ctx.textAlign = 'center';
-                
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = color;
+      globe.controls().autoRotate = false;
 
-                const lineHeight = baseFontSize * 1.3;
-                lines.forEach((line, index) => {
-                    ctx.fillText(line, canvas.width / 2, padding + (index * lineHeight));
-                });
+      const targetLat = targetCountry.properties.LABEL_Y || targetCountry.geometry.coordinates[0][1];
+      const targetLon = targetCountry.properties.LABEL_X || targetCountry.geometry.coordinates[0][0];
+      const guessLat = guessedFeature.properties.LABEL_Y || guessedFeature.geometry.coordinates[0][1];
+      const guessLon = guessedFeature.properties.LABEL_X || guessedFeature.geometry.coordinates[0][0];
 
-                const imageLink = canvas.toDataURL("image/png");
-                const downloadAnchor = document.createElement('a');
-                downloadAnchor.download = `text-${currentSelectedFont}-${Date.now()}.png`;
-                downloadAnchor.href = imageLink;
-                downloadAnchor.click();
+      let distance = calculateDistance(guessLat, guessLon, targetLat, targetLon);
+      if (enName === targetCountry.properties.ADMIN) distance = 0;
 
-                downloadBtn.innerText = originalBtnText;
-            });
-        });
+      const color = getHeatColor(distance);
 
-        // تشغيل مستمعي الأحداث الفورية
-        textField.addEventListener('input', applyStylesToMainPreview);
-        colorPicker.addEventListener('input', applyStylesToMainPreview);
-        sizeSlider.addEventListener('input', applyStylesToMainPreview);
+      guessedCountries.push({
+        nameEn: enName,
+        nameAr: getArName(enName),
+        distance: distance,
+        color: color
+      });
 
-        // تشغيل البناء الأولي للموقع عند الفتح
-        buildFontsGrid();
-        applyStylesToMainPreview();
-    </script>
+      globe.polygonCapColor(globe.polygonCapColor());
+      globe.pointOfView({ lat: guessLat, lng: guessLon, altitude: 2 }, 1500);
+
+      updateUI(enName === targetCountry.properties.ADMIN);
+    }
+
+    // السماح بالتخمين عند ضغط Enter في الكيبورد
+    document.getElementById('countryInput').addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') {
+        makeGuess();
+      }
+    });
+
+    function updateUI(isWin) {
+      const listContainer = document.getElementById('guessesList');
+      const guessesCard = document.getElementById('guessesCard');
+      const statusDiv = document.getElementById('status');
+
+      guessesCard.style.display = 'block';
+      const sorted = [...guessedCountries].sort((a, b) => a.distance - b.distance);
+
+      listContainer.innerHTML = sorted.map(g => `
+        <div class="guess-item">
+          <div class="country-names">
+            <span class="color-indicator" style="background: ${g.color};"></span>
+            <b>${g.nameAr}</b> <span style="color: #8b949e; font-size:0.75rem;">(${g.nameEn})</span>
+          </div>
+          <b>${g.distance === 0 ? '🎯 فوز!' : g.distance.toLocaleString() + ' km'}</b>
+        </div>
+      `).join('');
+
+      if (isWin) {
+        statusDiv.innerHTML = `<p class="win-msg">🎉 مبروك! اكتشفت الدولة بعد ${guessedCountries.length} محاولات!</p>`;
+        document.getElementById('countryInput').disabled = true;
+      }
+    }
+  </script>
 </body>
 </html>
