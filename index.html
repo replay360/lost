@@ -250,8 +250,8 @@
     let guessedCountries = [];
     let globe;
 
-    // رابط سيرفرك المرفوع على Vercel
-    const SERVER_URL = "https://globle-server.vercel.app";
+    // رابط السيرفر المحلي الخاص بك في الشبكة
+    const SERVER_URL = "http://192.168.0.247:3000";
     let socket = null;
     let isMultiplayer = false;
     let currentRoom = null;
@@ -316,6 +316,19 @@
 
     function getArName(enName) {
       return arabicNames[enName] || enName;
+    }
+
+    function getFeatureCoords(feature) {
+      if (feature.properties.LABEL_Y && feature.properties.LABEL_X) {
+        return { lat: feature.properties.LABEL_Y, lon: feature.properties.LABEL_X };
+      }
+      const coords = feature.geometry.coordinates;
+      if (feature.geometry.type === 'Polygon') {
+        return { lat: coords[0][0][1], lon: coords[0][0][0] };
+      } else if (feature.geometry.type === 'MultiPolygon') {
+        return { lat: coords[0][0][0][1], lon: coords[0][0][0][0] };
+      }
+      return { lat: 0, lon: 0 };
     }
 
     function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -393,7 +406,7 @@
       const roomStatus = document.getElementById('roomStatus');
       
       if (!socket) {
-        roomStatus.innerText = "⏳ جاري الاتصال بالسيرفر...";
+        roomStatus.innerText = "⏳ جاري الاتصال بالسيرفر المحلي...";
         
         socket = io(SERVER_URL, { 
           transports: ['polling', 'websocket'],
@@ -402,11 +415,11 @@
         });
 
         socket.on('connect', () => {
-          roomStatus.innerText = "🟢 متصل بالسيرفر! اضغط إنشاء أو اكتب رمز الغرفة للانضمام.";
+          roomStatus.innerText = "🟢 متصل بالسيرفر المحلي! اضغط إنشاء أو اكتب رمز الغرفة.";
         });
 
         socket.on('connect_error', () => {
-          roomStatus.innerText = "❌ تعذر الاتصال بالسيرفر! يرجى المحاولة بعد ثوانٍ.";
+          roomStatus.innerText = "❌ تعذر الاتصال بالسيرفر المحلي! تأكد من تشغيل Termux.";
         });
 
         socket.on('roomCreated', (data) => {
@@ -426,7 +439,16 @@
         });
 
         socket.on('guessResult', (data) => {
-          processGuessResult(data.guessedCountryName, data.distance, data.byPlayer);
+          const guessedFeature = worldData.find(c => c.properties.ADMIN === data.guessedCountryName);
+          let distance = 0;
+          if (guessedFeature && targetCountry) {
+            const gPos = getFeatureCoords(guessedFeature);
+            const tPos = getFeatureCoords(targetCountry);
+            distance = calculateDistance(gPos.lat, gPos.lon, tPos.lat, tPos.lon);
+            if (data.guessedCountryName === targetCountry.properties.ADMIN) distance = 0;
+          }
+
+          processGuessResult(data.guessedCountryName, distance, data.byPlayer);
           isMyTurn = (data.nextTurn === socket.id);
           updateTurnStatus();
 
@@ -450,10 +472,10 @@
       if (!isMultiplayer) return;
       const statusDiv = document.getElementById('roomStatus');
       if (isMyTurn) {
-        statusDiv.innerText = `🟢 دورك الآن للتخمين! (الغرفة: ${currentRoom})`;
+        statusDiv.innerText = `🟢 دورك الآن للتخمين! ( الغرفة: ${currentRoom} )`;
         document.getElementById('guessBtn').disabled = false;
       } else {
-        statusDiv.innerText = `⏳ دور الخصم... ينفذ تخمينه الآن. (الغرفة: ${currentRoom})`;
+        statusDiv.innerText = `⏳ دور الخصم... ينتظر تخمينه. ( الغرفة: ${currentRoom} )`;
         document.getElementById('guessBtn').disabled = true;
       }
     }
@@ -464,7 +486,7 @@
         initSocketConnection();
         return;
       }
-      document.getElementById('roomStatus').innerText = "⏳ جاري طلب غرفة جديدة من السيرفر...";
+      document.getElementById('roomStatus').innerText = "⏳ جاري طلب غرفة جديدة...";
       socket.emit('createRoom');
     }
 
@@ -518,12 +540,10 @@
       if (isMultiplayer) {
         socket.emit('makeGuess', { roomId: currentRoom, countryName: enName });
       } else {
-        const targetLat = targetCountry.properties.LABEL_Y || targetCountry.geometry.coordinates[0][1];
-        const targetLon = targetCountry.properties.LABEL_X || targetCountry.geometry.coordinates[0][0];
-        const guessLat = guessedFeature.properties.LABEL_Y || guessedFeature.geometry.coordinates[0][1];
-        const guessLon = guessedFeature.properties.LABEL_X || guessedFeature.geometry.coordinates[0][0];
+        const gPos = getFeatureCoords(guessedFeature);
+        const tPos = getFeatureCoords(targetCountry);
 
-        let distance = calculateDistance(guessLat, guessLon, targetLat, targetLon);
+        let distance = calculateDistance(gPos.lat, gPos.lon, tPos.lat, tPos.lon);
         if (enName === targetCountry.properties.ADMIN) distance = 0;
 
         processGuessResult(enName, distance, 'me');
@@ -534,9 +554,9 @@
       globe.controls().autoRotate = false;
 
       const guessedFeature = worldData.find(c => c.properties.ADMIN === enName);
-      const guessLat = guessedFeature.properties.LABEL_Y || guessedFeature.geometry.coordinates[0][1];
-      const guessLon = guessedFeature.properties.LABEL_X || guessedFeature.geometry.coordinates[0][0];
+      if (!guessedFeature) return;
 
+      const gPos = getFeatureCoords(guessedFeature);
       const color = getHeatColor(distance);
 
       guessedCountries.push({
@@ -548,7 +568,7 @@
       });
 
       globe.polygonCapColor(globe.polygonCapColor());
-      globe.pointOfView({ lat: guessLat, lng: guessLon, altitude: 2 }, 1500);
+      globe.pointOfView({ lat: gPos.lat, lng: gPos.lon, altitude: 2 }, 1500);
 
       updateUI(distance === 0 && !isMultiplayer);
     }
