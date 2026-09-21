@@ -7,7 +7,7 @@
   
   <script src="//unpkg.com/three"></script>
   <script src="//unpkg.com/globe.gl"></script>
-  <!-- إضافة مكتبة Socket.io -->
+  <!-- مكتبة Socket.io للاتصال بالسيرفر -->
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
   <style>
@@ -81,13 +81,14 @@
 
     .mode-btn {
       flex: 1;
-      padding: 6px 10px;
-      font-size: 0.8rem;
+      padding: 8px 10px;
+      font-size: 0.85rem;
       background: #21262d;
       border: 1px solid #30363d;
       border-radius: 8px;
       color: #c9d1d9;
       cursor: pointer;
+      font-weight: bold;
     }
 
     .mode-btn.active {
@@ -101,9 +102,10 @@
       flex-direction: column;
       gap: 6px;
       margin-bottom: 8px;
-      background: rgba(0,0,0,0.2);
-      padding: 8px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 10px;
       border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.08);
     }
 
     .input-group {
@@ -127,7 +129,7 @@
     }
 
     button {
-      padding: 10px 18px;
+      padding: 10px 16px;
       border-radius: 10px;
       border: none;
       background: #238636;
@@ -199,7 +201,7 @@
     .room-info {
       font-size: 0.8rem;
       color: #e3b341;
-      margin-bottom: 4px;
+      line-height: 1.4;
     }
   </style>
 </head>
@@ -212,22 +214,23 @@
       <h1>🌍 G L O B L E</h1>
       <p class="subtitle">خمن الدولة المجهولة بأقل عدد محاولات</p>
 
-      <!-- خيارات التبديل بين الأوفلاين والأونلاين -->
+      <!-- اختيار نمط اللعب -->
       <div class="mode-buttons">
         <button class="mode-btn active" id="btnSingle" onclick="switchMode('single')">👤 لعب فردي</button>
         <button class="mode-btn" id="btnMulti" onclick="switchMode('multi')">🎮 لعب أونلاين</button>
       </div>
 
-      <!-- واجهة إنشاء/انضمام الغرفة للأونلاين -->
+      <!-- أدوات الغرف للأونلاين -->
       <div class="multiplayer-box" id="multiBox">
-        <div id="roomStatus" class="room-info">اختر إنشاء غرفة أو ادخل رمز غرفة</div>
+        <div id="roomStatus" class="room-info">اختر إنشاء غرفة أو ادخل رمز غرفة للانضمام</div>
         <div class="input-group">
-          <input type="text" id="roomInput" placeholder="رمز الغرفة (مثال: A1X9)...">
+          <input type="text" id="roomInput" placeholder="رمز الغرفة..." autocomplete="off">
           <button class="btn-secondary" onclick="joinRoom()">انضمام</button>
           <button onclick="createRoom()">إنشاء</button>
         </div>
       </div>
 
+      <!-- إدخال التخمين -->
       <div class="input-group">
         <input type="text" id="countryInput" placeholder="اكتب اسم الدولة (عربي / English)..." autocomplete="off">
         <button onclick="makeGuess()" id="guessBtn">تخمين</button>
@@ -247,13 +250,12 @@
     let guessedCountries = [];
     let globe;
 
-    // متغيرة الأونلاين وربط السيرفر بـ Vercel
+    // رابط سيرفرك المرفوع على Vercel
     const SERVER_URL = "https://globle-server.vercel.app";
     let socket = null;
     let isMultiplayer = false;
     let currentRoom = null;
     let isMyTurn = true;
-    let myPlayerId = null;
 
     const arabicNames = {
       "Afghanistan": "أفغانستان", "Albania": "ألبانيا", "Algeria": "الجزائر", "Andorra": "أندورا",
@@ -372,7 +374,6 @@
       document.getElementById('countryInput').disabled = false;
     }
 
-    // التبديل بين الأوفلاين والأونلاين
     function switchMode(mode) {
       document.getElementById('btnSingle').classList.toggle('active', mode === 'single');
       document.getElementById('btnMulti').classList.toggle('active', mode === 'multi');
@@ -389,26 +390,34 @@
     }
 
     function initSocketConnection() {
+      const roomStatus = document.getElementById('roomStatus');
+      
       if (!socket) {
-        socket = io(SERVER_URL, { transports: ['websocket', 'polling'] });
+        roomStatus.innerText = "⏳ جاري الاتصال بالسيرفر...";
+        
+        socket = io(SERVER_URL, { 
+          transports: ['polling', 'websocket'],
+          reconnectionAttempts: 5,
+          timeout: 10000 
+        });
 
         socket.on('connect', () => {
-          myPlayerId = socket.id;
-          document.getElementById('roomStatus').innerText = "متصل بالسيرفر! اختر إنشاء أو انضمام.";
+          roomStatus.innerText = "🟢 متصل بالسيرفر! اضغط إنشاء أو اكتب رمز الغرفة للانضمام.";
+        });
+
+        socket.on('connect_error', () => {
+          roomStatus.innerText = "❌ تعذر الاتصال بالسيرفر! يرجى المحاولة بعد ثوانٍ.";
         });
 
         socket.on('roomCreated', (data) => {
           currentRoom = data.roomId;
-          document.getElementById('roomStatus').innerText = `تم إنشاء الغرفة! الكود: ${currentRoom} (في انتظار لاعب آخر...)`;
+          roomStatus.innerHTML = `✅ تم إنشاء الغرفة!<br>الكود: <b style="font-size:1.2rem; color:#58a6ff;">${currentRoom}</b><br>(في انتظار انضمام اللاعب الثاني...)`;
         });
 
         socket.on('gameStart', (data) => {
           currentRoom = data.roomId;
           guessedCountries = [];
-          
-          // تحديد الدولة المجهولة من السيرفر
           targetCountry = worldData.find(c => c.properties.ADMIN === data.targetCountryName);
-          
           isMyTurn = (data.currentTurn === socket.id);
           updateTurnStatus();
           document.getElementById('guessesCard').style.display = 'none';
@@ -432,6 +441,7 @@
           alert(msg);
         });
       } else if (!socket.connected) {
+        roomStatus.innerText = "⏳ جاري إعادة الاتصال...";
         socket.connect();
       }
     }
@@ -443,31 +453,39 @@
         statusDiv.innerText = `🟢 دورك الآن للتخمين! (الغرفة: ${currentRoom})`;
         document.getElementById('guessBtn').disabled = false;
       } else {
-        statusDiv.innerText = `⏳ دور الخصم... ينتظر تخمينه. (الغرفة: ${currentRoom})`;
+        statusDiv.innerText = `⏳ دور الخصم... ينفذ تخمينه الآن. (الغرفة: ${currentRoom})`;
         document.getElementById('guessBtn').disabled = true;
       }
     }
 
     function createRoom() {
-      if (socket && socket.connected) {
-        socket.emit('createRoom');
+      if (!socket || !socket.connected) {
+        alert("جاري الاتصال بالسيرفر، انتظر لحظات ثم اضغط مرة أخرى");
+        initSocketConnection();
+        return;
       }
+      document.getElementById('roomStatus').innerText = "⏳ جاري طلب غرفة جديدة من السيرفر...";
+      socket.emit('createRoom');
     }
 
     function joinRoom() {
       const code = document.getElementById('roomInput').value.trim().toUpperCase();
       if (!code) {
-        alert("يرجى كتابة رمز الغرفة!");
+        alert("يرجى كتابة رمز الغرفة أولاً!");
         return;
       }
-      if (socket && socket.connected) {
-        socket.emit('joinRoom', code);
+      if (!socket || !socket.connected) {
+        alert("جاري الاتصال بالسيرفر، انتظر لحظات ثم اضغط مرة أخرى");
+        initSocketConnection();
+        return;
       }
+      document.getElementById('roomStatus').innerText = "⏳ جاري الانضمام للغرفة...";
+      socket.emit('joinRoom', code);
     }
 
     function makeGuess() {
       if (isMultiplayer && !isMyTurn) {
-        alert("انتظر دورك!");
+        alert("ليس دورك الآن!");
         return;
       }
 
@@ -498,10 +516,8 @@
       }
 
       if (isMultiplayer) {
-        // إرسال التخمين للسيرفر
         socket.emit('makeGuess', { roomId: currentRoom, countryName: enName });
       } else {
-        // التخمين الفردي الأوفلاين
         const targetLat = targetCountry.properties.LABEL_Y || targetCountry.geometry.coordinates[0][1];
         const targetLon = targetCountry.properties.LABEL_X || targetCountry.geometry.coordinates[0][0];
         const guessLat = guessedFeature.properties.LABEL_Y || guessedFeature.geometry.coordinates[0][1];
