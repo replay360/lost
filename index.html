@@ -7,6 +7,8 @@
   
   <script src="//unpkg.com/three"></script>
   <script src="//unpkg.com/globe.gl"></script>
+  <!-- إضافة مكتبة Socket.io -->
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
   <style>
     * {
@@ -71,6 +73,39 @@
       margin-bottom: 8px;
     }
 
+    .mode-buttons {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .mode-btn {
+      flex: 1;
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      background: #21262d;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      color: #c9d1d9;
+      cursor: pointer;
+    }
+
+    .mode-btn.active {
+      background: #1f6beb;
+      color: #fff;
+      border-color: #58a6ff;
+    }
+
+    .multiplayer-box {
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 8px;
+      background: rgba(0,0,0,0.2);
+      padding: 8px;
+      border-radius: 10px;
+    }
+
     .input-group {
       display: flex;
       gap: 6px;
@@ -85,7 +120,6 @@
       color: #fff;
       font-size: 0.95rem;
       outline: none;
-      autocomplete: off;
     }
 
     input[type="text"]:focus {
@@ -105,6 +139,14 @@
 
     button:active {
       background: #2ea043;
+    }
+
+    .btn-secondary {
+      background: #388bfd;
+    }
+
+    .btn-secondary:active {
+      background: #1f6beb;
     }
 
     .closest-card {
@@ -153,6 +195,12 @@
       font-weight: bold;
       margin-top: 6px;
     }
+
+    .room-info {
+      font-size: 0.8rem;
+      color: #e3b341;
+      margin-bottom: 4px;
+    }
   </style>
 </head>
 <body>
@@ -164,9 +212,25 @@
       <h1>🌍 G L O B L E</h1>
       <p class="subtitle">خمن الدولة المجهولة بأقل عدد محاولات</p>
 
+      <!-- خيارات التبديل بين الأوفلاين والأونلاين -->
+      <div class="mode-buttons">
+        <button class="mode-btn active" id="btnSingle" onclick="switchMode('single')">👤 لعب فردي</button>
+        <button class="mode-btn" id="btnMulti" onclick="switchMode('multi')">🎮 لعب أونلاين</button>
+      </div>
+
+      <!-- واجهة إنشاء/انضمام الغرفة للأونلاين -->
+      <div class="multiplayer-box" id="multiBox">
+        <div id="roomStatus" class="room-info">اختر إنشاء غرفة أو ادخل رمز غرفة</div>
+        <div class="input-group">
+          <input type="text" id="roomInput" placeholder="رمز الغرفة (مثال: A1X9)...">
+          <button class="btn-secondary" onclick="joinRoom()">انضمام</button>
+          <button onclick="createRoom()">إنشاء</button>
+        </div>
+      </div>
+
       <div class="input-group">
         <input type="text" id="countryInput" placeholder="اكتب اسم الدولة (عربي / English)..." autocomplete="off">
-        <button onclick="makeGuess()">تخمين</button>
+        <button onclick="makeGuess()" id="guessBtn">تخمين</button>
       </div>
       <div id="status"></div>
     </div>
@@ -183,7 +247,14 @@
     let guessedCountries = [];
     let globe;
 
-    // ترجمة كاملة وشاملة لجميع دول العالم
+    // متغيرة الأونلاين وربط السيرفر بـ Vercel
+    const SERVER_URL = "https://globle-server.vercel.app";
+    let socket = null;
+    let isMultiplayer = false;
+    let currentRoom = null;
+    let isMyTurn = true;
+    let myPlayerId = null;
+
     const arabicNames = {
       "Afghanistan": "أفغانستان", "Albania": "ألبانيا", "Algeria": "الجزائر", "Andorra": "أندورا",
       "Angola": "أنغولا", "Antigua and Barbuda": "أنتيغوا وباربودا", "Argentina": "الأرجنتين",
@@ -236,15 +307,9 @@
       "Yemen": "اليمن", "Zambia": "زامبيا", "Zimbabwe": "زيمبابوي"
     };
 
-    // توحيد الهمزات والرموز
     function normalizeText(str) {
       if (!str) return "";
-      return str
-        .toLowerCase()
-        .replace(/[أإآء]/g, 'ا')
-        .replace(/ة/g, 'ه')
-        .replace(/\s+/g, '')
-        .trim();
+      return str.toLowerCase().replace(/[أإآء]/g, 'ا').replace(/ة/g, 'ه').replace(/\s+/g, '').trim();
     }
 
     function getArName(enName) {
@@ -291,13 +356,121 @@
       .then(res => res.json())
       .then(countries => {
         worldData = countries.features;
-        targetCountry = worldData[Math.floor(Math.random() * worldData.length)];
+        resetSinglePlayerGame();
         initGlobe();
         globe.polygonsData(worldData);
       });
 
-    // التخمين مع المعالجة الذكية لجميع انواع الألف
+    function resetSinglePlayerGame() {
+      if (worldData.length > 0) {
+        targetCountry = worldData[Math.floor(Math.random() * worldData.length)];
+      }
+      guessedCountries = [];
+      if (globe) globe.polygonCapColor(globe.polygonCapColor());
+      document.getElementById('guessesCard').style.display = 'none';
+      document.getElementById('status').innerHTML = '';
+      document.getElementById('countryInput').disabled = false;
+    }
+
+    // التبديل بين الأوفلاين والأونلاين
+    function switchMode(mode) {
+      document.getElementById('btnSingle').classList.toggle('active', mode === 'single');
+      document.getElementById('btnMulti').classList.toggle('active', mode === 'multi');
+      document.getElementById('multiBox').style.display = mode === 'multi' ? 'flex' : 'none';
+
+      isMultiplayer = (mode === 'multi');
+
+      if (isMultiplayer) {
+        initSocketConnection();
+      } else {
+        if (socket) socket.disconnect();
+        resetSinglePlayerGame();
+      }
+    }
+
+    function initSocketConnection() {
+      if (!socket) {
+        socket = io(SERVER_URL, { transports: ['websocket', 'polling'] });
+
+        socket.on('connect', () => {
+          myPlayerId = socket.id;
+          document.getElementById('roomStatus').innerText = "متصل بالسيرفر! اختر إنشاء أو انضمام.";
+        });
+
+        socket.on('roomCreated', (data) => {
+          currentRoom = data.roomId;
+          document.getElementById('roomStatus').innerText = `تم إنشاء الغرفة! الكود: ${currentRoom} (في انتظار لاعب آخر...)`;
+        });
+
+        socket.on('gameStart', (data) => {
+          currentRoom = data.roomId;
+          guessedCountries = [];
+          
+          // تحديد الدولة المجهولة من السيرفر
+          targetCountry = worldData.find(c => c.properties.ADMIN === data.targetCountryName);
+          
+          isMyTurn = (data.currentTurn === socket.id);
+          updateTurnStatus();
+          document.getElementById('guessesCard').style.display = 'none';
+          document.getElementById('status').innerHTML = '';
+          document.getElementById('countryInput').disabled = false;
+        });
+
+        socket.on('guessResult', (data) => {
+          processGuessResult(data.guessedCountryName, data.distance, data.byPlayer);
+          isMyTurn = (data.nextTurn === socket.id);
+          updateTurnStatus();
+
+          if (data.isWin) {
+            const winnerText = data.byPlayer === socket.id ? "🎉 مبروك! فزت باللعبة!" : "❌ خسرت! الخصم اكتشف الدولة أولاً.";
+            document.getElementById('status').innerHTML = `<p class="win-msg">${winnerText}</p>`;
+            document.getElementById('countryInput').disabled = true;
+          }
+        });
+
+        socket.on('errorMsg', (msg) => {
+          alert(msg);
+        });
+      } else if (!socket.connected) {
+        socket.connect();
+      }
+    }
+
+    function updateTurnStatus() {
+      if (!isMultiplayer) return;
+      const statusDiv = document.getElementById('roomStatus');
+      if (isMyTurn) {
+        statusDiv.innerText = `🟢 دورك الآن للتخمين! (الغرفة: ${currentRoom})`;
+        document.getElementById('guessBtn').disabled = false;
+      } else {
+        statusDiv.innerText = `⏳ دور الخصم... ينتظر تخمينه. (الغرفة: ${currentRoom})`;
+        document.getElementById('guessBtn').disabled = true;
+      }
+    }
+
+    function createRoom() {
+      if (socket && socket.connected) {
+        socket.emit('createRoom');
+      }
+    }
+
+    function joinRoom() {
+      const code = document.getElementById('roomInput').value.trim().toUpperCase();
+      if (!code) {
+        alert("يرجى كتابة رمز الغرفة!");
+        return;
+      }
+      if (socket && socket.connected) {
+        socket.emit('joinRoom', code);
+      }
+    }
+
     function makeGuess() {
+      if (isMultiplayer && !isMyTurn) {
+        alert("انتظر دورك!");
+        return;
+      }
+
       const input = document.getElementById('countryInput');
       const rawVal = input.value.trim();
       const val = normalizeText(rawVal);
@@ -318,20 +491,35 @@
       }
 
       const enName = guessedFeature.properties.ADMIN;
+
       if (guessedCountries.some(g => g.nameEn === enName)) {
         alert("خمنت هذه الدولة سابقاً!");
         return;
       }
 
+      if (isMultiplayer) {
+        // إرسال التخمين للسيرفر
+        socket.emit('makeGuess', { roomId: currentRoom, countryName: enName });
+      } else {
+        // التخمين الفردي الأوفلاين
+        const targetLat = targetCountry.properties.LABEL_Y || targetCountry.geometry.coordinates[0][1];
+        const targetLon = targetCountry.properties.LABEL_X || targetCountry.geometry.coordinates[0][0];
+        const guessLat = guessedFeature.properties.LABEL_Y || guessedFeature.geometry.coordinates[0][1];
+        const guessLon = guessedFeature.properties.LABEL_X || guessedFeature.geometry.coordinates[0][0];
+
+        let distance = calculateDistance(guessLat, guessLon, targetLat, targetLon);
+        if (enName === targetCountry.properties.ADMIN) distance = 0;
+
+        processGuessResult(enName, distance, 'me');
+      }
+    }
+
+    function processGuessResult(enName, distance, player) {
       globe.controls().autoRotate = false;
 
-      const targetLat = targetCountry.properties.LABEL_Y || targetCountry.geometry.coordinates[0][1];
-      const targetLon = targetCountry.properties.LABEL_X || targetCountry.geometry.coordinates[0][0];
+      const guessedFeature = worldData.find(c => c.properties.ADMIN === enName);
       const guessLat = guessedFeature.properties.LABEL_Y || guessedFeature.geometry.coordinates[0][1];
       const guessLon = guessedFeature.properties.LABEL_X || guessedFeature.geometry.coordinates[0][0];
-
-      let distance = calculateDistance(guessLat, guessLon, targetLat, targetLon);
-      if (enName === targetCountry.properties.ADMIN) distance = 0;
 
       const color = getHeatColor(distance);
 
@@ -339,16 +527,16 @@
         nameEn: enName,
         nameAr: getArName(enName),
         distance: distance,
-        color: color
+        color: color,
+        player: player
       });
 
       globe.polygonCapColor(globe.polygonCapColor());
       globe.pointOfView({ lat: guessLat, lng: guessLon, altitude: 2 }, 1500);
 
-      updateUI(enName === targetCountry.properties.ADMIN);
+      updateUI(distance === 0 && !isMultiplayer);
     }
 
-    // السماح بالتخمين عند ضغط Enter في الكيبورد
     document.getElementById('countryInput').addEventListener('keypress', function (e) {
       if (e.key === 'Enter') {
         makeGuess();
