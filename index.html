@@ -4,126 +4,144 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>لعبة X-O أونلاين</title>
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="https://23171154b8bd7733-37-238-212-143.serveousercontent.com"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-    body { background: #0d1117; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
-    .card { background: #161b22; border: 1px solid #30363d; border-radius: 16px; padding: 20px; text-align: center; width: 90%; max-width: 350px; }
-    h1 { color: #58a6ff; margin-bottom: 10px; }
-    .status { margin: 15px 0; font-weight: bold; color: #e3b341; }
-    .inputs { display: flex; gap: 8px; margin-bottom: 15px; }
-    input { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #30363d; background: #0d1117; color: #fff; text-align: center; }
-    button { padding: 10px 15px; border-radius: 8px; border: none; background: #238636; color: #fff; font-weight: bold; cursor: pointer; }
-    .btn-join { background: #1f6beb; }
-    
-    /* شبكة اللعبة */
-    .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
-    .cell { width: 80px; height: 80px; background: #21262d; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; cursor: pointer; border: 1px solid #30363d; }
-    .cell.X { color: #58a6ff; }
-    .cell.O { color: #f85149; }
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #121212;
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 { color: #00e676; }
+    .controls { margin-bottom: 20px; }
+    input, button {
+      padding: 10px 15px;
+      font-size: 16px;
+      margin: 5px;
+      border-radius: 5px;
+      border: none;
+    }
+    button {
+      background-color: #00e676;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover { background-color: #00c853; }
+    #board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-gap: 5px;
+      justify-content: center;
+      margin: 20px auto;
+    }
+    .cell {
+      width: 100px;
+      height: 100px;
+      background-color: #1e1e1e;
+      border: 2px solid #333;
+      font-size: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .cell:hover { background-color: #2a2a2a; }
+    #status { font-size: 18px; margin-top: 15px; color: #ffeb3b; }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    <h1>❌ X - O ⭕</h1>
-    <div id="status" class="status">اختر إنشاء غرفة أو ادخل كود للانضمام</div>
+  <h1>لعبة X - O أونلاين 🎮</h1>
 
-    <div class="inputs" id="setupBox">
-      <input type="text" id="roomCode" placeholder="رمز الغرفة...">
-      <button class="btn-join" onclick="joinRoom()">انضمام</button>
-      <button onclick="createRoom()">إنشاء</button>
-    </div>
-
-    <div class="board" id="board" style="display: none;">
-      <div class="cell" onclick="cellClicked(0)"></div>
-      <div class="cell" onclick="cellClicked(1)"></div>
-      <div class="cell" onclick="cellClicked(2)"></div>
-      <div class="cell" onclick="cellClicked(3)"></div>
-      <div class="cell" onclick="cellClicked(4)"></div>
-      <div class="cell" onclick="cellClicked(5)"></div>
-      <div class="cell" onclick="cellClicked(6)"></div>
-      <div class="cell" onclick="cellClicked(7)"></div>
-      <div class="cell" onclick="cellClicked(8)"></div>
-    </div>
+  <div class="controls">
+    <button onclick="createRoom()">إنشاء غرفة جديدة</button>
+    <br><br>
+    <input type="text" id="roomIdInput" placeholder="أدخل رمز الغرفة">
+    <button onclick="joinRoom()">انضمام للغرفة</button>
   </div>
 
-  <script>
-    const SERVER_URL = "http://192.168.0.176:3000";
-    const socket = io(SERVER_URL);
+  <h2 id="roomDisplay"></h2>
+  <div id="board" style="display:none;">
+    <div class="cell" onclick="makeMove(0)"></div>
+    <div class="cell" onclick="makeMove(1)"></div>
+    <div class="cell" onclick="makeMove(2)"></div>
+    <div class="cell" onclick="makeMove(3)"></div>
+    <div class="cell" onclick="makeMove(4)"></div>
+    <div class="cell" onclick="makeMove(5)"></div>
+    <div class="cell" onclick="makeMove(6)"></div>
+    <div class="cell" onclick="makeMove(7)"></div>
+    <div class="cell" onclick="makeMove(8)"></div>
+  </div>
 
-    let mySymbol = null;
+  <div id="status"></div>
+
+  <script>
+    // الربط التلقائي بالسيرفر المباشر عن طريق Serveo
+    const socket = io('https://6cdb581225716dab-37-238-212-143.serveousercontent.com');
+
     let currentRoom = null;
-    let myTurn = false;
+    let mySymbol = null;
 
     socket.on('connect', () => {
-      document.getElementById('status').innerText = "🟢 متصل بالسيرفر المحلي!";
+      console.log('تم الاتصال بالسيرفر بنجاح!');
     });
-
-    socket.on('roomCreated', (data) => {
-      currentRoom = data.roomId;
-      mySymbol = data.symbol;
-      document.getElementById('status').innerText = `✅ كود الغرفة: ${currentRoom}\nأنت اللاعب (${mySymbol}) - بانتظار الخصم...`;
-    });
-
-    socket.on('gameStart', (data) => {
-      currentRoom = data.roomId;
-      document.getElementById('setupBox').style.display = 'none';
-      document.getElementById('board').style.display = 'grid';
-      
-      const me = data.players.find(p => p.id === socket.id);
-      mySymbol = me.symbol;
-      myTurn = (data.turn === mySymbol);
-      
-      updateTurnStatus();
-    });
-
-    socket.on('moveMade', (data) => {
-      // تحديث الشكل
-      const cells = document.querySelectorAll('.cell');
-      data.board.forEach((val, idx) => {
-        cells[idx].innerText = val || '';
-        cells[idx].className = `cell ${val || ''}`;
-      });
-
-      if (data.winner) {
-        document.getElementById('status').innerText = data.winner === mySymbol ? "🎉 مبروك! فزت باللعبة!" : "❌ خسرت! الفوز للخصم.";
-        myTurn = false;
-        return;
-      }
-
-      if (data.isDraw) {
-        document.getElementById('status').innerText = "🤝 تعادل!";
-        myTurn = false;
-        return;
-      }
-
-      myTurn = (data.nextTurn === mySymbol);
-      updateTurnStatus();
-    });
-
-    socket.on('errorMsg', (msg) => alert(msg));
 
     function createRoom() {
       socket.emit('createRoom');
     }
 
     function joinRoom() {
-      const code = document.getElementById('roomCode').value.trim().toUpperCase();
-      if (code) socket.emit('joinRoom', code);
-    }
-
-    function cellClicked(index) {
-      if (!myTurn) {
-        alert("مو دورك!");
-        return;
+      const roomId = document.getElementById('roomIdInput').value.trim().toUpperCase();
+      if (roomId) {
+        socket.emit('joinRoom', roomId);
       }
-      socket.emit('makeMove', { roomId: currentRoom, index });
     }
 
-    function updateTurnStatus() {
-      document.getElementById('status').innerText = myTurn ? `🟢 دورك الآن (${mySymbol})` : `⏳ دور الخصم...`;
+    socket.on('roomCreated', (data) => {
+      currentRoom = data.roomId;
+      mySymbol = data.symbol;
+      document.getElementById('roomDisplay').innerText = `رمز الغرفة: ${currentRoom} (أنت ${mySymbol})`;
+      document.getElementById('status').innerText = 'بانتظار انضمام اللاعب الثاني...';
+    });
+
+    socket.on('gameStart', (data) => {
+      currentRoom = data.roomId;
+      document.getElementById('board').style.display = 'grid';
+      const playerObj = data.players.find(p => p.id === socket.id);
+      if (playerObj) mySymbol = playerObj.symbol;
+
+      document.getElementById('roomDisplay').innerText = `الغرفة: ${currentRoom} | دور: ${data.turn}`;
+      document.getElementById('status').innerText = `بدأت اللعبة! رمزك هو (${mySymbol})`;
+    });
+
+    function makeMove(index) {
+      if (currentRoom) {
+        socket.emit('makeMove', { roomId: currentRoom, index });
+      }
     }
+
+    socket.on('moveMade', (data) => {
+      const cells = document.querySelectorAll('.cell');
+      data.board.forEach((val, idx) => {
+        cells[idx].innerText = val || '';
+      });
+
+      if (data.winner) {
+        document.getElementById('status').innerText = `🎉 الفائز هو اللاعب (${data.winner})!`;
+      } else if (data.isDraw) {
+        document.getElementById('status').innerText = '🤝 تعادل!';
+      } else {
+        document.getElementById('status').innerText = `دور اللاعب: (${data.nextTurn})`;
+      }
+    });
+
+    socket.on('errorMsg', (msg) => {
+      alert(msg);
+    });
   </script>
 </body>
 </html>
