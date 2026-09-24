@@ -2,605 +2,127 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Globle 3D - لعبة تخمين الدول</title>
-  
-  <script src="//unpkg.com/three"></script>
-  <script src="//unpkg.com/globe.gl"></script>
-  <!-- مكتبة Socket.io للاتصال بالسيرفر -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لعبة X-O أونلاين</title>
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    body {
-      background-color: #0d1117;
-      color: #ffffff;
-      overflow: hidden;
-      height: 100vh;
-      width: 100vw;
-    }
-
-    #globeViz {
-      width: 100%;
-      height: 100vh;
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 1;
-    }
-
-    .ui-container {
-      position: absolute;
-      top: 12px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 10;
-      width: 92%;
-      max-width: 420px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      pointer-events: none;
-    }
-
-    .card {
-      pointer-events: auto;
-      background: rgba(22, 27, 34, 0.88);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 16px;
-      padding: 12px 14px;
-      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
-      text-align: center;
-    }
-
-    h1 {
-      font-size: 1.3rem;
-      color: #58a6ff;
-      letter-spacing: 1px;
-    }
-
-    p.subtitle {
-      font-size: 0.75rem;
-      color: #8b949e;
-      margin-bottom: 8px;
-    }
-
-    .mode-buttons {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 8px;
-    }
-
-    .mode-btn {
-      flex: 1;
-      padding: 8px 10px;
-      font-size: 0.85rem;
-      background: #21262d;
-      border: 1px solid #30363d;
-      border-radius: 8px;
-      color: #c9d1d9;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .mode-btn.active {
-      background: #1f6beb;
-      color: #fff;
-      border-color: #58a6ff;
-    }
-
-    .multiplayer-box {
-      display: none;
-      flex-direction: column;
-      gap: 6px;
-      margin-bottom: 8px;
-      background: rgba(0, 0, 0, 0.3);
-      padding: 10px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .input-group {
-      display: flex;
-      gap: 6px;
-    }
-
-    input[type="text"] {
-      flex: 1;
-      padding: 10px 14px;
-      border-radius: 10px;
-      border: 1px solid #30363d;
-      background: #0d1117;
-      color: #fff;
-      font-size: 0.95rem;
-      outline: none;
-    }
-
-    input[type="text"]:focus {
-      border-color: #58a6ff;
-    }
-
-    button {
-      padding: 10px 16px;
-      border-radius: 10px;
-      border: none;
-      background: #238636;
-      color: #fff;
-      font-weight: bold;
-      font-size: 0.95rem;
-      cursor: pointer;
-    }
-
-    button:active {
-      background: #2ea043;
-    }
-
-    .btn-secondary {
-      background: #388bfd;
-    }
-
-    .btn-secondary:active {
-      background: #1f6beb;
-    }
-
-    .closest-card {
-      max-height: 160px;
-      overflow-y: auto;
-      text-align: right;
-      padding: 8px 12px;
-    }
-
-    .closest-card h3 {
-      font-size: 0.8rem;
-      color: #8b949e;
-      margin-bottom: 6px;
-      border-bottom: 1px solid #30363d;
-      padding-bottom: 4px;
-    }
-
-    .guess-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 6px 8px;
-      margin-bottom: 4px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 8px;
-      font-size: 0.85rem;
-    }
-
-    .country-names {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .color-indicator {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      display: inline-block;
-      flex-shrink: 0;
-    }
-
-    .win-msg {
-      color: #3fb950;
-      font-size: 0.95rem;
-      font-weight: bold;
-      margin-top: 6px;
-    }
-
-    .room-info {
-      font-size: 0.8rem;
-      color: #e3b341;
-      line-height: 1.4;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+    body { background: #0d1117; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
+    .card { background: #161b22; border: 1px solid #30363d; border-radius: 16px; padding: 20px; text-align: center; width: 90%; max-width: 350px; }
+    h1 { color: #58a6ff; margin-bottom: 10px; }
+    .status { margin: 15px 0; font-weight: bold; color: #e3b341; }
+    .inputs { display: flex; gap: 8px; margin-bottom: 15px; }
+    input { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #30363d; background: #0d1117; color: #fff; text-align: center; }
+    button { padding: 10px 15px; border-radius: 8px; border: none; background: #238636; color: #fff; font-weight: bold; cursor: pointer; }
+    .btn-join { background: #1f6beb; }
+    
+    /* شبكة اللعبة */
+    .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+    .cell { width: 80px; height: 80px; background: #21262d; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; cursor: pointer; border: 1px solid #30363d; }
+    .cell.X { color: #58a6ff; }
+    .cell.O { color: #f85149; }
   </style>
 </head>
 <body>
 
-  <div id="globeViz"></div>
+  <div class="card">
+    <h1>❌ X - O ⭕</h1>
+    <div id="status" class="status">اختر إنشاء غرفة أو ادخل كود للانضمام</div>
 
-  <div class="ui-container">
-    <div class="card">
-      <h1>🌍 G L O B L E</h1>
-      <p class="subtitle">خمن الدولة المجهولة بأقل عدد محاولات</p>
-
-      <!-- اختيار نمط اللعب -->
-      <div class="mode-buttons">
-        <button class="mode-btn active" id="btnSingle" onclick="switchMode('single')">👤 لعب فردي</button>
-        <button class="mode-btn" id="btnMulti" onclick="switchMode('multi')">🎮 لعب أونلاين</button>
-      </div>
-
-      <!-- أدوات الغرف للأونلاين -->
-      <div class="multiplayer-box" id="multiBox">
-        <div id="roomStatus" class="room-info">اختر إنشاء غرفة أو ادخل رمز غرفة للانضمام</div>
-        <div class="input-group">
-          <input type="text" id="roomInput" placeholder="رمز الغرفة..." autocomplete="off">
-          <button class="btn-secondary" onclick="joinRoom()">انضمام</button>
-          <button onclick="createRoom()">إنشاء</button>
-        </div>
-      </div>
-
-      <!-- إدخال التخمين -->
-      <div class="input-group">
-        <input type="text" id="countryInput" placeholder="اكتب اسم الدولة (عربي / English)..." autocomplete="off">
-        <button onclick="makeGuess()" id="guessBtn">تخمين</button>
-      </div>
-      <div id="status"></div>
+    <div class="inputs" id="setupBox">
+      <input type="text" id="roomCode" placeholder="رمز الغرفة...">
+      <button class="btn-join" onclick="joinRoom()">انضمام</button>
+      <button onclick="createRoom()">إنشاء</button>
     </div>
 
-    <div class="card closest-card" id="guessesCard" style="display: none;">
-      <h3>أقرب المحاولات:</h3>
-      <div id="guessesList"></div>
+    <div class="board" id="board" style="display: none;">
+      <div class="cell" onclick="cellClicked(0)"></div>
+      <div class="cell" onclick="cellClicked(1)"></div>
+      <div class="cell" onclick="cellClicked(2)"></div>
+      <div class="cell" onclick="cellClicked(3)"></div>
+      <div class="cell" onclick="cellClicked(4)"></div>
+      <div class="cell" onclick="cellClicked(5)"></div>
+      <div class="cell" onclick="cellClicked(6)"></div>
+      <div class="cell" onclick="cellClicked(7)"></div>
+      <div class="cell" onclick="cellClicked(8)"></div>
     </div>
   </div>
 
   <script>
-    let worldData = [];
-    let targetCountry = null;
-    let guessedCountries = [];
-    let globe;
-
-    // رابط السيرفر المحلي الخاص بك في الشبكة
     const SERVER_URL = "http://192.168.0.176:3000";
-    let socket = null;
-    let isMultiplayer = false;
+    const socket = io(SERVER_URL);
+
+    let mySymbol = null;
     let currentRoom = null;
-    let isMyTurn = true;
+    let myTurn = false;
 
-    const arabicNames = {
-      "Afghanistan": "أفغانستان", "Albania": "ألبانيا", "Algeria": "الجزائر", "Andorra": "أندورا",
-      "Angola": "أنغولا", "Antigua and Barbuda": "أنتيغوا وباربودا", "Argentina": "الأرجنتين",
-      "Armenia": "أرمينيا", "Australia": "أستراليا", "Austria": "النمسا", "Azerbaijan": "أذربيجان",
-      "Bahamas": "جزر البهاماس", "Bahrain": "البحرين", "Bangladesh": "بنغلاديش", "Barbados": "باربادوس",
-      "Belarus": "بيلاروسيا", "Belgium": "بلجيكا", "Belize": "بليز", "Benin": "بنين", "Bhutan": "بوتان",
-      "Bolivia": "بوليفيا", "Bosnia and Herzegovina": "البوسنة والهرسك", "Botswana": "بوتسوانا",
-      "Brazil": "البرازيل", "Brunei": "بروناي", "Bulgaria": "بلغاريا", "Burkina Faso": "بوركينا فاسو",
-      "Burundi": "بوروندي", "Cambodia": "كمبوديا", "Cameroon": "الكاميرون", "Canada": "كندا",
-      "Cape Verde": "الرأس الأخضر", "Central African Republic": "جمهورية أفريقيا الوسطى",
-      "Chad": "تشاد", "Chile": "تشيلي", "China": "الصين", "Colombia": "كولومبيا", "Comoros": "جزر القمر",
-      "Congo": "الكونغو", "Costa Rica": "كوستاريكا", "Croatia": "كرواتيا", "Cuba": "كوبا",
-      "Cyprus": "قبرص", "Czechia": "تشيكيا", "Czech Republic": "جمهورية التشيك",
-      "Democratic Republic of the Congo": "الكونغو الديمقراطية", "Denmark": "الدنمارك",
-      "Djibouti": "جيبوتي", "Dominica": "دومينيكا", "Dominican Republic": "جمهورية الدومينيكان",
-      "Ecuador": "إكوادور", "Egypt": "مصر", "El Salvador": "السلفادور", "Equatorial Guinea": "غينيا الاستوائية",
-      "Eritrea": "إريتريا", "Estonia": "إستونيا", "Eswatini": "إسواتيني", "Ethiopia": "إثيوبيا",
-      "Fiji": "فيجي", "Finland": "فنلندا", "France": "فرنسا", "Gabon": "الغابون", "Gambia": "غامبيا",
-      "Georgia": "جورجيا", "Germany": "ألمانيا", "Ghana": "غانا", "Greece": "اليونان",
-      "Grenada": "غرينادا", "Guatemala": "غواتيمالا", "Guinea": "غينيا", "Guinea-Bissau": "غينيا بيساو",
-      "Guyana": "غيانا", "Haiti": "هايتي", "Honduras": "هندوراس", "Hungary": "المجر",
-      "Iceland": "آيسلندا", "India": "الهند", "Indonesia": "إندونيسيا", "Iran": "إيران",
-      "Iraq": "العراق", "Ireland": "أيرلندا", "Israel": "إسرائيل", "Italy": "إيطاليا",
-      "Ivory Coast": "ساحل العاج", "Jamaica": "جامايوكا", "Japan": "اليابان", "Jordan": "الأردن",
-      "Kazakhstan": "كازاخستان", "Kenya": "كينيا", "Kuwait": "الكويت", "Kyrgyzstan": "قيرغيزستان",
-      "Laos": "لاوس", "Latvia": "لاتفيا", "Lebanon": "لبنان", "Lesotho": "ليسوتو",
-      "Liberia": "ليبيريا", "Libya": "ليبيا", "Liechtenstein": "ليختنشتاين", "Lithuania": "ليتوانيا",
-      "Luxembourg": "لوكسمبورغ", "Madagascar": "مدغشقر", "Malawi": "مالاوي", "Malaysia": "ماليزيا",
-      "Maldives": "جزر المالديف", "Mali": "مالي", "Malta": "مالطا", "Mauritania": "موريتانيا",
-      "Mauritius": "موريشيوس", "Mexico": "المكسيك", "Moldova": "مولدوفا", "Monaco": "موناكو",
-      "Mongolia": "منغوليا", "Montenegro": "الجبل الأسود", "Morocco": "المغرب", "Mozambique": "موزمبيق",
-      "Myanmar": "ميانمار", "Namibia": "ناميبيا", "Nepal": "نيبال", "Netherlands": "هولندا",
-      "New Zealand": "نيوزيلندا", "Nicaragua": "نيكاراغوا", "Niger": "النيجر", "Nigeria": "نيجيريا",
-      "North Korea": "كوريا الشمالية", "North Macedonia": "مقدونيا الشمالية", "Norway": "النرويج",
-      "Oman": "عُمان", "Pakistan": "باكستان", "Palestine": "فلسطين", "Panama": "بنما",
-      "Papua New Guinea": "بابوا غينيا الجديدة", "Paraguay": "باراغواي", "Peru": "بيرو",
-      "Philippines": "الفلبين", "Poland": "بولندا", "Portugal": "البرتغال", "Qatar": "قطر",
-      "Romania": "رومانيا", "Russia": "روسيا", "Rwanda": "رواندا", "Saudi Arabia": "السعودية",
-      "Senegal": "السنغال", "Serbia": "صربيا", "Sierra Leone": "سيراليون", "Singapore": "سنغافورة",
-      "Slovakia": "سلوفاكيا", "Slovenia": "سلوفينيا", "Somalia": "الصومال", "South Africa": "جنوب أفريقيا",
-      "South Korea": "كوريا الجنوبية", "South Sudan": "جنوب السودان", "Spain": "إسبانيا",
-      "Sri Lanka": "سريلانكا", "Sudan": "السودان", "Suriname": "سورينام", "Sweden": "السويد",
-      "Switzerland": "سويسرا", "Syria": "سوريا", "Taiwan": "تايوان", "Tajikistan": "طاجيكستان",
-      "Tanzania": "تنزانيا", "United Republic of Tanzania": "تنزانيا", "Thailand": "تايلاند",
-      "Togo": "توغو", "Tunisia": "تونس", "Turkey": "تركيا", "Turkmenistan": "تركمانستان",
-      "Uganda": "أوغندا", "Ukraine": "أوكرانيا", "United Arab Emirates": "الإمارات",
-      "United Kingdom": "المملكة المتحدة", "United States of America": "أمريكا",
-      "Uruguay": "أوروغواي", "Uzbekistan": "أوزبكستان", "Vatican City": "الفاتيكان",
-      "Venezuela": "فنزويلا", "Vietnam": "فيتنام", "Western Sahara": "الصحراء الغربية",
-      "Yemen": "اليمن", "Zambia": "زامبيا", "Zimbabwe": "زيمبابوي"
-    };
+    socket.on('connect', () => {
+      document.getElementById('status').innerText = "🟢 متصل بالسيرفر المحلي!";
+    });
 
-    function normalizeText(str) {
-      if (!str) return "";
-      return str.toLowerCase().replace(/[أإآء]/g, 'ا').replace(/ة/g, 'ه').replace(/\s+/g, '').trim();
-    }
+    socket.on('roomCreated', (data) => {
+      currentRoom = data.roomId;
+      mySymbol = data.symbol;
+      document.getElementById('status').innerText = `✅ كود الغرفة: ${currentRoom}\nأنت اللاعب (${mySymbol}) - بانتظار الخصم...`;
+    });
 
-    function getArName(enName) {
-      return arabicNames[enName] || enName;
-    }
+    socket.on('gameStart', (data) => {
+      currentRoom = data.roomId;
+      document.getElementById('setupBox').style.display = 'none';
+      document.getElementById('board').style.display = 'grid';
+      
+      const me = data.players.find(p => p.id === socket.id);
+      mySymbol = me.symbol;
+      myTurn = (data.turn === mySymbol);
+      
+      updateTurnStatus();
+    });
 
-    function getFeatureCoords(feature) {
-      if (feature.properties.LABEL_Y && feature.properties.LABEL_X) {
-        return { lat: feature.properties.LABEL_Y, lon: feature.properties.LABEL_X };
-      }
-      const coords = feature.geometry.coordinates;
-      if (feature.geometry.type === 'Polygon') {
-        return { lat: coords[0][0][1], lon: coords[0][0][0] };
-      } else if (feature.geometry.type === 'MultiPolygon') {
-        return { lat: coords[0][0][0][1], lon: coords[0][0][0][0] };
-      }
-      return { lat: 0, lon: 0 };
-    }
-
-    function calculateDistance(lat1, lon1, lat2, lon2) {
-      const R = 6371;
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-      return Math.round(R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))));
-    }
-
-    function getHeatColor(distance) {
-      if (distance === 0) return '#ff0000';
-      if (distance < 1000) return '#b30000';
-      if (distance < 2500) return '#ff4500';
-      if (distance < 5000) return '#ffa500';
-      if (distance < 8000) return '#ffde59';
-      return '#3a5a40';
-    }
-
-    function initGlobe() {
-      globe = Globe()
-        (document.getElementById('globeViz'))
-        .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-        .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
-        .polygonSideColor(() => 'rgba(0, 30, 60, 0.5)')
-        .polygonStrokeColor(() => '#111')
-        .polygonAltitude(0.01)
-        .polygonCapColor(feat => {
-          const guess = guessedCountries.find(g => g.nameEn === feat.properties.ADMIN);
-          return guess ? guess.color : 'rgba(200, 200, 200, 0.15)';
-        })
-        .polygonLabel(({ properties: d }) => `<b>${getArName(d.ADMIN)} (${d.ADMIN})</b>`);
-
-      globe.controls().autoRotate = true;
-      globe.controls().autoRotateSpeed = 0.4;
-    }
-
-    fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson')
-      .then(res => res.json())
-      .then(countries => {
-        worldData = countries.features;
-        resetSinglePlayerGame();
-        initGlobe();
-        globe.polygonsData(worldData);
+    socket.on('moveMade', (data) => {
+      // تحديث الشكل
+      const cells = document.querySelectorAll('.cell');
+      data.board.forEach((val, idx) => {
+        cells[idx].innerText = val || '';
+        cells[idx].className = `cell ${val || ''}`;
       });
 
-    function resetSinglePlayerGame() {
-      if (worldData.length > 0) {
-        targetCountry = worldData[Math.floor(Math.random() * worldData.length)];
-      }
-      guessedCountries = [];
-      if (globe) globe.polygonCapColor(globe.polygonCapColor());
-      document.getElementById('guessesCard').style.display = 'none';
-      document.getElementById('status').innerHTML = '';
-      document.getElementById('countryInput').disabled = false;
-    }
-
-    function switchMode(mode) {
-      document.getElementById('btnSingle').classList.toggle('active', mode === 'single');
-      document.getElementById('btnMulti').classList.toggle('active', mode === 'multi');
-      document.getElementById('multiBox').style.display = mode === 'multi' ? 'flex' : 'none';
-
-      isMultiplayer = (mode === 'multi');
-
-      if (isMultiplayer) {
-        initSocketConnection();
-      } else {
-        if (socket) socket.disconnect();
-        resetSinglePlayerGame();
-      }
-    }
-
-    function initSocketConnection() {
-      const roomStatus = document.getElementById('roomStatus');
-      
-      if (!socket) {
-        roomStatus.innerText = "⏳ جاري الاتصال بالسيرفر المحلي...";
-        
-        socket = io(SERVER_URL, { 
-          transports: ['polling', 'websocket'],
-          reconnectionAttempts: 5,
-          timeout: 10000 
-        });
-
-        socket.on('connect', () => {
-          roomStatus.innerText = "🟢 متصل بالسيرفر المحلي! اضغط إنشاء أو اكتب رمز الغرفة.";
-        });
-
-        socket.on('connect_error', () => {
-          roomStatus.innerText = "❌ تعذر الاتصال بالسيرفر المحلي!";
-        });
-
-        socket.on('roomCreated', (data) => {
-          currentRoom = data.roomId;
-          roomStatus.innerHTML = `✅ تم إنشاء الغرفة!<br>الكود: <b style="font-size:1.2rem; color:#58a6ff;">${currentRoom}</b><br>(في انتظار انضمام اللاعب الثاني...)`;
-        });
-
-        socket.on('gameStart', (data) => {
-          currentRoom = data.roomId;
-          guessedCountries = [];
-          targetCountry = worldData.find(c => c.properties.ADMIN === data.targetCountryName);
-          isMyTurn = (data.currentTurn === socket.id);
-          updateTurnStatus();
-          document.getElementById('guessesCard').style.display = 'none';
-          document.getElementById('status').innerHTML = '';
-          document.getElementById('countryInput').disabled = false;
-        });
-
-        socket.on('guessResult', (data) => {
-          const guessedFeature = worldData.find(c => c.properties.ADMIN === data.guessedCountryName);
-          let distance = 0;
-          if (guessedFeature && targetCountry) {
-            const gPos = getFeatureCoords(guessedFeature);
-            const tPos = getFeatureCoords(targetCountry);
-            distance = calculateDistance(gPos.lat, gPos.lon, tPos.lat, tPos.lon);
-            if (data.guessedCountryName === targetCountry.properties.ADMIN) distance = 0;
-          }
-
-          processGuessResult(data.guessedCountryName, distance, data.byPlayer);
-          isMyTurn = (data.nextTurn === socket.id);
-          updateTurnStatus();
-
-          if (data.isWin) {
-            const winnerText = data.byPlayer === socket.id ? "🎉 مبروك! فزت باللعبة!" : "❌ خسرت! الخصم اكتشف الدولة أولاً.";
-            document.getElementById('status').innerHTML = `<p class="win-msg">${winnerText}</p>`;
-            document.getElementById('countryInput').disabled = true;
-          }
-        });
-
-        socket.on('errorMsg', (msg) => {
-          alert(msg);
-        });
-      } else if (!socket.connected) {
-        roomStatus.innerText = "⏳ جاري إعادة الاتصال...";
-        socket.connect();
-      }
-    }
-
-    function updateTurnStatus() {
-      if (!isMultiplayer) return;
-      const statusDiv = document.getElementById('roomStatus');
-      if (isMyTurn) {
-        statusDiv.innerText = `🟢 دورك الآن للتخمين! ( الغرفة: ${currentRoom} )`;
-        document.getElementById('guessBtn').disabled = false;
-      } else {
-        statusDiv.innerText = `⏳ دور الخصم... ينتظر تخمينه. ( الغرفة: ${currentRoom} )`;
-        document.getElementById('guessBtn').disabled = true;
-      }
-    }
-
-    function createRoom() {
-      if (!socket || !socket.connected) {
-        alert("جاري الاتصال بالسيرفر، انتظر لحظات ثم اضغط مرة أخرى");
-        initSocketConnection();
+      if (data.winner) {
+        document.getElementById('status').innerText = data.winner === mySymbol ? "🎉 مبروك! فزت باللعبة!" : "❌ خسرت! الفوز للخصم.";
+        myTurn = false;
         return;
       }
-      document.getElementById('roomStatus').innerText = "⏳ جاري طلب غرفة جديدة...";
+
+      if (data.isDraw) {
+        document.getElementById('status').innerText = "🤝 تعادل!";
+        myTurn = false;
+        return;
+      }
+
+      myTurn = (data.nextTurn === mySymbol);
+      updateTurnStatus();
+    });
+
+    socket.on('errorMsg', (msg) => alert(msg));
+
+    function createRoom() {
       socket.emit('createRoom');
     }
 
     function joinRoom() {
-      const code = document.getElementById('roomInput').value.trim().toUpperCase();
-      if (!code) {
-        alert("يرجى كتابة رمز الغرفة أولاً!");
-        return;
-      }
-      if (!socket || !socket.connected) {
-        alert("جاري الاتصال بالسيرفر، انتظر لحظات ثم اضغط مرة أخرى");
-        initSocketConnection();
-        return;
-      }
-      document.getElementById('roomStatus').innerText = "⏳ جاري الانضمام للغرفة...";
-      socket.emit('joinRoom', code);
+      const code = document.getElementById('roomCode').value.trim().toUpperCase();
+      if (code) socket.emit('joinRoom', code);
     }
 
-    function makeGuess() {
-      if (isMultiplayer && !isMyTurn) {
-        alert("ليس دورك الآن!");
+    function cellClicked(index) {
+      if (!myTurn) {
+        alert("مو دورك!");
         return;
       }
-
-      const input = document.getElementById('countryInput');
-      const rawVal = input.value.trim();
-      const val = normalizeText(rawVal);
-      
-      input.value = '';
-
-      if (!val) return;
-
-      const guessedFeature = worldData.find(c => {
-        const en = normalizeText(c.properties.ADMIN);
-        const ar = normalizeText(getArName(c.properties.ADMIN));
-        return val === en || val === ar || en.includes(val) || ar.includes(val);
-      });
-
-      if (!guessedFeature) {
-        alert("تأكد من اسم الدولة بشكل صحيح!");
-        return;
-      }
-
-      const enName = guessedFeature.properties.ADMIN;
-
-      if (guessedCountries.some(g => g.nameEn === enName)) {
-        alert("خمنت هذه الدولة سابقاً!");
-        return;
-      }
-
-      if (isMultiplayer) {
-        socket.emit('makeGuess', { roomId: currentRoom, countryName: enName });
-      } else {
-        const gPos = getFeatureCoords(guessedFeature);
-        const tPos = getFeatureCoords(targetCountry);
-
-        let distance = calculateDistance(gPos.lat, gPos.lon, tPos.lat, tPos.lon);
-        if (enName === targetCountry.properties.ADMIN) distance = 0;
-
-        processGuessResult(enName, distance, 'me');
-      }
+      socket.emit('makeMove', { roomId: currentRoom, index });
     }
 
-    function processGuessResult(enName, distance, player) {
-      globe.controls().autoRotate = false;
-
-      const guessedFeature = worldData.find(c => c.properties.ADMIN === enName);
-      if (!guessedFeature) return;
-
-      const gPos = getFeatureCoords(guessedFeature);
-      const color = getHeatColor(distance);
-
-      guessedCountries.push({
-        nameEn: enName,
-        nameAr: getArName(enName),
-        distance: distance,
-        color: color,
-        player: player
-      });
-
-      globe.polygonCapColor(globe.polygonCapColor());
-      globe.pointOfView({ lat: gPos.lat, lng: gPos.lon, altitude: 2 }, 1500);
-
-      updateUI(distance === 0 && !isMultiplayer);
-    }
-
-    document.getElementById('countryInput').addEventListener('keypress', function (e) {
-      if (e.key === 'Enter') {
-        makeGuess();
-      }
-    });
-
-    function updateUI(isWin) {
-      const listContainer = document.getElementById('guessesList');
-      const guessesCard = document.getElementById('guessesCard');
-      const statusDiv = document.getElementById('status');
-
-      guessesCard.style.display = 'block';
-      const sorted = [...guessedCountries].sort((a, b) => a.distance - b.distance);
-
-      listContainer.innerHTML = sorted.map(g => `
-        <div class="guess-item">
-          <div class="country-names">
-            <span class="color-indicator" style="background: ${g.color};"></span>
-            <b>${g.nameAr}</b> <span style="color: #8b949e; font-size:0.75rem;">(${g.nameEn})</span>
-          </div>
-          <b>${g.distance === 0 ? '🎯 فوز!' : g.distance.toLocaleString() + ' km'}</b>
-        </div>
-      `).join('');
-
-      if (isWin) {
-        statusDiv.innerHTML = `<p class="win-msg">🎉 مبروك! اكتشفت الدولة بعد ${guessedCountries.length} محاولات!</p>`;
-        document.getElementById('countryInput').disabled = true;
-      }
+    function updateTurnStatus() {
+      document.getElementById('status').innerText = myTurn ? `🟢 دورك الآن (${mySymbol})` : `⏳ دور الخصم...`;
     }
   </script>
 </body>
