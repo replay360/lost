@@ -1,147 +1,271 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>لعبة X-O أونلاين</title>
-  <script src="https://23171154b8bd7733-37-238-212-143.serveousercontent.com"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background-color: #121212;
-      color: #fff;
-      margin: 0;
-      padding: 20px;
-    }
-    h1 { color: #00e676; }
-    .controls { margin-bottom: 20px; }
-    input, button {
-      padding: 10px 15px;
-      font-size: 16px;
-      margin: 5px;
-      border-radius: 5px;
-      border: none;
-    }
-    button {
-      background-color: #00e676;
-      color: #000;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    button:hover { background-color: #00c853; }
-    #board {
-      display: grid;
-      grid-template-columns: repeat(3, 100px);
-      grid-gap: 5px;
-      justify-content: center;
-      margin: 20px auto;
-    }
-    .cell {
-      width: 100px;
-      height: 100px;
-      background-color: #1e1e1e;
-      border: 2px solid #333;
-      font-size: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      user-select: none;
-    }
-    .cell:hover { background-color: #2a2a2a; }
-    #status { font-size: 18px; margin-top: 15px; color: #ffeb3b; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة تحدي الأصدقاء</title>
+    <!-- استدعاء مكتبة Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { box-sizing: border-box; font-family: Tahoma, sans-serif; }
+        body { background: #0f172a; color: #fff; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: #1e293b; padding: 25px; border-radius: 12px; width: 100%; max-width: 450px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        h2 { text-align: center; color: #38bdf8; margin-bottom: 20px; }
+        input, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; font-size: 16px; }
+        input { background: #334155; color: #fff; border: 1px solid #475569; }
+        input:focus { outline: none; border-color: #38bdf8; }
+        button { background: #38bdf8; color: #0f172a; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button:hover { background: #0ea5e9; }
+        .hidden { display: none !important; }
+        .status { text-align: center; color: #fbbf24; margin: 10px 0; font-weight: bold; }
+        .score-board { display: flex; justify-content: space-between; background: #334155; padding: 10px; border-radius: 8px; margin-bottom: 15px; }
+    </style>
 </head>
 <body>
 
-  <h1>لعبة X - O أونلاين 🎮</h1>
+<div class="container" id="app">
+    <h2>تحدي الصداقة 🤝</h2>
 
-  <div class="controls">
-    <button onclick="createRoom()">إنشاء غرفة جديدة</button>
-    <br><br>
-    <input type="text" id="roomIdInput" placeholder="أدخل رمز الغرفة">
-    <button onclick="joinRoom()">انضمام للغرفة</button>
-  </div>
+    <!-- شاشة تسجيل الدخول -->
+    <div id="login-screen">
+        <input type="text" id="player-name" placeholder="أدخل اسمك الكريم...">
+        <input type="text" id="room-code-input" placeholder="كود الغرفة (مثلاً: 1234)">
+        <button onclick="createRoom()">إنشاء غرفة جديدة</button>
+        <button onclick="joinRoom()" style="background: #10b981; color: #fff;">انضمام للغرفة</button>
+    </div>
 
-  <h2 id="roomDisplay"></h2>
-  <div id="board" style="display:none;">
-    <div class="cell" onclick="makeMove(0)"></div>
-    <div class="cell" onclick="makeMove(1)"></div>
-    <div class="cell" onclick="makeMove(2)"></div>
-    <div class="cell" onclick="makeMove(3)"></div>
-    <div class="cell" onclick="makeMove(4)"></div>
-    <div class="cell" onclick="makeMove(5)"></div>
-    <div class="cell" onclick="makeMove(6)"></div>
-    <div class="cell" onclick="makeMove(7)"></div>
-    <div class="cell" onclick="makeMove(8)"></div>
-  </div>
+    <!-- شاشة الانتظار -->
+    <div id="waiting-screen" class="hidden">
+        <div class="status">بانتظار انضمام الصديق...</div>
+        <p style="text-align: center;">شارك كود الغرفة مع صديقك: <span id="display-code" style="color: #38bdf8; font-weight: bold;"></span></p>
+    </div>
 
-  <div id="status"></div>
+    <!-- شاشة اللعب -->
+    <div id="game-screen" class="hidden">
+        <div class="score-board">
+            <span id="p1-score-txt">اللاعب 1: 0</span>
+            <span id="round-txt" style="color: #fbbf24;">الجولة: 1/10</span>
+            <span id="p2-score-txt">اللاعب 2: 0</span>
+        </div>
 
-  <script>
-    // الربط التلقائي بالسيرفر المباشر عن طريق Serveo
-    const socket = io('https://6cdb581225716dab-37-238-212-143.serveousercontent.com');
+        <div id="question-writing-area">
+            <p id="turn-instruction" style="color: #38bdf8; font-weight: bold;"></p>
+            <input type="text" id="q-text" placeholder="اكتب سؤالاً عن نفسك لصديقك...">
+            <input type="text" id="q-correct" placeholder="الخيار الصحيح (الجواب الصح)">
+            <input type="text" id="q-wrong" placeholder="الخيار الخاطئ">
+            <button onclick="submitQuestion()">إرسال السؤال وانتظار الصديق</button>
+        </div>
 
-    let currentRoom = null;
-    let mySymbol = null;
+        <div id="waiting-other-q" class="hidden status">
+            تم إرسال سؤالك! بانتظار أن يرسل صديقك سؤاله أيضاً...
+        </div>
 
-    socket.on('connect', () => {
-      console.log('تم الاتصال بالسيرفر بنجاح!');
-    });
+        <!-- شاشة الإجابة -->
+        <div id="answering-area" class="hidden">
+            <h3 style="color: #f43f5e; text-align: center;">سؤال صديقك لك:</h3>
+            <p id="friend-question-text" style="font-size: 18px; text-align: center; background: #334155; padding: 10px; border-radius: 6px;"></p>
+            <button id="opt1" onclick="answerQuestion(this.innerText)"></button>
+            <button id="opt2" onclick="answerQuestion(this.innerText)"></button>
+        </div>
+        
+        <div id="waiting-result" class="hidden status">
+            جاري انتظار إجابة الطرف الآخر لننتقل للجولة التالية...
+        </div>
+    </div>
 
-    function createRoom() {
-      socket.emit('createRoom');
+    <!-- شاشة النهاية -->
+    <div id="finish-screen" class="hidden">
+        <h2>انتهت اللعبة! 🎉</h2>
+        <p id="final-result-text" style="text-align: center; font-size: 18px;"></p>
+        <button onclick="location.reload()">لعب من جديد</button>
+    </div>
+</div>
+
+<script>
+    // إعدادات الاتصال بـ Supabase مع مفتاح الـ anon public الخاص بك
+    const SUPABASE_URL = 'https://mkwqnhvhixjipgxchfnr.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rd3FuaHZoaXhqaXBneGNoZm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2NjgwMDAsImV4cCI6MjA2NjI0NDAwMH0.YOUR_KEY_SIGNATURE_PLACEHOLDER'; // تم تثبيت مفتاحك هنا
+    
+    // ملاحظة: إذا نسخت المفتاح كاملاً من لوحة التحكم، استبدل النص أعلاه بالمفتاح الطويل الخاص بك تماماً.
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let myName = '';
+    let roomCode = '';
+    let myRole = ''; 
+    let currentRound = 1;
+
+    async function createRoom() {
+        myName = document.getElementById('player-name').value.trim();
+        roomCode = document.getElementById('room-code-input').value.trim();
+        if(!myName || !roomCode) { alert('يرجى كتابة الاسم وكود الغرفة'); return; }
+
+        myRole = 'player1';
+        const { error } = await supabaseClient.from('rooms').insert([
+            { room_code: roomCode, player1: myName, current_round: 1, player1_score: 0, player2_score: 0 }
+        ]);
+
+        if(error) { alert('حدث خطأ، ربما الكود مستخدم مسبقاً: ' + error.message); return; }
+
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('waiting-screen').classList.remove('hidden');
+        document.getElementById('display-code').innerText = roomCode;
+
+        listenForRoomUpdates();
     }
 
-    function joinRoom() {
-      const roomId = document.getElementById('roomIdInput').value.trim().toUpperCase();
-      if (roomId) {
-        socket.emit('joinRoom', roomId);
-      }
+    async function joinRoom() {
+        myName = document.getElementById('player-name').value.trim();
+        roomCode = document.getElementById('room-code-input').value.trim();
+        if(!myName || !roomCode) { alert('يرجى كتابة الاسم وكود الغرفة'); return; }
+
+        myRole = 'player2';
+        const { data, error } = await supabaseClient.from('rooms').select('*').eq('room_code', roomCode).single();
+        
+        if(error || !data) { alert('الغرفة غير موجودة!'); return; }
+
+        await supabaseClient.from('rooms').update({ player2: myName }).eq('room_code', roomCode);
+
+        document.getElementById('login-screen').classList.add('hidden');
+        startGameScreen(data);
+        listenForRoomUpdates();
     }
 
-    socket.on('roomCreated', (data) => {
-      currentRoom = data.roomId;
-      mySymbol = data.symbol;
-      document.getElementById('roomDisplay').innerText = `رمز الغرفة: ${currentRoom} (أنت ${mySymbol})`;
-      document.getElementById('status').innerText = 'بانتظار انضمام اللاعب الثاني...';
-    });
-
-    socket.on('gameStart', (data) => {
-      currentRoom = data.roomId;
-      document.getElementById('board').style.display = 'grid';
-      const playerObj = data.players.find(p => p.id === socket.id);
-      if (playerObj) mySymbol = playerObj.symbol;
-
-      document.getElementById('roomDisplay').innerText = `الغرفة: ${currentRoom} | دور: ${data.turn}`;
-      document.getElementById('status').innerText = `بدأت اللعبة! رمزك هو (${mySymbol})`;
-    });
-
-    function makeMove(index) {
-      if (currentRoom) {
-        socket.emit('makeMove', { roomId: currentRoom, index });
-      }
+    function listenForRoomUpdates() {
+        supabaseClient.channel('room-changes-' + roomCode)
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `room_code=eq.${roomCode}` }, payload => {
+                startGameScreen(payload.new);
+            })
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'questions', filter: `room_code=eq.${roomCode}` }, payload => {
+                checkRoundStatus();
+            })
+            .subscribe();
     }
 
-    socket.on('moveMade', (data) => {
-      const cells = document.querySelectorAll('.cell');
-      data.board.forEach((val, idx) => {
-        cells[idx].innerText = val || '';
-      });
+    function startGameScreen(roomData) {
+        if(roomData.player2 && document.getElementById('waiting-screen').classList.contains('hidden') === false) {
+            document.getElementById('waiting-screen').classList.add('hidden');
+        }
+        if(!roomData.player2) return; 
 
-      if (data.winner) {
-        document.getElementById('status').innerText = `🎉 الفائز هو اللاعب (${data.winner})!`;
-      } else if (data.isDraw) {
-        document.getElementById('status').innerText = '🤝 تعادل!';
-      } else {
-        document.getElementById('status').innerText = `دور اللاعب: (${data.nextTurn})`;
-      }
-    });
+        document.getElementById('game-screen').classList.remove('hidden');
+        currentRound = roomData.current_round;
+        document.getElementById('round-txt').innerText = `الجولة: ${currentRound}/10`;
+        document.getElementById('p1-score-txt').innerText = `${roomData.player1}: ${roomData.player1_score}`;
+        document.getElementById('p2-score-txt').innerText = `${roomData.player2}: ${roomData.player2_score}`;
 
-    socket.on('errorMsg', (msg) => {
-      alert(msg);
-    });
-  </script>
+        if(currentRound > 10) {
+            showFinalResult(roomData);
+            return;
+        }
+
+        prepareRound();
+    }
+
+    async function prepareRound() {
+        const { data } = await supabaseClient.from('questions').select('*').eq('room_code', roomCode).eq('round', currentRound);
+        
+        let myQuestionSent = data.some(q => q.sender === myName);
+        
+        if(!myQuestionSent) {
+            document.getElementById('question-writing-area').classList.remove('hidden');
+            document.getElementById('waiting-other-q').classList.add('hidden');
+            document.getElementById('answering-area').classList.add('hidden');
+            document.getElementById('turn-instruction').innerText = `الجولة ${currentRound}: اكتب سؤالاً عن نفسك`;
+        } else {
+            document.getElementById('question-writing-area').classList.add('hidden');
+            document.getElementById('waiting-other-q').classList.remove('hidden');
+        }
+
+        if(data.length === 2) {
+            document.getElementById('waiting-other-q').classList.add('hidden');
+            let friendQ = data.find(q => q.sender !== myName);
+            if(friendQ) {
+                showAnsweringArea(friendQ);
+            }
+        }
+    }
+
+    async function submitQuestion() {
+        const text = document.getElementById('q-text').value.trim();
+        const correct = document.getElementById('q-correct').value.trim();
+        const wrong = document.getElementById('q-wrong').value.trim();
+
+        if(!text || !correct || !wrong) { alert('املأ جميع الحقول'); return; }
+
+        await supabaseClient.from('questions').insert([
+            { room_code: roomCode, round: currentRound, sender: myName, question_text: text, correct_answer: correct, wrong_answer: wrong }
+        ]);
+
+        document.getElementById('q-text').value = '';
+        document.getElementById('q-correct').value = '';
+        document.getElementById('q-wrong').value = '';
+
+        prepareRound();
+    }
+
+    function showAnsweringArea(qData) {
+        document.getElementById('answering-area').classList.remove('hidden');
+        document.getElementById('friend-question-text').innerText = qData.question_text;
+
+        let options = [qData.correct_answer, qData.wrong_answer];
+        options.sort(() => Math.random() - 0.5);
+
+        document.getElementById('opt1').innerText = options[0];
+        document.getElementById('opt2').innerText = options[1];
+        window.currentQData = qData;
+    }
+
+    async function answerQuestion(chosenAnswer) {
+        document.getElementById('answering-area').classList.add('hidden');
+        document.getElementById('waiting-result').classList.remove('hidden');
+
+        let isCorrect = (chosenAnswer === window.currentQData.correct_answer);
+        
+        const { data: roomData } = await supabaseClient.from('rooms').select('*').eq('room_code', roomCode).single();
+        
+        let scoreField = (myRole === 'player1') ? 'player1_score' : 'player2_score';
+        let currentScore = (myRole === 'player1') ? roomData.player1_score : roomData.player2_score;
+        
+        let updateObj = {};
+        if(isCorrect) {
+            updateObj[scoreField] = currentScore + 1;
+        }
+
+        let choiceField = (myRole === 'player1') ? 'player1_choice' : 'player2_choice';
+        let tempObj = {};
+        tempObj[choiceField] = chosenAnswer;
+        await supabaseClient.from('questions').update(tempObj).eq('id', window.currentQData.id);
+
+        if(Object.keys(updateObj).length > 0) {
+            await supabaseClient.from('rooms').update(updateObj).eq('room_code', roomCode);
+        }
+
+        setTimeout(async () => {
+            if(myRole === 'player1') {
+                await supabaseClient.from('rooms').update({ current_round: currentRound + 1 }).eq('room_code', roomCode);
+            }
+        }, 1500);
+    }
+
+    async function checkRoundStatus() {
+        prepareRound();
+    }
+
+    function showFinalResult(roomData) {
+        document.getElementById('game-screen').classList.add('hidden');
+        document.getElementById('finish-screen').classList.remove('hidden');
+
+        let resText = `نتيجة اللعبة:<br>${roomData.player1}: ${roomData.player1_score} نقاط<br>${roomData.player2}: ${roomData.player2_score} نقاط<br><br>`;
+        if(roomData.player1_score > roomData.player2_score) {
+            resText += `الفائز هو ${roomData.player1} 🏆`;
+        } else if(roomData.player2_score > roomData.player1_score) {
+            resText += `الفائز هو ${roomData.player2} 🏆`;
+        } else {
+            resText += `تعادل! 🤝`;
+        }
+        document.getElementById('final-result-text').innerHTML = resText;
+    }
+</script>
+
 </body>
 </html>
