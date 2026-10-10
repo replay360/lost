@@ -82,11 +82,10 @@
 </div>
 
 <script>
-    // إعدادات الاتصال بـ Supabase مع مفتاح الـ anon public الخاص بك
+    // إعدادات الاتصال بـ Supabase مع المفتاح الحقيقي الخاص بك
     const SUPABASE_URL = 'https://mkwqnhvhixjipgxchfnr.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rd3FuaHZoaXhqaXBneGNoZm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2NjgwMDAsImV4cCI6MjA2NjI0NDAwMH0.YOUR_KEY_SIGNATURE_PLACEHOLDER'; // تم تثبيت مفتاحك هنا
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rd3FuaHZoaXhqaXBneGNoZm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE2MDU3MTcsImV4cCI6MjEwNzE4MTcxN30.h19KvBWGOyv2OOZAEcJPJ68YeQTxL6wdTyowN2WN66E';
     
-    // ملاحظة: إذا نسخت المفتاح كاملاً من لوحة التحكم، استبدل النص أعلاه بالمفتاح الطويل الخاص بك تماماً.
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let myName = '';
