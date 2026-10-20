@@ -1,270 +1,439 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة تحدي الأصدقاء</title>
-    <!-- استدعاء مكتبة Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        * { box-sizing: border-box; font-family: Tahoma, sans-serif; }
-        body { background: #0f172a; color: #fff; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container { background: #1e293b; padding: 25px; border-radius: 12px; width: 100%; max-width: 450px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        h2 { text-align: center; color: #38bdf8; margin-bottom: 20px; }
-        input, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; font-size: 16px; }
-        input { background: #334155; color: #fff; border: 1px solid #475569; }
-        input:focus { outline: none; border-color: #38bdf8; }
-        button { background: #38bdf8; color: #0f172a; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        button:hover { background: #0ea5e9; }
-        .hidden { display: none !important; }
-        .status { text-align: center; color: #fbbf24; margin: 10px 0; font-weight: bold; }
-        .score-board { display: flex; justify-content: space-between; background: #334155; padding: 10px; border-radius: 8px; margin-bottom: 15px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>تحدي الأصدقاء</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e1020;--card:#171a31;--bd:rgba(255,255,255,.1);--tx:#f1f2fb;--mu:#9aa0c6;--ac:#7c6cff;--gold:#ffb703;--ok:#2fd08a;--bad:#ff5d73;--sp:cubic-bezier(.3,1.6,.5,1);color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:radial-gradient(ellipse at 50% -10%,#2a2060 0,var(--bg) 55%) fixed;color:var(--tx);font-family:"Cairo",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;line-height:1.7;min-height:100vh}
+button{font-family:inherit;cursor:pointer;color:inherit}
+.ic{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+#app{width:min(520px,100%);margin:0 auto;padding:14px 14px calc(36px + env(safe-area-inset-bottom,0px))}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:17px}
+.logo i{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(135deg,var(--ac),#4cc9f0);color:#fff;font-style:normal;font-size:16px}
+.pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--bd);background:var(--card);border-radius:999px;padding:5px 13px;font:600 12.5px "Cairo",sans-serif;color:var(--mu);transition:border-color .2s}
+.pill:hover{border-color:var(--mu)}
+.pill i{width:8px;height:8px;border-radius:50%;background:var(--mu)}
+.pill.on i{background:var(--ok)}.pill.re i,.pill.cn i{background:var(--gold);animation:bl 1s infinite}.pill.off i{background:var(--bad)}
+@keyframes bl{50%{opacity:.3}}
+.view{animation:in .35s ease both}@keyframes in{from{opacity:0;transform:translateY(12px)}}
+.hero{text-align:center;padding:26px 0 20px}.hero h1{font-size:38px;font-weight:800;line-height:1.3}.hero h1 span{color:var(--gold)}.hero p{color:var(--mu)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:18px;margin-bottom:14px}
+.card h2{font-size:19px;font-weight:700;line-height:1.5}
+.sub{color:var(--mu);font-size:14px;margin:2px 0 12px}
+label{display:block;font-size:13.5px;font-weight:600;color:var(--mu);margin:10px 0 5px}label.g{color:var(--ok)}label.r{color:var(--bad)}
+.fi,textarea{width:100%;background:#0f1124;color:var(--tx);border:1.5px solid var(--bd);border-radius:13px;padding:11px 14px;font:500 16px "Cairo",sans-serif;outline:none;transition:border-color .15s}
+textarea{min-height:84px;resize:none}
+.fi:focus,textarea:focus{border-color:var(--ac)}
+.fi.ok{border-color:rgba(47,208,138,.45)}.fi.bad{border-color:rgba(255,93,115,.35)}
+.code{text-align:center;letter-spacing:.35em;font-weight:800;text-transform:uppercase;direction:ltr}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:12px;padding:12px 18px;border-radius:14px;border:1.5px solid var(--bd);background:transparent;font:700 15.5px "Cairo",sans-serif;transition:transform .35s var(--sp),background .15s,opacity .15s}
+.btn:hover{background:rgba(255,255,255,.06)}.btn:active{transform:scale(.96)}
+.btn.p{background:var(--ac);border-color:var(--ac);color:#fff}.btn.p:hover{background:#8d7fff}
+.btn.sm{width:auto;margin:0;padding:8px 16px;font-size:14px}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.row{display:flex;gap:10px;align-items:stretch}.row .fi{flex:1;min-width:0}.row .btn{width:auto;margin-top:0}
+.or{display:flex;align-items:center;gap:10px;color:var(--mu);font-size:13px;margin:16px 0 4px}.or::before,.or::after{content:"";flex:1;height:1px;background:var(--bd)}
+.hint{font-size:13px;color:var(--mu);margin-top:10px;min-height:1.4em}.hint.err{color:var(--bad)}
+.how ol{padding-inline-start:20px;color:var(--mu);font-size:14px}.how b{color:var(--tx)}
+.rc{font:800 46px/1.2 "Cairo",sans-serif;letter-spacing:.3em;text-align:center;direction:ltr;padding:14px 0 14px .3em;color:var(--gold)}
+.sl{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--bd);border-radius:14px;margin-top:8px}
+.sl .dot{margin-inline-start:auto}.wt{color:var(--mu);animation:bl 1.4s infinite}
+.av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:var(--ac);flex:none}
+.av.o{background:var(--gold);color:#241a00}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--mu);flex:none}.dot.on{background:var(--ok)}
+.gh{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:12px 14px;margin-bottom:14px}
+.pl{display:flex;align-items:center;gap:9px;min-width:0}.pl.op{justify-content:flex-end;flex-direction:row-reverse}
+.pl b{display:block;font-size:13.5px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:88px}
+.sc{font-size:23px;font-weight:800;color:var(--gold);line-height:1.2;display:inline-block}.sc.bump{animation:bp .5s var(--sp)}@keyframes bp{40%{transform:scale(1.5)}}
+.mid{text-align:center;min-width:92px}.rd{font-size:12.5px;font-weight:700;color:var(--mu)}
+.bar{height:5px;border-radius:9px;background:var(--bd);margin-top:5px;overflow:hidden}.bar i{display:block;height:100%;width:0;background:var(--gold);border-radius:inherit;transition:width .6s}
+.banner{background:rgba(255,93,115,.14);border:1px solid rgba(255,93,115,.4);color:#ffb3bd;border-radius:12px;padding:8px 14px;font-size:13.5px;margin-bottom:12px;text-align:center}
+.chip{display:flex;align-items:center;justify-content:center;gap:8px;font-size:13.5px;color:var(--mu);padding:6px}.chip.ok{color:var(--ok)}
+.qt{font-size:21px;font-weight:700;margin:6px 0 16px;overflow-wrap:anywhere;line-height:1.6}
+.tag{display:inline-block;font-size:12.5px;font-weight:700;color:var(--gold);background:rgba(255,183,3,.12);padding:2px 12px;border-radius:999px}
+.ch{display:flex;align-items:center;gap:12px;width:100%;text-align:start;margin-bottom:10px;padding:13px 14px;border-radius:14px;border:1.5px solid var(--bd);background:#0f1124;font:600 16px "Cairo",sans-serif;transition:transform .3s var(--sp),border-color .15s,background .15s;overflow-wrap:anywhere}
+.ch:hover{border-color:var(--ac)}.ch:active{transform:scale(.97)}
+.ch b{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:var(--bd);font-size:13px;flex:none}
+.ch.pick{border-color:var(--ac);background:rgba(124,108,255,.18)}.ch.dis{pointer-events:none;opacity:.75}
+.ch.pick.dis{opacity:1}
+.res{border-radius:18px;padding:16px;margin-bottom:12px;border:1.5px solid var(--bd);animation:in .4s ease both}
+.res.ok{border-color:rgba(47,208,138,.5);background:rgba(47,208,138,.08)}.res.no{border-color:rgba(255,93,115,.45);background:rgba(255,93,115,.07)}
+.res h3{font-size:15px;display:flex;align-items:center;gap:8px;margin-bottom:6px}.res.ok h3{color:var(--ok)}.res.no h3{color:var(--bad)}
+.res p{font-size:14.5px;color:var(--mu)}.res p b{color:var(--tx)}.res .q{color:var(--tx);font-weight:600;margin-bottom:4px}
+.end{text-align:center}.end .tr{width:84px;height:84px;margin:6px auto 8px;color:var(--gold);animation:pop .7s var(--sp) both}.end .tr .ic{width:84px;height:84px;stroke-width:1.4}
+@keyframes pop{from{transform:scale(0) rotate(-20deg)}}
+.end h2{font-size:26px}.big{font-size:44px;font-weight:800;color:var(--gold);margin:4px 0}
+.rec{display:grid;gap:6px;margin-top:12px;text-align:start}
+.rec div{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;border-radius:11px;background:#0f1124;font-size:14px}
+.rec .m{display:flex;gap:12px}.rec .t{color:var(--ok)}.rec .f{color:var(--bad)}.rec .ic{width:16px;height:16px}
+.spin{width:22px;height:22px;border:2.5px solid var(--bd);border-top-color:var(--ac);border-radius:50%;animation:sp .8s linear infinite;margin:0 auto}@keyframes sp{to{transform:rotate(360deg)}}
+.ov{position:fixed;inset:0;z-index:50;display:none;place-items:center;padding:16px;background:rgba(5,6,16,.7);overflow-y:auto}.ov.on{display:grid}
+.dlg{width:min(480px,100%);background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:20px;animation:in .25s ease both}
+.dlg h3{font-size:19px;margin-bottom:4px}
+.tl{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border:1px solid var(--bd);border-radius:12px;margin-top:8px;font-size:14px}
+.tl small{color:var(--mu);direction:ltr;display:inline-block}.tl .s{font-weight:700}.tl .s.ok{color:var(--ok)}.tl .s.no{color:var(--bad)}
+.tips{margin-top:12px;padding:12px 14px;border-radius:13px;background:rgba(255,183,3,.08);border:1px solid rgba(255,183,3,.3);font-size:13.5px;color:#ffe29a}.tips ul{padding-inline-start:18px;margin-top:4px}
+.ma{display:flex;gap:8px;margin-top:14px}.ma .btn{margin-top:0}
+#toasts{position:fixed;bottom:calc(22px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);z-index:80;display:grid;gap:8px;justify-items:center;pointer-events:none;width:min(420px,calc(100% - 28px))}
+.toast{background:var(--tx);color:var(--bg);padding:10px 18px;border-radius:12px;font-size:14px;font-weight:600;animation:in .25s both}.toast.err{background:var(--bad);color:#fff}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
 </head>
 <body>
-
-<div class="container" id="app">
-    <h2>تحدي الصداقة 🤝</h2>
-
-    <!-- شاشة تسجيل الدخول -->
-    <div id="login-screen">
-        <input type="text" id="player-name" placeholder="أدخل اسمك الكريم...">
-        <input type="text" id="room-code-input" placeholder="كود الغرفة (مثلاً: 1234)">
-        <button onclick="createRoom()">إنشاء غرفة جديدة</button>
-        <button onclick="joinRoom()" style="background: #10b981; color: #fff;">انضمام للغرفة</button>
-    </div>
-
-    <!-- شاشة الانتظار -->
-    <div id="waiting-screen" class="hidden">
-        <div class="status">بانتظار انضمام الصديق...</div>
-        <p style="text-align: center;">شارك كود الغرفة مع صديقك: <span id="display-code" style="color: #38bdf8; font-weight: bold;"></span></p>
-    </div>
-
-    <!-- شاشة اللعب -->
-    <div id="game-screen" class="hidden">
-        <div class="score-board">
-            <span id="p1-score-txt">اللاعب 1: 0</span>
-            <span id="round-txt" style="color: #fbbf24;">الجولة: 1/10</span>
-            <span id="p2-score-txt">اللاعب 2: 0</span>
-        </div>
-
-        <div id="question-writing-area">
-            <p id="turn-instruction" style="color: #38bdf8; font-weight: bold;"></p>
-            <input type="text" id="q-text" placeholder="اكتب سؤالاً عن نفسك لصديقك...">
-            <input type="text" id="q-correct" placeholder="الخيار الصحيح (الجواب الصح)">
-            <input type="text" id="q-wrong" placeholder="الخيار الخاطئ">
-            <button onclick="submitQuestion()">إرسال السؤال وانتظار الصديق</button>
-        </div>
-
-        <div id="waiting-other-q" class="hidden status">
-            تم إرسال سؤالك! بانتظار أن يرسل صديقك سؤاله أيضاً...
-        </div>
-
-        <!-- شاشة الإجابة -->
-        <div id="answering-area" class="hidden">
-            <h3 style="color: #f43f5e; text-align: center;">سؤال صديقك لك:</h3>
-            <p id="friend-question-text" style="font-size: 18px; text-align: center; background: #334155; padding: 10px; border-radius: 6px;"></p>
-            <button id="opt1" onclick="answerQuestion(this.innerText)"></button>
-            <button id="opt2" onclick="answerQuestion(this.innerText)"></button>
-        </div>
-        
-        <div id="waiting-result" class="hidden status">
-            جاري انتظار إجابة الطرف الآخر لننتقل للجولة التالية...
-        </div>
-    </div>
-
-    <!-- شاشة النهاية -->
-    <div id="finish-screen" class="hidden">
-        <h2>انتهت اللعبة! 🎉</h2>
-        <p id="final-result-text" style="text-align: center; font-size: 18px;"></p>
-        <button onclick="location.reload()">لعب من جديد</button>
-    </div>
+<div id="app">
+  <div class="top"><div class="logo"><i>؟</i>تحدي الأصدقاء</div><button class="pill cn" id="net"><i></i><span>جاري الاتصال…</span></button></div>
+  <main id="main"></main>
 </div>
+<div class="ov" id="ov"><div class="dlg" id="dlg"></div></div>
+<div id="toasts"></div>
 
 <script>
-    // تعريفات الاتصال بشكل نظيف تماماً ومنفصل
-    const SUPABASE_URL = 'https://mkwqnhvhixjipgxchfnr.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rd3FuaHZoaXhqaXBneGNoZm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE2MDU3MTcsImV4cCI6MjEwNzE4MTcxN30.h19KvBWGOyv2OOZAEcJPJ68YeQTxL6wdTyowN2WN66E';
-    
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+/* =========================================================
+   تحدي الأصدقاء — لعبة لاعبين اونلاين بدون Supabase
+   الاتصال يتم عبر سيرفرات MQTT عامة (WSS) مع تبديل تلقائي
+   بين عدة سيرفرات، فإذا واحد انحجب يشتغل الثاني.
+   ========================================================= */
+const APP = 'friends-challenge-iq-v1', N = 10;
+const DEFAULT_BROKERS = [
+  { n: 'EMQX',      u: 'wss://broker.emqx.io:8084/mqtt' },
+  { n: 'HiveMQ',    u: 'wss://broker.hivemq.com:8884/mqtt' },
+  { n: 'Mosquitto', u: 'wss://test.mosquitto.org:8081' }
+];
+const MQTT_CDNS = [
+  'https://cdn.jsdelivr.net/npm/mqtt@5.10.4/dist/mqtt.min.js',
+  'https://unpkg.com/mqtt@5.10.4/dist/mqtt.min.js'
+];
 
-    let myName = '';
-    let roomCode = '';
-    let myRole = ''; 
-    let currentRound = 1;
+/* ---------- LOGIC-START (pure game logic, no DOM) ---------- */
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]] } return a }
+function mkQ(t, right, wrongs) { const c = shuffle([right, ...wrongs]); return { t, c, k: c.indexOf(right) } }
+function newDoc(gid, uid, name) { return { v: 1, gid, uid, name, qs: {}, ans: {}, seen: 0, rm: null, ts: Date.now() } }
+function derive(a, b, role) {
+  if (!a || !b) return { st: 'lobby' };
+  const me = role === 'a' ? a : b, op = role === 'a' ? b : a;
+  if (me.gid !== op.gid) return { st: 'sync' };
+  const done = Math.min(me.seen, op.seen), fin = done >= N, r = Math.min(done + 1, N);
+  let phase;
+  if (fin) phase = 'end';
+  else if (!(me.qs[r] && op.qs[r])) phase = 'write';
+  else if (me.ans[r] == null || op.ans[r] == null) phase = 'answer';
+  else phase = 'reveal';
+  const upto = fin ? N : (phase === 'reveal' ? r : done);
+  let sm = 0, so = 0; const rows = [];
+  for (let i = 1; i <= upto; i++) {
+    const m = op.qs[i] && me.ans[i] != null && me.ans[i] === op.qs[i].k, o = me.qs[i] && op.ans[i] != null && op.ans[i] === me.qs[i].k;
+    if (m) sm++; if (o) so++; rows.push({ i, m: !!m, o: !!o });
+  }
+  return { st: 'game', phase, r, done, fin, me, op, sm, so, rows, meQ: me.qs[r], opQ: op.qs[r], meA: me.ans[r], opA: op.ans[r] };
+}
+/* ---------- LOGIC-END ---------- */
 
-    async function createRoom() {
-        myName = document.getElementById('player-name').value.trim();
-        roomCode = document.getElementById('room-code-input').value.trim();
-        if(!myName || !roomCode) { alert('يرجى كتابة الاسم وكود الغرفة'); return; }
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const LS = { get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v) } catch (e) { return d } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)) } catch (e) {} } };
+const ICONS = {
+  plus: '<path d="M12 5v14M5 12h14"/>', copy: '<rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
+  share: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>', x: '<path d="M18 6 6 18M6 6l12 12"/>', next: '<path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>',
+  redo: '<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>', out: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/>',
+  trophy: '<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>'
+};
+const ic = n => `<svg class="ic" viewBox="0 0 24 24">${ICONS[n]}</svg>`;
+function toast(m, t) { const e = document.createElement('div'); e.className = 'toast ' + (t || ''); e.textContent = m; $('#toasts').appendChild(e); setTimeout(() => e.remove(), 3000) }
+const uid = LS.get('fc_uid') || (() => { const u = Math.random().toString(36).slice(2, 10) + Date.now().toString(36); LS.set('fc_uid', u); return u })();
+const urlRoom = (new URLSearchParams(location.search).get('room') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5);
+const genCode = () => { const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s = ''; for (let i = 0; i < 5; i++) s += A[Math.floor(Math.random() * A.length)]; return s };
+const getBrokers = () => [...DEFAULT_BROKERS, ...LS.get('fc_brokers', [])];
 
-        myRole = 'player1';
-        const { error } = await supabaseClient.from('rooms').insert([
-            { room_code: roomCode, player1: myName, current_round: 1, player1_score: 0, player2_score: 0 }
-        ]);
+/* ---------- state ---------- */
+let room = null, role = null, mine = null, docs = { a: null, b: null }, lastSeen = { a: 0, b: 0 }, ready = false, hadB = false, hbTimer = null;
+let screen = 'home', sig = '', cur = null, prevSc = { m: 0, o: 0 }, draft = { t: '', c: ['', '', ''] };
+const opRole = () => role === 'a' ? 'b' : 'a';
+const newGid = () => Math.random().toString(36).slice(2, 9);
 
-        if(error) { alert('حدث خطأ، ربما الكود مستخدم مسبقاً: ' + error.message); return; }
+/* ---------- network (MQTT over WSS, race between brokers) ---------- */
+const Net = { client: null, broker: '', state: 'cn', connecting: false };
+function setNet(s) {
+  Net.state = s; const b = $('#net'); b.className = 'pill ' + s;
+  b.querySelector('span').textContent = { on: 'متصل · ' + Net.broker, cn: 'جاري الاتصال…', re: 'إعادة اتصال…', off: 'غير متصل — اضغط للفحص' }[s];
+  if (screen === 'home') homeHint();
+  const o = $('#off'); if (o) o.hidden = s === 'on';
+}
+function loadMqtt() {
+  return new Promise((res, rej) => { let i = 0; const next = () => { if (window.mqtt) return res(); if (i >= MQTT_CDNS.length) return rej(new Error('lib')); const s = document.createElement('script'); s.src = MQTT_CDNS[i++]; s.onload = () => window.mqtt ? res() : next(); s.onerror = next; document.head.appendChild(s) }; next() });
+}
+const mkClient = (u, id) => mqtt.connect(u, { clientId: id, clean: true, connectTimeout: 8000, reconnectPeriod: 0, keepalive: 30, protocolVersion: 4 });
+async function netConnect() {
+  if (Net.connecting) return false; Net.connecting = true; setNet('cn');
+  try { await loadMqtt() } catch (e) { Net.connecting = false; setNet('off'); return false }
+  const ok = await new Promise(resolve => {
+    const list = getBrokers(); let won = false, fails = 0; const cs = [];
+    const fail = () => { if (!won && ++fails === list.length) resolve(false) };
+    list.forEach(b => {
+      let c; try { c = mkClient(b.u, 'fc_' + uid.slice(0, 6) + Math.random().toString(36).slice(2, 7)) } catch (e) { return fail() }
+      cs.push(c); c.on('error', () => {});
+      c.once('connect', () => {
+        if (won) { c.end(true); return } won = true; cs.forEach(o => o !== c && o.end(true));
+        Net.client = c; Net.broker = b.n; c.options.reconnectPeriod = 2500;
+        c.on('message', onMsg);
+        c.on('reconnect', () => setNet('re'));
+        c.on('close', () => { if (Net.client === c) setNet('re') });
+        c.on('connect', () => { setNet('on'); if (room && mine) { c.subscribe(`${APP}/${room}/#`, { qos: 1 }); publishDoc() } });
+        resolve(true);
+      });
+      c.once('close', fail);
+    });
+  });
+  Net.connecting = false; setNet(ok ? 'on' : 'off'); return ok;
+}
+const topic = x => `${APP}/${room}/${x}`;
+function publishDoc() { if (Net.client && mine) Net.client.publish(topic(role), JSON.stringify(mine), { qos: 1, retain: true }) }
 
-        document.getElementById('login-screen').classList.add('hidden');
-        document.getElementById('waiting-screen').classList.remove('hidden');
-        document.getElementById('display-code').innerText = roomCode;
+/* ---------- rooms ---------- */
+function onMsg(tp, payload) {
+  const p = tp.split('/'); if (p[0] !== APP || p[1] !== room) return;
+  if (p[2] === 'hb') { lastSeen[p[3]] = Date.now(); return }
+  if (p[2] !== 'a' && p[2] !== 'b') return;
+  const x = p[2]; if (x === role && mine) return;
+  let d = null; const s = payload.toString(); if (s) { try { d = JSON.parse(s) } catch (e) {} }
+  docs[x] = d; if (x !== role) lastSeen[x] = Date.now();
+  if (ready) render();
+}
+async function enterRoom(code, intent, name) {
+  if (!Net.client || !Net.client.connected) return 'offline';
+  clearInterval(hbTimer); ready = false; room = code; docs = { a: null, b: null }; mine = null; role = null;
+  const drop = () => { Net.client.unsubscribe(`${APP}/${code}/#`); room = null };
+  Net.client.subscribe(`${APP}/${code}/#`, { qos: 1 });
+  await sleep(1500);
+  const a = docs.a, b = docs.b;
+  if (intent === 'create') {
+    if (a && a.uid !== uid && Date.now() - a.ts < 3 * 3600e3) { drop(); return 'taken' }
+    role = 'a'; mine = (a && a.uid === uid) ? a : newDoc(newGid(), uid, name);
+  } else {
+    if (a && a.uid === uid) { role = 'a'; mine = a }
+    else if (b && b.uid === uid) { role = 'b'; mine = b }
+    else if (!a) { drop(); return 'missing' }
+    else if (b) { drop(); return 'full' }
+    else { role = 'b'; mine = newDoc(a.gid, uid, name) }
+  }
+  if (name && mine.name !== name) mine.name = name;
+  docs[role] = mine; hadB = !!docs.b; publishDoc(); LS.set('fc_room', code);
+  hbTimer = setInterval(() => { if (Net.client && Net.client.connected && room) Net.client.publish(topic('hb/' + role), '1', { qos: 0 }); updateChips() }, 5000);
+  ready = true; render(); return 'ok';
+}
+function leave(clear) {
+  if (Net.client && room) { if (clear && mine) Net.client.publish(topic(role), '', { qos: 1, retain: true }); Net.client.unsubscribe(`${APP}/${room}/#`) }
+  clearInterval(hbTimer); ready = false; room = role = mine = null; docs = { a: null, b: null }; LS.set('fc_room', null); sig = ''; showHome();
+}
+function update(fn) { fn(mine); mine.ts = Date.now(); docs[role] = mine; publishDoc(); render() }
+function resetMine(gid) { mine.gid = gid; mine.qs = {}; mine.ans = {}; mine.seen = 0; mine.rm = null; mine.ts = Date.now(); publishDoc(); draft = { t: '', c: ['', '', ''] } }
+function reconcile() {
+  const a = docs.a, b = docs.b;
+  if (role === 'a') {
+    if (b) hadB = true;
+    else if (hadB) { hadB = false; if (Object.keys(mine.qs).length || mine.seen) { toast('صديقك غادر الغرفة'); resetMine(newGid()) } }
+    if (b && a.rm === a.gid && b.rm === a.gid) resetMine(newGid());
+  } else if (a && mine.gid !== a.gid) resetMine(a.gid);
+}
 
-        listenForRoomUpdates();
-    }
+/* ---------- screens ---------- */
+const main = $('#main');
+function homeHint() {
+  const h = $('#hm'); if (!h) return; h.className = 'hint';
+  if (Net.state === 'on') h.textContent = '';
+  else if (Net.state === 'off') { h.textContent = 'ما كدرنا نتصل بالسيرفر. اضغط على حالة الاتصال فوق لفحص الشبكة.'; h.classList.add('err') }
+  else h.textContent = 'جاري الاتصال بالسيرفر…';
+}
+function showHome() {
+  screen = 'home'; sig = '';
+  main.innerHTML = `<section class="view">
+  <div class="hero"><h1>تحدي <span>الأصدقاء</span></h1><p>اكتب سؤال عن نفسك وشوف شكد صديقك يعرفك</p></div>
+  <div class="card">
+    <label for="nm" style="margin-top:0">اسمك</label>
+    <input id="nm" class="fi" maxlength="14" placeholder="مثال: علي" value="${esc(LS.get('fc_name', ''))}">
+    <button class="btn p" id="mk">${ic('plus')}إنشاء غرفة جديدة</button>
+    <div class="or"><span>أو ادخل بكود صديقك</span></div>
+    <div class="row"><input id="cd" class="fi code" maxlength="5" placeholder="XXXXX" value="${esc(urlRoom)}" autocapitalize="characters" autocomplete="off"><button class="btn" id="jn">دخول</button></div>
+    <p class="hint" id="hm"></p>
+  </div>
+  <div class="card how"><h2 style="font-size:16px;margin-bottom:6px">شلون تلعب؟</h2>
+    <ol><li>واحد يسوي غرفة ويرسل <b>الكود</b> أو الرابط للثاني.</li><li>كل جولة، <b>كل واحد يكتب سؤال عن نفسه</b> ويحط الجواب الصحيح وجوابين غلط.</li><li>بعدها كل واحد <b>يجاوب على سؤال صديقه</b>.</li><li>10 جولات، واللي يعرف صديقه أكثر يفوز!</li></ol></div>
+  </section>`;
+  homeHint();
+  const getName = () => { const n = $('#nm').value.trim(); if (!n) { $('#nm').focus(); toast('اكتب اسمك أولاً', 'err'); return null } LS.set('fc_name', n); return n };
+  const guard = () => {
+    if (Net.state === 'on') return true;
+    if (Net.state === 'cn' || Net.state === 're') toast('جاري الاتصال… انتظر لحظة'); else { toast('لا يوجد اتصال بالسيرفر', 'err'); openDiag() }
+    return false;
+  };
+  $('#mk').onclick = async e => {
+    const n = getName(); if (!n || !guard()) return; const b = e.currentTarget; b.disabled = true; $('#hm').textContent = 'جاري إنشاء الغرفة…';
+    let r = 'taken'; for (let i = 0; i < 5 && r === 'taken'; i++) r = await enterRoom(genCode(), 'create', n);
+    if (r !== 'ok') { b.disabled = false; homeHint(); toast('تعذر إنشاء الغرفة، حاول مرة ثانية', 'err') }
+  };
+  $('#jn').onclick = async e => {
+    const n = getName(); if (!n || !guard()) return; const c = $('#cd').value.trim().toUpperCase();
+    if (c.length !== 5) { toast('الكود يتكون من 5 رموز', 'err'); return }
+    const b = e.currentTarget; b.disabled = true; $('#hm').textContent = 'جاري الدخول…';
+    const r = await enterRoom(c, 'join', n); b.disabled = false;
+    if (r !== 'ok') { homeHint(); toast({ missing: 'الغرفة غير موجودة، تأكد من الكود', full: 'الغرفة ممتلئة', offline: 'لا يوجد اتصال' }[r] || 'تعذر الدخول', 'err') }
+  };
+  $('#cd').addEventListener('keydown', e => { if (e.key === 'Enter') $('#jn').click() });
+}
+function showLobby() {
+  screen = 'lobby'; sig = '';
+  main.innerHTML = `<section class="view"><div class="card" style="text-align:center">
+    <h2>غرفتك جاهزة</h2><p class="sub">أرسل الكود لصديقك وانتظره</p>
+    <div class="rc">${esc(room)}</div>
+    <div class="row" style="justify-content:center"><button class="btn sm" id="cp">${ic('copy')}نسخ الرابط</button><button class="btn sm p" id="sh">${ic('share')}مشاركة</button></div>
+    <div style="margin-top:16px;text-align:start">
+      <div class="sl"><span class="av">${esc((mine.name || '?').charAt(0))}</span><b>${esc(mine.name)} (أنت)</b><i class="dot on"></i></div>
+      <div class="sl"><span class="av o">؟</span><span class="wt">بانتظار صديقك…</span></div></div>
+    <button class="btn" id="lv">${ic('out')}إلغاء الغرفة</button></div></section>`;
+  const url = `${location.origin}${location.pathname}?room=${room}`, msg = `تعال العب وياي تحدي الأصدقاء! كود الغرفة: ${room}\n${url}`;
+  $('#cp').onclick = async () => { try { await navigator.clipboard.writeText(url); toast('تم نسخ الرابط') } catch (e) { prompt('انسخ الرابط:', url) } };
+  $('#sh').onclick = () => { if (navigator.share) navigator.share({ title: 'تحدي الأصدقاء', text: msg }).catch(() => {}); else window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank') };
+  $('#lv').onclick = () => leave(true);
+}
+function showSync() { screen = 'sync'; sig = ''; main.innerHTML = `<section class="view card" style="text-align:center"><div class="spin"></div><p class="sub" style="margin-top:12px">جاري تجهيز اللعبة…</p></section>` }
 
-    async function joinRoom() {
-        myName = document.getElementById('player-name').value.trim();
-        roomCode = document.getElementById('room-code-input').value.trim();
-        if(!myName || !roomCode) { alert('يرجى كتابة الاسم وكود الغرفة'); return; }
+function buildShell() {
+  screen = 'game'; sig = ''; prevSc = { m: 0, o: 0 };
+  main.innerHTML = `<section class="view"><div id="off" class="banner" hidden>الاتصال مقطوع… نحاول نرجع الاتصال</div>
+  <div class="gh">
+    <div class="pl"><span class="av" id="mav"></span><div><b id="mn"></b><span class="sc" id="ms">0</span></div></div>
+    <div class="mid"><span class="rd" id="rd"></span><div class="bar"><i id="pb"></i></div></div>
+    <div class="pl op"><span class="av o" id="oav"></span><div style="text-align:end"><b id="on"></b><span class="sc" id="os">0</span></div><i class="dot" id="dot"></i></div>
+  </div><div id="body"></div>
+  <div style="text-align:center;margin-top:8px"><button class="btn sm" id="lv" style="color:var(--mu)">${ic('out')}مغادرة</button></div></section>`;
+  $('#lv').onclick = () => { if (confirm('تريد تغادر الغرفة؟')) leave(true) };
+  $('#off').hidden = Net.state === 'on';
+}
+function updateHeader(V) {
+  $('#mav').textContent = (V.me.name || '?').charAt(0); $('#oav').textContent = (V.op.name || '?').charAt(0);
+  $('#mn').textContent = V.me.name + ' (أنت)'; $('#on').textContent = V.op.name;
+  $('#rd').textContent = V.fin ? 'النتيجة النهائية' : `الجولة ${V.r} / ${N}`;
+  $('#pb').style.width = ((V.fin ? N : V.done + (V.phase === 'reveal' ? 1 : 0)) / N * 100) + '%';
+  [['ms', V.sm, 'm'], ['os', V.so, 'o']].forEach(([id, v, k]) => { const e = $('#' + id); e.textContent = v; if (v > prevSc[k]) { e.classList.remove('bump'); void e.offsetWidth; e.classList.add('bump') } prevSc[k] = v });
+}
+function updateChips() {
+  if (!room) return;
+  const d = $('#dot'), op = docs[opRole()];
+  if (d) d.classList.toggle('on', Date.now() - lastSeen[opRole()] < 16000);
+  const c = $('#opst');
+  if (c && cur && op) { const done = !!(op.qs && op.qs[cur.r]); c.className = 'chip' + (done ? ' ok' : ''); c.innerHTML = done ? `${ic('check')}${esc(op.name)} أرسل سؤاله` : `${esc(op.name)} يكتب سؤاله…` }
+}
 
-        myRole = 'player2';
-        const { data, error } = await supabaseClient.from('rooms').select('*').eq('room_code', roomCode).single();
-        
-        if(error || !data) { alert('الغرفة غير موجودة!'); return; }
+function bodyFor(V) {
+  const L = ['أ', 'ب', 'ج', 'د'];
+  if (V.phase === 'write') {
+    if (V.meQ) return `<div class="card view"><span class="tag">سؤالك أُرسل</span><h2 class="qt">${esc(V.meQ.t)}</h2><div class="spin"></div><p class="sub" style="text-align:center;margin-top:10px">بانتظار سؤال ${esc(V.op.name)}…</p></div><div class="chip" id="opst"></div>`;
+    return `<div class="card view"><h2>اكتب سؤالاً عن نفسك</h2><p class="sub">صديقك رح يجاوب عليه من بين 3 خيارات. اكتب الجواب الصحيح ومعاه جوابين غلط.</p>
+      <label for="q" style="margin-top:0">السؤال</label><textarea id="q" maxlength="140" placeholder="مثال: شنو أكلتي المفضلة؟">${esc(draft.t)}</textarea>
+      <label class="g">الجواب الصحيح</label><input class="fi ok" id="c0" maxlength="40" value="${esc(draft.c[0])}">
+      <label class="r">جواب غلط 1</label><input class="fi bad" id="c1" maxlength="40" value="${esc(draft.c[1])}">
+      <label class="r">جواب غلط 2</label><input class="fi bad" id="c2" maxlength="40" value="${esc(draft.c[2])}">
+      <button class="btn p" id="send" disabled>إرسال السؤال</button></div><div class="chip" id="opst"></div>`;
+  }
+  if (V.phase === 'answer') {
+    const done = V.meA != null;
+    return `<div class="card view"><span class="tag">سؤال من ${esc(V.op.name)}</span><h2 class="qt">${esc(V.opQ.t)}</h2>
+      ${V.opQ.c.map((x, i) => `<button class="ch${done ? ' dis' : ''}${V.meA === i ? ' pick' : ''}" data-i="${i}"><b>${L[i]}</b><span>${esc(x)}</span></button>`).join('')}
+      ${done ? `<p class="sub" style="text-align:center;margin:6px 0 0">بانتظار جواب ${esc(V.op.name)}…</p>` : ''}</div>`;
+  }
+  if (V.phase === 'reveal') {
+    const okM = V.meA === V.opQ.k, okO = V.opA === V.meQ.k, nextDone = V.me.seen >= V.r;
+    return `<div class="view">
+      <div class="res ${okM ? 'ok' : 'no'}"><h3>${ic(okM ? 'check' : 'x')}${okM ? 'جوابك صحيح! +1' : 'جوابك غلط'}</h3><p class="q">${esc(V.opQ.t)}</p>
+        <p>اخترت: <b>${esc(V.opQ.c[V.meA])}</b>${okM ? '' : ` — الصحيح: <b>${esc(V.opQ.c[V.opQ.k])}</b>`}</p></div>
+      <div class="res ${okO ? 'ok' : 'no'}"><h3>${ic(okO ? 'check' : 'x')}${esc(V.op.name)} ${okO ? 'جاوب صح على سؤالك' : 'جاوب غلط على سؤالك'}</h3><p class="q">${esc(V.meQ.t)}</p>
+        <p>اختار: <b>${esc(V.meQ.c[V.opA])}</b>${okO ? '' : ` — الصحيح: <b>${esc(V.meQ.c[V.meQ.k])}</b>`}</p></div>
+      <button class="btn p" id="next" ${nextDone ? 'disabled' : ''}>${nextDone ? `بانتظار ${esc(V.op.name)}…` : (V.r >= N ? 'عرض النتيجة النهائية' : 'الجولة التالية') + ic('next')}</button></div>`;
+  }
+  const w = V.sm > V.so ? 'win' : V.sm < V.so ? 'lose' : 'tie', mRm = V.me.rm === V.me.gid;
+  const title = { win: 'مبروك، فزت!', lose: `فاز ${esc(V.op.name)} هالمرة`, tie: 'تعادل!' }[w];
+  return `<div class="card end view"><div class="tr">${ic('trophy')}</div><h2>${title}</h2><div class="big">${V.sm} — ${V.so}</div>
+    <p class="sub">${esc(V.me.name)} — ${esc(V.op.name)}</p>
+    <div class="rec">${V.rows.map(x => `<div><span>الجولة ${x.i}</span><span class="m"><span class="${x.m ? 't' : 'f'}">أنت ${ic(x.m ? 'check' : 'x')}</span><span class="${x.o ? 't' : 'f'}">${esc(V.op.name)} ${ic(x.o ? 'check' : 'x')}</span></span></div>`).join('')}</div>
+    <button class="btn p" id="again" ${mRm ? 'disabled' : ''}>${ic('redo')}${mRm ? `بانتظار ${esc(V.op.name)}…` : (V.op.rm === V.op.gid ? `${esc(V.op.name)} يريد يعيد — اضغط للموافقة` : 'العب مرة ثانية')}</button></div>`;
+}
+function wireBody(V) {
+  if (V.phase === 'write' && !V.meQ) {
+    const q = $('#q'), cs = [0, 1, 2].map(i => $('#c' + i)), btn = $('#send');
+    const chk = () => { draft.t = q.value; draft.c = cs.map(c => c.value); const v = cs.map(c => c.value.trim().toLowerCase()); btn.disabled = !(q.value.trim() && v.every(Boolean) && new Set(v).size === 3) };
+    [q, ...cs].forEach(e => e.addEventListener('input', chk)); chk();
+    btn.onclick = () => { const v = cs.map(c => c.value.trim()), r = V.r, t = q.value.trim(); draft = { t: '', c: ['', '', ''] }; update(d => { d.qs[r] = mkQ(t, v[0], [v[1], v[2]]) }) };
+  } else if (V.phase === 'answer' && V.meA == null) {
+    document.querySelectorAll('.ch').forEach(b => b.onclick = () => { const i = +b.dataset.i, r = V.r; if (navigator.vibrate) navigator.vibrate(8); update(d => { if (d.ans[r] == null) d.ans[r] = i }) });
+  } else if (V.phase === 'reveal') {
+    const n = $('#next'); if (n) n.onclick = () => { const r = V.r; update(d => { d.seen = Math.max(d.seen, r) }) };
+  } else if (V.phase === 'end') {
+    const a = $('#again'); if (a) a.onclick = () => update(d => { d.rm = d.gid });
+  }
+}
+function render() {
+  if (!room || !mine) { if (screen !== 'home') showHome(); return }
+  if (role === 'b' && !docs.a) { toast('المضيف غادر الغرفة', 'err'); leave(false); return }
+  reconcile();
+  const V = derive(docs.a, docs.b, role);
+  if (V.st === 'lobby') { if (screen !== 'lobby') showLobby(); return }
+  if (V.st === 'sync') { if (screen !== 'sync') showSync(); return }
+  if (screen !== 'game') buildShell();
+  cur = V; updateHeader(V);
+  const s = V.phase === 'write' ? `w${V.r}|${V.meQ ? 1 : 0}`
+    : V.phase === 'answer' ? `a${V.r}|${V.meA == null ? '-' : V.meA}|${V.opA == null ? 0 : 1}`
+    : V.phase === 'reveal' ? `v${V.r}|${V.me.seen >= V.r ? 1 : 0}`
+    : `e|${V.me.rm === V.me.gid ? 1 : 0}|${V.op.rm === V.op.gid ? 1 : 0}`;
+  if (s !== sig) { sig = s; $('#body').innerHTML = bodyFor(V); wireBody(V) }
+  updateChips();
+}
 
-        await supabaseClient.from('rooms').update({ player2: myName }).eq('room_code', roomCode);
+/* ---------- connection doctor ---------- */
+function testOne(b) {
+  const t0 = performance.now();
+  return new Promise(res => {
+    let c; try { c = mkClient(b.u, 'fcT_' + Math.random().toString(36).slice(2, 8)) } catch (e) { return res({ ok: false }) }
+    const fin = ok => { try { c.end(true) } catch (e) {} res({ ok, ms: Math.round(performance.now() - t0) }) };
+    c.on('error', () => {}); c.once('connect', () => fin(true)); c.once('close', () => fin(false));
+  });
+}
+function openDiag() {
+  const ov = $('#ov'), dlg = $('#dlg'); ov.classList.add('on'); const list = getBrokers();
+  dlg.innerHTML = `<h3>فحص الاتصال</h3><p class="sub">نفحص كل سيرفر من جهازك. يكفي واحد يشتغل.</p>
+    <div>${list.map((b, i) => `<div class="tl"><span>${esc(b.n)}<br><small>${esc(b.u)}</small></span><span class="s" id="t${i}">…</span></div>`).join('')}</div>
+    <div id="dh"></div>
+    <div class="row" style="margin-top:12px"><input class="fi" id="cu" placeholder="سيرفر مخصص: wss://…" style="direction:ltr;font-size:14px"><button class="btn sm" id="ca">إضافة</button></div>
+    <div class="ma"><button class="btn" id="dr">إعادة الفحص</button><button class="btn p" id="dx">إغلاق</button></div>`;
+  $('#dx').onclick = () => ov.classList.remove('on'); $('#dr').onclick = openDiag;
+  $('#ca').onclick = () => { const u = $('#cu').value.trim(); if (!/^wss:\/\/.+/.test(u)) return toast('لازم الرابط يبدأ بـ wss://', 'err'); const a = LS.get('fc_brokers', []); a.push({ n: 'مخصص', u }); LS.set('fc_brokers', a); openDiag() };
+  (async () => {
+    try { await loadMqtt() } catch (e) { $('#dh').innerHTML = `<div class="tips">ما كدرنا نحمّل مكتبة الاتصال (mqtt.js) من الانترنت. تأكد من الانترنت أو غيّر الشبكة.</div>`; return }
+    const rs = await Promise.all(list.map(async (b, i) => { const r = await testOne(b); const e = $('#t' + i); if (e) { e.className = 's ' + (r.ok ? 'ok' : 'no'); e.textContent = r.ok ? `يعمل · ${r.ms}ms` : 'ما يشتغل' } return r.ok }));
+    if (rs.some(Boolean)) {
+      $('#dh').innerHTML = `<div class="tips" style="background:rgba(47,208,138,.08);border-color:rgba(47,208,138,.35);color:#a9f0cf">الاتصال سليم، واللعبة ما تحتاج Supabase أبداً.${Net.state === 'on' ? '' : ' <button class="btn sm p" id="rc" style="margin-top:8px">اتصل الآن</button>'}</div>`;
+      const rc = $('#rc'); if (rc) rc.onclick = async () => { ov.classList.remove('on'); await netConnect() };
+    } else $('#dh').innerHTML = `<div class="tips">ما اشتغل أي سيرفر على شبكتك. جرّب بالترتيب:<ul><li>غيّر DNS الجهاز أو الراوتر الى <b>1.1.1.1</b> أو <b>8.8.8.8</b> (بالموبايل: Private DNS ← <b>one.one.one.one</b>).</li><li>بدّل بين واي فاي وبيانات الموبايل.</li><li>جرّب VPN مجاني.</li><li>بعض الشبكات تحجب منافذ 8084 / 8884 / 8081، أضف سيرفر مخصص يعمل على 443.</li></ul></div>`;
+  })();
+}
+$('#net').onclick = openDiag;
+$('#ov').addEventListener('pointerdown', e => { if (e.target.id === 'ov') $('#ov').classList.remove('on') });
 
-        document.getElementById('login-screen').classList.add('hidden');
-        startGameScreen(data);
-        listenForRoomUpdates();
-    }
-
-    function listenForRoomUpdates() {
-        supabaseClient.channel('room-changes-' + roomCode)
-            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `room_code=eq.${roomCode}` }, payload => {
-                startGameScreen(payload.new);
-            })
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'questions', filter: `room_code=eq.${roomCode}` }, payload => {
-                checkRoundStatus();
-            })
-            .subscribe();
-    }
-
-    function startGameScreen(roomData) {
-        if(roomData.player2 && document.getElementById('waiting-screen').classList.contains('hidden') === false) {
-            document.getElementById('waiting-screen').classList.add('hidden');
-        }
-        if(!roomData.player2) return; 
-
-        document.getElementById('game-screen').classList.remove('hidden');
-        currentRound = roomData.current_round;
-        document.getElementById('round-txt').innerText = `الجولة: ${currentRound}/10`;
-        document.getElementById('p1-score-txt').innerText = `${roomData.player1}: ${roomData.player1_score}`;
-        document.getElementById('p2-score-txt').innerText = `${roomData.player2}: ${roomData.player2_score}`;
-
-        if(currentRound > 10) {
-            showFinalResult(roomData);
-            return;
-        }
-
-        prepareRound();
-    }
-
-    async function prepareRound() {
-        const { data } = await supabaseClient.from('questions').select('*').eq('room_code', roomCode).eq('round', currentRound);
-        
-        let myQuestionSent = data.some(q => q.sender === myName);
-        
-        if(!myQuestionSent) {
-            document.getElementById('question-writing-area').classList.remove('hidden');
-            document.getElementById('waiting-other-q').classList.add('hidden');
-            document.getElementById('answering-area').classList.add('hidden');
-            document.getElementById('turn-instruction').innerText = `الجولة ${currentRound}: اكتب سؤالاً عن نفسك`;
-        } else {
-            document.getElementById('question-writing-area').classList.add('hidden');
-            document.getElementById('waiting-other-q').classList.remove('hidden');
-        }
-
-        if(data.length === 2) {
-            document.getElementById('waiting-other-q').classList.add('hidden');
-            let friendQ = data.find(q => q.sender !== myName);
-            if(friendQ) {
-                showAnsweringArea(friendQ);
-            }
-        }
-    }
-
-    async function submitQuestion() {
-        const text = document.getElementById('q-text').value.trim();
-        const correct = document.getElementById('q-correct').value.trim();
-        const wrong = document.getElementById('q-wrong').value.trim();
-
-        if(!text || !correct || !wrong) { alert('املأ جميع الحقول'); return; }
-
-        await supabaseClient.from('questions').insert([
-            { room_code: roomCode, round: currentRound, sender: myName, question_text: text, correct_answer: correct, wrong_answer: wrong }
-        ]);
-
-        document.getElementById('q-text').value = '';
-        document.getElementById('q-correct').value = '';
-        document.getElementById('q-wrong').value = '';
-
-        prepareRound();
-    }
-
-    function showAnsweringArea(qData) {
-        document.getElementById('answering-area').classList.remove('hidden');
-        document.getElementById('friend-question-text').innerText = qData.question_text;
-
-        let options = [qData.correct_answer, qData.wrong_answer];
-        options.sort(() => Math.random() - 0.5);
-
-        document.getElementById('opt1').innerText = options[0];
-        document.getElementById('opt2').innerText = options[1];
-        window.currentQData = qData;
-    }
-
-    async function answerQuestion(chosenAnswer) {
-        document.getElementById('answering-area').classList.add('hidden');
-        document.getElementById('waiting-result').classList.remove('hidden');
-
-        let isCorrect = (chosenAnswer === window.currentQData.correct_answer);
-        
-        const { data: roomData } = await supabaseClient.from('rooms').select('*').eq('room_code', roomCode).single();
-        
-        let scoreField = (myRole === 'player1') ? 'player1_score' : 'player2_score';
-        let currentScore = (myRole === 'player1') ? roomData.player1_score : roomData.player2_score;
-        
-        let updateObj = {};
-        if(isCorrect) {
-            updateObj[scoreField] = currentScore + 1;
-        }
-
-        let choiceField = (myRole === 'player1') ? 'player1_choice' : 'player2_choice';
-        let tempObj = {};
-        tempObj[choiceField] = chosenAnswer;
-        await supabaseClient.from('questions').update(tempObj).eq('id', window.currentQData.id);
-
-        if(Object.keys(updateObj).length > 0) {
-            await supabaseClient.from('rooms').update(updateObj).eq('room_code', roomCode);
-        }
-
-        setTimeout(async () => {
-            if(myRole === 'player1') {
-                await supabaseClient.from('rooms').update({ current_round: currentRound + 1 }).eq('room_code', roomCode);
-            }
-        }, 1500);
-    }
-
-    async function checkRoundStatus() {
-        prepareRound();
-    }
-
-    function showFinalResult(roomData) {
-        document.getElementById('game-screen').classList.add('hidden');
-        document.getElementById('finish-screen').classList.remove('hidden');
-
-        let resText = `نتيجة اللعبة:<br>${roomData.player1}: ${roomData.player1_score} نقاط<br>${roomData.player2}: ${roomData.player2_score} نقاط<br><br>`;
-        if(roomData.player1_score > roomData.player2_score) {
-            resText += `الفائز هو ${roomData.player1} 🏆`;
-        } else if(roomData.player2_score > roomData.player1_score) {
-            resText += `الفائز هو ${roomData.player2} 🏆`;
-        } else {
-            resText += `تعادل! 🤝`;
-        }
-        document.getElementById('final-result-text').innerHTML = resText;
-    }
+/* ---------- start ---------- */
+showHome(); setInterval(updateChips, 4000);
+(async function init() {
+  const ok = await netConnect();
+  if (ok) { const r = LS.get('fc_room'); if (r && !urlRoom) { const res = await enterRoom(r, 'join', LS.get('fc_name', 'لاعب')); if (res !== 'ok') LS.set('fc_room', null) } }
+  else (function retry() { setTimeout(async () => { if (Net.state === 'on') return; await netConnect(); if (Net.state !== 'on') retry() }, 12000) })();
+})();
 </script>
-
 </body>
 </html>
