@@ -1,439 +1,1168 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>تحدي الأصدقاء</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#0e1020;--card:#171a31;--bd:rgba(255,255,255,.1);--tx:#f1f2fb;--mu:#9aa0c6;--ac:#7c6cff;--gold:#ffb703;--ok:#2fd08a;--bad:#ff5d73;--sp:cubic-bezier(.3,1.6,.5,1);color-scheme:dark}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{background:radial-gradient(ellipse at 50% -10%,#2a2060 0,var(--bg) 55%) fixed;color:var(--tx);font-family:"Cairo",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;line-height:1.7;min-height:100vh}
-button{font-family:inherit;cursor:pointer;color:inherit}
-.ic{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
-#app{width:min(520px,100%);margin:0 auto;padding:14px 14px calc(36px + env(safe-area-inset-bottom,0px))}
-.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:17px}
-.logo i{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(135deg,var(--ac),#4cc9f0);color:#fff;font-style:normal;font-size:16px}
-.pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--bd);background:var(--card);border-radius:999px;padding:5px 13px;font:600 12.5px "Cairo",sans-serif;color:var(--mu);transition:border-color .2s}
-.pill:hover{border-color:var(--mu)}
-.pill i{width:8px;height:8px;border-radius:50%;background:var(--mu)}
-.pill.on i{background:var(--ok)}.pill.re i,.pill.cn i{background:var(--gold);animation:bl 1s infinite}.pill.off i{background:var(--bad)}
-@keyframes bl{50%{opacity:.3}}
-.view{animation:in .35s ease both}@keyframes in{from{opacity:0;transform:translateY(12px)}}
-.hero{text-align:center;padding:26px 0 20px}.hero h1{font-size:38px;font-weight:800;line-height:1.3}.hero h1 span{color:var(--gold)}.hero p{color:var(--mu)}
-.card{background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:18px;margin-bottom:14px}
-.card h2{font-size:19px;font-weight:700;line-height:1.5}
-.sub{color:var(--mu);font-size:14px;margin:2px 0 12px}
-label{display:block;font-size:13.5px;font-weight:600;color:var(--mu);margin:10px 0 5px}label.g{color:var(--ok)}label.r{color:var(--bad)}
-.fi,textarea{width:100%;background:#0f1124;color:var(--tx);border:1.5px solid var(--bd);border-radius:13px;padding:11px 14px;font:500 16px "Cairo",sans-serif;outline:none;transition:border-color .15s}
-textarea{min-height:84px;resize:none}
-.fi:focus,textarea:focus{border-color:var(--ac)}
-.fi.ok{border-color:rgba(47,208,138,.45)}.fi.bad{border-color:rgba(255,93,115,.35)}
-.code{text-align:center;letter-spacing:.35em;font-weight:800;text-transform:uppercase;direction:ltr}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:12px;padding:12px 18px;border-radius:14px;border:1.5px solid var(--bd);background:transparent;font:700 15.5px "Cairo",sans-serif;transition:transform .35s var(--sp),background .15s,opacity .15s}
-.btn:hover{background:rgba(255,255,255,.06)}.btn:active{transform:scale(.96)}
-.btn.p{background:var(--ac);border-color:var(--ac);color:#fff}.btn.p:hover{background:#8d7fff}
-.btn.sm{width:auto;margin:0;padding:8px 16px;font-size:14px}
-.btn[disabled]{opacity:.45;pointer-events:none}
-.row{display:flex;gap:10px;align-items:stretch}.row .fi{flex:1;min-width:0}.row .btn{width:auto;margin-top:0}
-.or{display:flex;align-items:center;gap:10px;color:var(--mu);font-size:13px;margin:16px 0 4px}.or::before,.or::after{content:"";flex:1;height:1px;background:var(--bd)}
-.hint{font-size:13px;color:var(--mu);margin-top:10px;min-height:1.4em}.hint.err{color:var(--bad)}
-.how ol{padding-inline-start:20px;color:var(--mu);font-size:14px}.how b{color:var(--tx)}
-.rc{font:800 46px/1.2 "Cairo",sans-serif;letter-spacing:.3em;text-align:center;direction:ltr;padding:14px 0 14px .3em;color:var(--gold)}
-.sl{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--bd);border-radius:14px;margin-top:8px}
-.sl .dot{margin-inline-start:auto}.wt{color:var(--mu);animation:bl 1.4s infinite}
-.av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:var(--ac);flex:none}
-.av.o{background:var(--gold);color:#241a00}
-.dot{width:9px;height:9px;border-radius:50%;background:var(--mu);flex:none}.dot.on{background:var(--ok)}
-.gh{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:12px 14px;margin-bottom:14px}
-.pl{display:flex;align-items:center;gap:9px;min-width:0}.pl.op{justify-content:flex-end;flex-direction:row-reverse}
-.pl b{display:block;font-size:13.5px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:88px}
-.sc{font-size:23px;font-weight:800;color:var(--gold);line-height:1.2;display:inline-block}.sc.bump{animation:bp .5s var(--sp)}@keyframes bp{40%{transform:scale(1.5)}}
-.mid{text-align:center;min-width:92px}.rd{font-size:12.5px;font-weight:700;color:var(--mu)}
-.bar{height:5px;border-radius:9px;background:var(--bd);margin-top:5px;overflow:hidden}.bar i{display:block;height:100%;width:0;background:var(--gold);border-radius:inherit;transition:width .6s}
-.banner{background:rgba(255,93,115,.14);border:1px solid rgba(255,93,115,.4);color:#ffb3bd;border-radius:12px;padding:8px 14px;font-size:13.5px;margin-bottom:12px;text-align:center}
-.chip{display:flex;align-items:center;justify-content:center;gap:8px;font-size:13.5px;color:var(--mu);padding:6px}.chip.ok{color:var(--ok)}
-.qt{font-size:21px;font-weight:700;margin:6px 0 16px;overflow-wrap:anywhere;line-height:1.6}
-.tag{display:inline-block;font-size:12.5px;font-weight:700;color:var(--gold);background:rgba(255,183,3,.12);padding:2px 12px;border-radius:999px}
-.ch{display:flex;align-items:center;gap:12px;width:100%;text-align:start;margin-bottom:10px;padding:13px 14px;border-radius:14px;border:1.5px solid var(--bd);background:#0f1124;font:600 16px "Cairo",sans-serif;transition:transform .3s var(--sp),border-color .15s,background .15s;overflow-wrap:anywhere}
-.ch:hover{border-color:var(--ac)}.ch:active{transform:scale(.97)}
-.ch b{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:var(--bd);font-size:13px;flex:none}
-.ch.pick{border-color:var(--ac);background:rgba(124,108,255,.18)}.ch.dis{pointer-events:none;opacity:.75}
-.ch.pick.dis{opacity:1}
-.res{border-radius:18px;padding:16px;margin-bottom:12px;border:1.5px solid var(--bd);animation:in .4s ease both}
-.res.ok{border-color:rgba(47,208,138,.5);background:rgba(47,208,138,.08)}.res.no{border-color:rgba(255,93,115,.45);background:rgba(255,93,115,.07)}
-.res h3{font-size:15px;display:flex;align-items:center;gap:8px;margin-bottom:6px}.res.ok h3{color:var(--ok)}.res.no h3{color:var(--bad)}
-.res p{font-size:14.5px;color:var(--mu)}.res p b{color:var(--tx)}.res .q{color:var(--tx);font-weight:600;margin-bottom:4px}
-.end{text-align:center}.end .tr{width:84px;height:84px;margin:6px auto 8px;color:var(--gold);animation:pop .7s var(--sp) both}.end .tr .ic{width:84px;height:84px;stroke-width:1.4}
-@keyframes pop{from{transform:scale(0) rotate(-20deg)}}
-.end h2{font-size:26px}.big{font-size:44px;font-weight:800;color:var(--gold);margin:4px 0}
-.rec{display:grid;gap:6px;margin-top:12px;text-align:start}
-.rec div{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;border-radius:11px;background:#0f1124;font-size:14px}
-.rec .m{display:flex;gap:12px}.rec .t{color:var(--ok)}.rec .f{color:var(--bad)}.rec .ic{width:16px;height:16px}
-.spin{width:22px;height:22px;border:2.5px solid var(--bd);border-top-color:var(--ac);border-radius:50%;animation:sp .8s linear infinite;margin:0 auto}@keyframes sp{to{transform:rotate(360deg)}}
-.ov{position:fixed;inset:0;z-index:50;display:none;place-items:center;padding:16px;background:rgba(5,6,16,.7);overflow-y:auto}.ov.on{display:grid}
-.dlg{width:min(480px,100%);background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:20px;animation:in .25s ease both}
-.dlg h3{font-size:19px;margin-bottom:4px}
-.tl{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border:1px solid var(--bd);border-radius:12px;margin-top:8px;font-size:14px}
-.tl small{color:var(--mu);direction:ltr;display:inline-block}.tl .s{font-weight:700}.tl .s.ok{color:var(--ok)}.tl .s.no{color:var(--bad)}
-.tips{margin-top:12px;padding:12px 14px;border-radius:13px;background:rgba(255,183,3,.08);border:1px solid rgba(255,183,3,.3);font-size:13.5px;color:#ffe29a}.tips ul{padding-inline-start:18px;margin-top:4px}
-.ma{display:flex;gap:8px;margin-top:14px}.ma .btn{margin-top:0}
-#toasts{position:fixed;bottom:calc(22px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);z-index:80;display:grid;gap:8px;justify-items:center;pointer-events:none;width:min(420px,calc(100% - 28px))}
-.toast{background:var(--tx);color:var(--bg);padding:10px 18px;border-radius:12px;font-size:14px;font-weight:600;animation:in .25s both}.toast.err{background:var(--bad);color:#fff}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ارسم وخمّن - لعبة تنافسية لشخصين</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- PeerJS for P2P connection -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <!-- Arabic Font Cairo -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Cairo', sans-serif;
+        }
+        body {
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        canvas {
+            touch-action: none;
+            cursor: crosshair;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 9999px;
+        }
+    </style>
 </head>
-<body>
-<div id="app">
-  <div class="top"><div class="logo"><i>؟</i>تحدي الأصدقاء</div><button class="pill cn" id="net"><i></i><span>جاري الاتصال…</span></button></div>
-  <main id="main"></main>
-</div>
-<div class="ov" id="ov"><div class="dlg" id="dlg"></div></div>
-<div id="toasts"></div>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between">
 
-<script>
-/* =========================================================
-   تحدي الأصدقاء — لعبة لاعبين اونلاين بدون Supabase
-   الاتصال يتم عبر سيرفرات MQTT عامة (WSS) مع تبديل تلقائي
-   بين عدة سيرفرات، فإذا واحد انحجب يشتغل الثاني.
-   ========================================================= */
-const APP = 'friends-challenge-iq-v1', N = 10;
-const DEFAULT_BROKERS = [
-  { n: 'EMQX',      u: 'wss://broker.emqx.io:8084/mqtt' },
-  { n: 'HiveMQ',    u: 'wss://broker.hivemq.com:8884/mqtt' },
-  { n: 'Mosquitto', u: 'wss://test.mosquitto.org:8081' }
-];
-const MQTT_CDNS = [
-  'https://cdn.jsdelivr.net/npm/mqtt@5.10.4/dist/mqtt.min.js',
-  'https://unpkg.com/mqtt@5.10.4/dist/mqtt.min.js'
-];
+    <!-- Top Navigation & Scoreboard Bar -->
+    <header class="bg-slate-800 border-b border-slate-700 shadow-lg sticky top-0 z-20">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
+            <!-- Game Logo -->
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-pink-500 flex items-center justify-center shadow-md">
+                    <i class="fa-solid fa-paintbrush text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-black text-xl tracking-wide bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">
+                        ارسم وخمّن
+                    </h1>
+                    <p class="text-[10px] text-slate-400 font-medium">لعبة رسم وتخمين أونلاين</p>
+                </div>
+            </div>
 
-/* ---------- LOGIC-START (pure game logic, no DOM) ---------- */
-function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]] } return a }
-function mkQ(t, right, wrongs) { const c = shuffle([right, ...wrongs]); return { t, c, k: c.indexOf(right) } }
-function newDoc(gid, uid, name) { return { v: 1, gid, uid, name, qs: {}, ans: {}, seen: 0, rm: null, ts: Date.now() } }
-function derive(a, b, role) {
-  if (!a || !b) return { st: 'lobby' };
-  const me = role === 'a' ? a : b, op = role === 'a' ? b : a;
-  if (me.gid !== op.gid) return { st: 'sync' };
-  const done = Math.min(me.seen, op.seen), fin = done >= N, r = Math.min(done + 1, N);
-  let phase;
-  if (fin) phase = 'end';
-  else if (!(me.qs[r] && op.qs[r])) phase = 'write';
-  else if (me.ans[r] == null || op.ans[r] == null) phase = 'answer';
-  else phase = 'reveal';
-  const upto = fin ? N : (phase === 'reveal' ? r : done);
-  let sm = 0, so = 0; const rows = [];
-  for (let i = 1; i <= upto; i++) {
-    const m = op.qs[i] && me.ans[i] != null && me.ans[i] === op.qs[i].k, o = me.qs[i] && op.ans[i] != null && op.ans[i] === me.qs[i].k;
-    if (m) sm++; if (o) so++; rows.push({ i, m: !!m, o: !!o });
-  }
-  return { st: 'game', phase, r, done, fin, me, op, sm, so, rows, meQ: me.qs[r], opQ: op.qs[r], meA: me.ans[r], opA: op.ans[r] };
-}
-/* ---------- LOGIC-END ---------- */
+            <!-- Scoreboard -->
+            <div class="flex items-center bg-slate-900 px-5 py-2 rounded-2xl border border-slate-700 space-x-6 space-x-reverse text-sm font-bold shadow-inner">
+                <div class="flex items-center space-x-2 space-x-reverse">
+                    <span id="p1-label" class="text-indigo-400">اللاعب 1 (الرسام)</span>
+                    <span id="score-p1" class="bg-indigo-600 text-white px-3 py-0.5 rounded-full font-black text-base">0</span>
+                </div>
+                <span class="text-slate-600 font-black text-lg">:</span>
+                <div class="flex items-center space-x-2 space-x-reverse">
+                    <span id="score-p2" class="bg-pink-600 text-white px-3 py-0.5 rounded-full font-black text-base">0</span>
+                    <span id="p2-label" class="text-pink-400">اللاعب 2 (المخمّن)</span>
+                </div>
+            </div>
 
-/* ---------- helpers ---------- */
-const $ = s => document.querySelector(s);
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-const LS = { get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v) } catch (e) { return d } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)) } catch (e) {} } };
-const ICONS = {
-  plus: '<path d="M12 5v14M5 12h14"/>', copy: '<rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
-  share: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/>',
-  check: '<path d="M20 6 9 17l-5-5"/>', x: '<path d="M18 6 6 18M6 6l12 12"/>', next: '<path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>',
-  redo: '<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>', out: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/>',
-  trophy: '<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>'
-};
-const ic = n => `<svg class="ic" viewBox="0 0 24 24">${ICONS[n]}</svg>`;
-function toast(m, t) { const e = document.createElement('div'); e.className = 'toast ' + (t || ''); e.textContent = m; $('#toasts').appendChild(e); setTimeout(() => e.remove(), 3000) }
-const uid = LS.get('fc_uid') || (() => { const u = Math.random().toString(36).slice(2, 10) + Date.now().toString(36); LS.set('fc_uid', u); return u })();
-const urlRoom = (new URLSearchParams(location.search).get('room') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5);
-const genCode = () => { const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s = ''; for (let i = 0; i < 5; i++) s += A[Math.floor(Math.random() * A.length)]; return s };
-const getBrokers = () => [...DEFAULT_BROKERS, ...LS.get('fc_brokers', [])];
+            <!-- Connection Status -->
+            <div class="flex items-center space-x-2 space-x-reverse text-xs font-semibold bg-slate-950 px-3.5 py-2 rounded-xl border border-slate-800">
+                <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+                <span id="status-text" class="text-slate-300">جاري الاتصال...</span>
+            </div>
+        </div>
+    </header>
 
-/* ---------- state ---------- */
-let room = null, role = null, mine = null, docs = { a: null, b: null }, lastSeen = { a: 0, b: 0 }, ready = false, hadB = false, hbTimer = null;
-let screen = 'home', sig = '', cur = null, prevSc = { m: 0, o: 0 }, draft = { t: '', c: ['', '', ''] };
-const opRole = () => role === 'a' ? 'b' : 'a';
-const newGid = () => Math.random().toString(36).slice(2, 9);
+    <!-- Main Container -->
+    <main class="max-w-4xl w-full mx-auto p-4 flex-grow flex flex-col items-center justify-center">
 
-/* ---------- network (MQTT over WSS, race between brokers) ---------- */
-const Net = { client: null, broker: '', state: 'cn', connecting: false };
-function setNet(s) {
-  Net.state = s; const b = $('#net'); b.className = 'pill ' + s;
-  b.querySelector('span').textContent = { on: 'متصل · ' + Net.broker, cn: 'جاري الاتصال…', re: 'إعادة اتصال…', off: 'غير متصل — اضغط للفحص' }[s];
-  if (screen === 'home') homeHint();
-  const o = $('#off'); if (o) o.hidden = s === 'on';
-}
-function loadMqtt() {
-  return new Promise((res, rej) => { let i = 0; const next = () => { if (window.mqtt) return res(); if (i >= MQTT_CDNS.length) return rej(new Error('lib')); const s = document.createElement('script'); s.src = MQTT_CDNS[i++]; s.onload = () => window.mqtt ? res() : next(); s.onerror = next; document.head.appendChild(s) }; next() });
-}
-const mkClient = (u, id) => mqtt.connect(u, { clientId: id, clean: true, connectTimeout: 8000, reconnectPeriod: 0, keepalive: 30, protocolVersion: 4 });
-async function netConnect() {
-  if (Net.connecting) return false; Net.connecting = true; setNet('cn');
-  try { await loadMqtt() } catch (e) { Net.connecting = false; setNet('off'); return false }
-  const ok = await new Promise(resolve => {
-    const list = getBrokers(); let won = false, fails = 0; const cs = [];
-    const fail = () => { if (!won && ++fails === list.length) resolve(false) };
-    list.forEach(b => {
-      let c; try { c = mkClient(b.u, 'fc_' + uid.slice(0, 6) + Math.random().toString(36).slice(2, 7)) } catch (e) { return fail() }
-      cs.push(c); c.on('error', () => {});
-      c.once('connect', () => {
-        if (won) { c.end(true); return } won = true; cs.forEach(o => o !== c && o.end(true));
-        Net.client = c; Net.broker = b.n; c.options.reconnectPeriod = 2500;
-        c.on('message', onMsg);
-        c.on('reconnect', () => setNet('re'));
-        c.on('close', () => { if (Net.client === c) setNet('re') });
-        c.on('connect', () => { setNet('on'); if (room && mine) { c.subscribe(`${APP}/${room}/#`, { qos: 1 }); publishDoc() } });
-        resolve(true);
-      });
-      c.once('close', fail);
-    });
-  });
-  Net.connecting = false; setNet(ok ? 'on' : 'off'); return ok;
-}
-const topic = x => `${APP}/${room}/${x}`;
-function publishDoc() { if (Net.client && mine) Net.client.publish(topic(role), JSON.stringify(mine), { qos: 1, retain: true }) }
+        <!-- ================= LOBBY SCREEN ================= -->
+        <section id="screen-lobby" class="w-full max-w-md bg-slate-800 rounded-3xl border border-slate-700 shadow-2xl p-6 sm:p-8 space-y-6">
+            <div class="text-center space-y-2">
+                <h2 class="text-2xl font-black text-white">انضم للعبة أونلاين</h2>
+                <p class="text-slate-400 text-xs">قم بإنشاء غرفة جديدة أو انضم لغرفة صديقك بواسطة الرمز</p>
+            </div>
 
-/* ---------- rooms ---------- */
-function onMsg(tp, payload) {
-  const p = tp.split('/'); if (p[0] !== APP || p[1] !== room) return;
-  if (p[2] === 'hb') { lastSeen[p[3]] = Date.now(); return }
-  if (p[2] !== 'a' && p[2] !== 'b') return;
-  const x = p[2]; if (x === role && mine) return;
-  let d = null; const s = payload.toString(); if (s) { try { d = JSON.parse(s) } catch (e) {} }
-  docs[x] = d; if (x !== role) lastSeen[x] = Date.now();
-  if (ready) render();
-}
-async function enterRoom(code, intent, name) {
-  if (!Net.client || !Net.client.connected) return 'offline';
-  clearInterval(hbTimer); ready = false; room = code; docs = { a: null, b: null }; mine = null; role = null;
-  const drop = () => { Net.client.unsubscribe(`${APP}/${code}/#`); room = null };
-  Net.client.subscribe(`${APP}/${code}/#`, { qos: 1 });
-  await sleep(1500);
-  const a = docs.a, b = docs.b;
-  if (intent === 'create') {
-    if (a && a.uid !== uid && Date.now() - a.ts < 3 * 3600e3) { drop(); return 'taken' }
-    role = 'a'; mine = (a && a.uid === uid) ? a : newDoc(newGid(), uid, name);
-  } else {
-    if (a && a.uid === uid) { role = 'a'; mine = a }
-    else if (b && b.uid === uid) { role = 'b'; mine = b }
-    else if (!a) { drop(); return 'missing' }
-    else if (b) { drop(); return 'full' }
-    else { role = 'b'; mine = newDoc(a.gid, uid, name) }
-  }
-  if (name && mine.name !== name) mine.name = name;
-  docs[role] = mine; hadB = !!docs.b; publishDoc(); LS.set('fc_room', code);
-  hbTimer = setInterval(() => { if (Net.client && Net.client.connected && room) Net.client.publish(topic('hb/' + role), '1', { qos: 0 }); updateChips() }, 5000);
-  ready = true; render(); return 'ok';
-}
-function leave(clear) {
-  if (Net.client && room) { if (clear && mine) Net.client.publish(topic(role), '', { qos: 1, retain: true }); Net.client.unsubscribe(`${APP}/${room}/#`) }
-  clearInterval(hbTimer); ready = false; room = role = mine = null; docs = { a: null, b: null }; LS.set('fc_room', null); sig = ''; showHome();
-}
-function update(fn) { fn(mine); mine.ts = Date.now(); docs[role] = mine; publishDoc(); render() }
-function resetMine(gid) { mine.gid = gid; mine.qs = {}; mine.ans = {}; mine.seen = 0; mine.rm = null; mine.ts = Date.now(); publishDoc(); draft = { t: '', c: ['', '', ''] } }
-function reconcile() {
-  const a = docs.a, b = docs.b;
-  if (role === 'a') {
-    if (b) hadB = true;
-    else if (hadB) { hadB = false; if (Object.keys(mine.qs).length || mine.seen) { toast('صديقك غادر الغرفة'); resetMine(newGid()) } }
-    if (b && a.rm === a.gid && b.rm === a.gid) resetMine(newGid());
-  } else if (a && mine.gid !== a.gid) resetMine(a.gid);
-}
+            <!-- Tabs Toggle -->
+            <div class="flex bg-slate-900 p-1.5 rounded-2xl border border-slate-700">
+                <button id="btn-tab-create" onclick="switchLobbyTab('create')" class="flex-1 py-2.5 text-xs font-bold rounded-xl bg-indigo-600 text-white shadow-md transition">
+                    إنشاء غرفة
+                </button>
+                <button id="btn-tab-join" onclick="switchLobbyTab('join')" class="flex-1 py-2.5 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition">
+                    الانضمام لغرفة
+                </button>
+            </div>
 
-/* ---------- screens ---------- */
-const main = $('#main');
-function homeHint() {
-  const h = $('#hm'); if (!h) return; h.className = 'hint';
-  if (Net.state === 'on') h.textContent = '';
-  else if (Net.state === 'off') { h.textContent = 'ما كدرنا نتصل بالسيرفر. اضغط على حالة الاتصال فوق لفحص الشبكة.'; h.classList.add('err') }
-  else h.textContent = 'جاري الاتصال بالسيرفر…';
-}
-function showHome() {
-  screen = 'home'; sig = '';
-  main.innerHTML = `<section class="view">
-  <div class="hero"><h1>تحدي <span>الأصدقاء</span></h1><p>اكتب سؤال عن نفسك وشوف شكد صديقك يعرفك</p></div>
-  <div class="card">
-    <label for="nm" style="margin-top:0">اسمك</label>
-    <input id="nm" class="fi" maxlength="14" placeholder="مثال: علي" value="${esc(LS.get('fc_name', ''))}">
-    <button class="btn p" id="mk">${ic('plus')}إنشاء غرفة جديدة</button>
-    <div class="or"><span>أو ادخل بكود صديقك</span></div>
-    <div class="row"><input id="cd" class="fi code" maxlength="5" placeholder="XXXXX" value="${esc(urlRoom)}" autocapitalize="characters" autocomplete="off"><button class="btn" id="jn">دخول</button></div>
-    <p class="hint" id="hm"></p>
-  </div>
-  <div class="card how"><h2 style="font-size:16px;margin-bottom:6px">شلون تلعب؟</h2>
-    <ol><li>واحد يسوي غرفة ويرسل <b>الكود</b> أو الرابط للثاني.</li><li>كل جولة، <b>كل واحد يكتب سؤال عن نفسه</b> ويحط الجواب الصحيح وجوابين غلط.</li><li>بعدها كل واحد <b>يجاوب على سؤال صديقه</b>.</li><li>10 جولات، واللي يعرف صديقه أكثر يفوز!</li></ol></div>
-  </section>`;
-  homeHint();
-  const getName = () => { const n = $('#nm').value.trim(); if (!n) { $('#nm').focus(); toast('اكتب اسمك أولاً', 'err'); return null } LS.set('fc_name', n); return n };
-  const guard = () => {
-    if (Net.state === 'on') return true;
-    if (Net.state === 'cn' || Net.state === 're') toast('جاري الاتصال… انتظر لحظة'); else { toast('لا يوجد اتصال بالسيرفر', 'err'); openDiag() }
-    return false;
-  };
-  $('#mk').onclick = async e => {
-    const n = getName(); if (!n || !guard()) return; const b = e.currentTarget; b.disabled = true; $('#hm').textContent = 'جاري إنشاء الغرفة…';
-    let r = 'taken'; for (let i = 0; i < 5 && r === 'taken'; i++) r = await enterRoom(genCode(), 'create', n);
-    if (r !== 'ok') { b.disabled = false; homeHint(); toast('تعذر إنشاء الغرفة، حاول مرة ثانية', 'err') }
-  };
-  $('#jn').onclick = async e => {
-    const n = getName(); if (!n || !guard()) return; const c = $('#cd').value.trim().toUpperCase();
-    if (c.length !== 5) { toast('الكود يتكون من 5 رموز', 'err'); return }
-    const b = e.currentTarget; b.disabled = true; $('#hm').textContent = 'جاري الدخول…';
-    const r = await enterRoom(c, 'join', n); b.disabled = false;
-    if (r !== 'ok') { homeHint(); toast({ missing: 'الغرفة غير موجودة، تأكد من الكود', full: 'الغرفة ممتلئة', offline: 'لا يوجد اتصال' }[r] || 'تعذر الدخول', 'err') }
-  };
-  $('#cd').addEventListener('keydown', e => { if (e.key === 'Enter') $('#jn').click() });
-}
-function showLobby() {
-  screen = 'lobby'; sig = '';
-  main.innerHTML = `<section class="view"><div class="card" style="text-align:center">
-    <h2>غرفتك جاهزة</h2><p class="sub">أرسل الكود لصديقك وانتظره</p>
-    <div class="rc">${esc(room)}</div>
-    <div class="row" style="justify-content:center"><button class="btn sm" id="cp">${ic('copy')}نسخ الرابط</button><button class="btn sm p" id="sh">${ic('share')}مشاركة</button></div>
-    <div style="margin-top:16px;text-align:start">
-      <div class="sl"><span class="av">${esc((mine.name || '?').charAt(0))}</span><b>${esc(mine.name)} (أنت)</b><i class="dot on"></i></div>
-      <div class="sl"><span class="av o">؟</span><span class="wt">بانتظار صديقك…</span></div></div>
-    <button class="btn" id="lv">${ic('out')}إلغاء الغرفة</button></div></section>`;
-  const url = `${location.origin}${location.pathname}?room=${room}`, msg = `تعال العب وياي تحدي الأصدقاء! كود الغرفة: ${room}\n${url}`;
-  $('#cp').onclick = async () => { try { await navigator.clipboard.writeText(url); toast('تم نسخ الرابط') } catch (e) { prompt('انسخ الرابط:', url) } };
-  $('#sh').onclick = () => { if (navigator.share) navigator.share({ title: 'تحدي الأصدقاء', text: msg }).catch(() => {}); else window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank') };
-  $('#lv').onclick = () => leave(true);
-}
-function showSync() { screen = 'sync'; sig = ''; main.innerHTML = `<section class="view card" style="text-align:center"><div class="spin"></div><p class="sub" style="margin-top:12px">جاري تجهيز اللعبة…</p></section>` }
+            <!-- Create Room Tab -->
+            <div id="tab-create-content" class="space-y-4">
+                <div class="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-xs text-indigo-300 leading-relaxed text-center">
+                    ستكون أنت <strong class="text-indigo-400">الرسام</strong> في الجولة الأولى.
+                </div>
+                <button onclick="createRoom()" class="w-full py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-black rounded-2xl shadow-lg transition transform active:scale-95 flex items-center justify-center space-x-2 space-x-reverse">
+                    <i class="fa-solid fa-plus-circle text-lg"></i>
+                    <span>إنشاء غرفة جديدة</span>
+                </button>
+            </div>
 
-function buildShell() {
-  screen = 'game'; sig = ''; prevSc = { m: 0, o: 0 };
-  main.innerHTML = `<section class="view"><div id="off" class="banner" hidden>الاتصال مقطوع… نحاول نرجع الاتصال</div>
-  <div class="gh">
-    <div class="pl"><span class="av" id="mav"></span><div><b id="mn"></b><span class="sc" id="ms">0</span></div></div>
-    <div class="mid"><span class="rd" id="rd"></span><div class="bar"><i id="pb"></i></div></div>
-    <div class="pl op"><span class="av o" id="oav"></span><div style="text-align:end"><b id="on"></b><span class="sc" id="os">0</span></div><i class="dot" id="dot"></i></div>
-  </div><div id="body"></div>
-  <div style="text-align:center;margin-top:8px"><button class="btn sm" id="lv" style="color:var(--mu)">${ic('out')}مغادرة</button></div></section>`;
-  $('#lv').onclick = () => { if (confirm('تريد تغادر الغرفة؟')) leave(true) };
-  $('#off').hidden = Net.state === 'on';
-}
-function updateHeader(V) {
-  $('#mav').textContent = (V.me.name || '?').charAt(0); $('#oav').textContent = (V.op.name || '?').charAt(0);
-  $('#mn').textContent = V.me.name + ' (أنت)'; $('#on').textContent = V.op.name;
-  $('#rd').textContent = V.fin ? 'النتيجة النهائية' : `الجولة ${V.r} / ${N}`;
-  $('#pb').style.width = ((V.fin ? N : V.done + (V.phase === 'reveal' ? 1 : 0)) / N * 100) + '%';
-  [['ms', V.sm, 'm'], ['os', V.so, 'o']].forEach(([id, v, k]) => { const e = $('#' + id); e.textContent = v; if (v > prevSc[k]) { e.classList.remove('bump'); void e.offsetWidth; e.classList.add('bump') } prevSc[k] = v });
-}
-function updateChips() {
-  if (!room) return;
-  const d = $('#dot'), op = docs[opRole()];
-  if (d) d.classList.toggle('on', Date.now() - lastSeen[opRole()] < 16000);
-  const c = $('#opst');
-  if (c && cur && op) { const done = !!(op.qs && op.qs[cur.r]); c.className = 'chip' + (done ? ' ok' : ''); c.innerHTML = done ? `${ic('check')}${esc(op.name)} أرسل سؤاله` : `${esc(op.name)} يكتب سؤاله…` }
-}
+            <!-- Join Room Tab -->
+            <div id="tab-join-content" class="space-y-4 hidden">
+                <div class="p-3 bg-pink-500/10 border border-pink-500/20 rounded-xl text-xs text-pink-300 leading-relaxed text-center">
+                    ستنضم بصفتك <strong class="text-pink-400">المخمّن</strong> في الجولة الأولى.
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-2">رمز الغرفة (Room ID)</label>
+                    <input id="input-room-code" type="text" placeholder="أدخل الرمز هنا..." class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-4 py-3 text-white font-mono tracking-widest focus:outline-none focus:border-pink-500 text-center font-black text-lg uppercase">
+                </div>
+                <button onclick="joinRoom()" class="w-full py-3.5 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-black rounded-2xl shadow-lg transition transform active:scale-95 flex items-center justify-center space-x-2 space-x-reverse">
+                    <i class="fa-solid fa-right-to-bracket text-lg"></i>
+                    <span>الانضمام للغرفة</span>
+                </button>
+            </div>
+        </section>
 
-function bodyFor(V) {
-  const L = ['أ', 'ب', 'ج', 'د'];
-  if (V.phase === 'write') {
-    if (V.meQ) return `<div class="card view"><span class="tag">سؤالك أُرسل</span><h2 class="qt">${esc(V.meQ.t)}</h2><div class="spin"></div><p class="sub" style="text-align:center;margin-top:10px">بانتظار سؤال ${esc(V.op.name)}…</p></div><div class="chip" id="opst"></div>`;
-    return `<div class="card view"><h2>اكتب سؤالاً عن نفسك</h2><p class="sub">صديقك رح يجاوب عليه من بين 3 خيارات. اكتب الجواب الصحيح ومعاه جوابين غلط.</p>
-      <label for="q" style="margin-top:0">السؤال</label><textarea id="q" maxlength="140" placeholder="مثال: شنو أكلتي المفضلة؟">${esc(draft.t)}</textarea>
-      <label class="g">الجواب الصحيح</label><input class="fi ok" id="c0" maxlength="40" value="${esc(draft.c[0])}">
-      <label class="r">جواب غلط 1</label><input class="fi bad" id="c1" maxlength="40" value="${esc(draft.c[1])}">
-      <label class="r">جواب غلط 2</label><input class="fi bad" id="c2" maxlength="40" value="${esc(draft.c[2])}">
-      <button class="btn p" id="send" disabled>إرسال السؤال</button></div><div class="chip" id="opst"></div>`;
-  }
-  if (V.phase === 'answer') {
-    const done = V.meA != null;
-    return `<div class="card view"><span class="tag">سؤال من ${esc(V.op.name)}</span><h2 class="qt">${esc(V.opQ.t)}</h2>
-      ${V.opQ.c.map((x, i) => `<button class="ch${done ? ' dis' : ''}${V.meA === i ? ' pick' : ''}" data-i="${i}"><b>${L[i]}</b><span>${esc(x)}</span></button>`).join('')}
-      ${done ? `<p class="sub" style="text-align:center;margin:6px 0 0">بانتظار جواب ${esc(V.op.name)}…</p>` : ''}</div>`;
-  }
-  if (V.phase === 'reveal') {
-    const okM = V.meA === V.opQ.k, okO = V.opA === V.meQ.k, nextDone = V.me.seen >= V.r;
-    return `<div class="view">
-      <div class="res ${okM ? 'ok' : 'no'}"><h3>${ic(okM ? 'check' : 'x')}${okM ? 'جوابك صحيح! +1' : 'جوابك غلط'}</h3><p class="q">${esc(V.opQ.t)}</p>
-        <p>اخترت: <b>${esc(V.opQ.c[V.meA])}</b>${okM ? '' : ` — الصحيح: <b>${esc(V.opQ.c[V.opQ.k])}</b>`}</p></div>
-      <div class="res ${okO ? 'ok' : 'no'}"><h3>${ic(okO ? 'check' : 'x')}${esc(V.op.name)} ${okO ? 'جاوب صح على سؤالك' : 'جاوب غلط على سؤالك'}</h3><p class="q">${esc(V.meQ.t)}</p>
-        <p>اختار: <b>${esc(V.meQ.c[V.opA])}</b>${okO ? '' : ` — الصحيح: <b>${esc(V.meQ.c[V.meQ.k])}</b>`}</p></div>
-      <button class="btn p" id="next" ${nextDone ? 'disabled' : ''}>${nextDone ? `بانتظار ${esc(V.op.name)}…` : (V.r >= N ? 'عرض النتيجة النهائية' : 'الجولة التالية') + ic('next')}</button></div>`;
-  }
-  const w = V.sm > V.so ? 'win' : V.sm < V.so ? 'lose' : 'tie', mRm = V.me.rm === V.me.gid;
-  const title = { win: 'مبروك، فزت!', lose: `فاز ${esc(V.op.name)} هالمرة`, tie: 'تعادل!' }[w];
-  return `<div class="card end view"><div class="tr">${ic('trophy')}</div><h2>${title}</h2><div class="big">${V.sm} — ${V.so}</div>
-    <p class="sub">${esc(V.me.name)} — ${esc(V.op.name)}</p>
-    <div class="rec">${V.rows.map(x => `<div><span>الجولة ${x.i}</span><span class="m"><span class="${x.m ? 't' : 'f'}">أنت ${ic(x.m ? 'check' : 'x')}</span><span class="${x.o ? 't' : 'f'}">${esc(V.op.name)} ${ic(x.o ? 'check' : 'x')}</span></span></div>`).join('')}</div>
-    <button class="btn p" id="again" ${mRm ? 'disabled' : ''}>${ic('redo')}${mRm ? `بانتظار ${esc(V.op.name)}…` : (V.op.rm === V.op.gid ? `${esc(V.op.name)} يريد يعيد — اضغط للموافقة` : 'العب مرة ثانية')}</button></div>`;
-}
-function wireBody(V) {
-  if (V.phase === 'write' && !V.meQ) {
-    const q = $('#q'), cs = [0, 1, 2].map(i => $('#c' + i)), btn = $('#send');
-    const chk = () => { draft.t = q.value; draft.c = cs.map(c => c.value); const v = cs.map(c => c.value.trim().toLowerCase()); btn.disabled = !(q.value.trim() && v.every(Boolean) && new Set(v).size === 3) };
-    [q, ...cs].forEach(e => e.addEventListener('input', chk)); chk();
-    btn.onclick = () => { const v = cs.map(c => c.value.trim()), r = V.r, t = q.value.trim(); draft = { t: '', c: ['', '', ''] }; update(d => { d.qs[r] = mkQ(t, v[0], [v[1], v[2]]) }) };
-  } else if (V.phase === 'answer' && V.meA == null) {
-    document.querySelectorAll('.ch').forEach(b => b.onclick = () => { const i = +b.dataset.i, r = V.r; if (navigator.vibrate) navigator.vibrate(8); update(d => { if (d.ans[r] == null) d.ans[r] = i }) });
-  } else if (V.phase === 'reveal') {
-    const n = $('#next'); if (n) n.onclick = () => { const r = V.r; update(d => { d.seen = Math.max(d.seen, r) }) };
-  } else if (V.phase === 'end') {
-    const a = $('#again'); if (a) a.onclick = () => update(d => { d.rm = d.gid });
-  }
-}
-function render() {
-  if (!room || !mine) { if (screen !== 'home') showHome(); return }
-  if (role === 'b' && !docs.a) { toast('المضيف غادر الغرفة', 'err'); leave(false); return }
-  reconcile();
-  const V = derive(docs.a, docs.b, role);
-  if (V.st === 'lobby') { if (screen !== 'lobby') showLobby(); return }
-  if (V.st === 'sync') { if (screen !== 'sync') showSync(); return }
-  if (screen !== 'game') buildShell();
-  cur = V; updateHeader(V);
-  const s = V.phase === 'write' ? `w${V.r}|${V.meQ ? 1 : 0}`
-    : V.phase === 'answer' ? `a${V.r}|${V.meA == null ? '-' : V.meA}|${V.opA == null ? 0 : 1}`
-    : V.phase === 'reveal' ? `v${V.r}|${V.me.seen >= V.r ? 1 : 0}`
-    : `e|${V.me.rm === V.me.gid ? 1 : 0}|${V.op.rm === V.op.gid ? 1 : 0}`;
-  if (s !== sig) { sig = s; $('#body').innerHTML = bodyFor(V); wireBody(V) }
-  updateChips();
-}
+        <!-- ================= WAITING ROOM SCREEN ================= -->
+        <section id="screen-waiting" class="w-full max-w-md bg-slate-800 rounded-3xl border border-slate-700 shadow-2xl p-6 sm:p-8 space-y-6 text-center hidden">
+            <div class="space-y-2">
+                <div class="inline-flex items-center justify-center w-14 h-14 bg-indigo-500/10 text-indigo-400 rounded-2xl mb-2 border border-indigo-500/20">
+                    <i class="fa-solid fa-users text-2xl animate-pulse"></i>
+                </div>
+                <h2 class="text-2xl font-black text-white">تم إنشاء الغرفة!</h2>
+                <p class="text-slate-400 text-xs">شارِك الرمز التالي مع المنافس ليتمكن من الدخول للغرفة</p>
+            </div>
 
-/* ---------- connection doctor ---------- */
-function testOne(b) {
-  const t0 = performance.now();
-  return new Promise(res => {
-    let c; try { c = mkClient(b.u, 'fcT_' + Math.random().toString(36).slice(2, 8)) } catch (e) { return res({ ok: false }) }
-    const fin = ok => { try { c.end(true) } catch (e) {} res({ ok, ms: Math.round(performance.now() - t0) }) };
-    c.on('error', () => {}); c.once('connect', () => fin(true)); c.once('close', () => fin(false));
-  });
-}
-function openDiag() {
-  const ov = $('#ov'), dlg = $('#dlg'); ov.classList.add('on'); const list = getBrokers();
-  dlg.innerHTML = `<h3>فحص الاتصال</h3><p class="sub">نفحص كل سيرفر من جهازك. يكفي واحد يشتغل.</p>
-    <div>${list.map((b, i) => `<div class="tl"><span>${esc(b.n)}<br><small>${esc(b.u)}</small></span><span class="s" id="t${i}">…</span></div>`).join('')}</div>
-    <div id="dh"></div>
-    <div class="row" style="margin-top:12px"><input class="fi" id="cu" placeholder="سيرفر مخصص: wss://…" style="direction:ltr;font-size:14px"><button class="btn sm" id="ca">إضافة</button></div>
-    <div class="ma"><button class="btn" id="dr">إعادة الفحص</button><button class="btn p" id="dx">إغلاق</button></div>`;
-  $('#dx').onclick = () => ov.classList.remove('on'); $('#dr').onclick = openDiag;
-  $('#ca').onclick = () => { const u = $('#cu').value.trim(); if (!/^wss:\/\/.+/.test(u)) return toast('لازم الرابط يبدأ بـ wss://', 'err'); const a = LS.get('fc_brokers', []); a.push({ n: 'مخصص', u }); LS.set('fc_brokers', a); openDiag() };
-  (async () => {
-    try { await loadMqtt() } catch (e) { $('#dh').innerHTML = `<div class="tips">ما كدرنا نحمّل مكتبة الاتصال (mqtt.js) من الانترنت. تأكد من الانترنت أو غيّر الشبكة.</div>`; return }
-    const rs = await Promise.all(list.map(async (b, i) => { const r = await testOne(b); const e = $('#t' + i); if (e) { e.className = 's ' + (r.ok ? 'ok' : 'no'); e.textContent = r.ok ? `يعمل · ${r.ms}ms` : 'ما يشتغل' } return r.ok }));
-    if (rs.some(Boolean)) {
-      $('#dh').innerHTML = `<div class="tips" style="background:rgba(47,208,138,.08);border-color:rgba(47,208,138,.35);color:#a9f0cf">الاتصال سليم، واللعبة ما تحتاج Supabase أبداً.${Net.state === 'on' ? '' : ' <button class="btn sm p" id="rc" style="margin-top:8px">اتصل الآن</button>'}</div>`;
-      const rc = $('#rc'); if (rc) rc.onclick = async () => { ov.classList.remove('on'); await netConnect() };
-    } else $('#dh').innerHTML = `<div class="tips">ما اشتغل أي سيرفر على شبكتك. جرّب بالترتيب:<ul><li>غيّر DNS الجهاز أو الراوتر الى <b>1.1.1.1</b> أو <b>8.8.8.8</b> (بالموبايل: Private DNS ← <b>one.one.one.one</b>).</li><li>بدّل بين واي فاي وبيانات الموبايل.</li><li>جرّب VPN مجاني.</li><li>بعض الشبكات تحجب منافذ 8084 / 8884 / 8081، أضف سيرفر مخصص يعمل على 443.</li></ul></div>`;
-  })();
-}
-$('#net').onclick = openDiag;
-$('#ov').addEventListener('pointerdown', e => { if (e.target.id === 'ov') $('#ov').classList.remove('on') });
+            <!-- Room Code -->
+            <div class="bg-slate-900 p-4 rounded-2xl border border-slate-700 flex items-center justify-between">
+                <div>
+                    <span class="block text-[10px] text-slate-400 font-bold uppercase mb-0.5">رمز الغرفة</span>
+                    <span id="display-room-code" class="text-2xl font-mono font-black text-indigo-400 tracking-wider">----</span>
+                </div>
+                <button onclick="copyRoomCode()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2.5 rounded-xl border border-slate-600 transition flex items-center space-x-1.5 space-x-reverse text-xs font-bold">
+                    <i class="fa-solid fa-copy"></i>
+                    <span>نسخ الرمز</span>
+                </button>
+            </div>
 
-/* ---------- start ---------- */
-showHome(); setInterval(updateChips, 4000);
-(async function init() {
-  const ok = await netConnect();
-  if (ok) { const r = LS.get('fc_room'); if (r && !urlRoom) { const res = await enterRoom(r, 'join', LS.get('fc_name', 'لاعب')); if (res !== 'ok') LS.set('fc_room', null) } }
-  else (function retry() { setTimeout(async () => { if (Net.state === 'on') return; await netConnect(); if (Net.state !== 'on') retry() }, 12000) })();
-})();
-</script>
+            <div class="py-3 border-t border-b border-slate-700/60">
+                <div class="flex items-center justify-center space-x-3 space-x-reverse text-amber-400 text-xs font-bold animate-pulse">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    <span id="waiting-status-msg">بانتظار انضمام المنافس للعب...</span>
+                </div>
+            </div>
+
+            <button onclick="leaveRoom()" class="w-full py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold rounded-xl text-xs transition">
+                إلغاء وخروج
+            </button>
+        </section>
+
+        <!-- ================= DRAWING PHASE (Drawer UI) ================= -->
+        <section id="screen-drawing" class="w-full max-w-4xl space-y-4 hidden">
+            <!-- Header Status -->
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center space-x-3 space-x-reverse">
+                    <span class="bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 px-3 py-1 rounded-full text-xs font-bold">دورك الآن: الرسام ✏️</span>
+                    <div>
+                        <span class="text-[11px] text-slate-400 block">الكلمة السرية المطلوب رسمها:</span>
+                        <span id="drawer-secret-word" class="font-black text-emerald-400 text-xl tracking-wide">---</span>
+                    </div>
+                </div>
+
+                <!-- Timer -->
+                <div class="flex items-center space-x-2 space-x-reverse bg-slate-900 px-4 py-2 rounded-xl border border-slate-700">
+                    <i class="fa-regular fa-clock text-amber-400"></i>
+                    <span id="drawer-timer" class="font-mono font-black text-2xl text-amber-400">01:00</span>
+                </div>
+
+                <button onclick="newRandomWord()" class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3.5 py-2 rounded-xl border border-slate-600 transition flex items-center space-x-1.5 space-x-reverse font-bold">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                    <span>تغيير الكلمة</span>
+                </button>
+            </div>
+
+            <!-- Canvas & Tools -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Canvas Area -->
+                <div class="md:col-span-3 bg-slate-800 border border-slate-700 rounded-2xl p-2.5 flex flex-col justify-between shadow-xl">
+                    <div class="relative w-full aspect-[4/3] bg-white rounded-xl overflow-hidden shadow-inner">
+                        <canvas id="draw-canvas" class="w-full h-full block"></canvas>
+                    </div>
+
+                    <!-- Tools Toolbar -->
+                    <div class="flex flex-wrap items-center justify-between gap-2 mt-3 px-1">
+                        <!-- Colors -->
+                        <div class="flex items-center space-x-1.5 space-x-reverse">
+                            <button onclick="setBrushColor('#000000')" class="w-7 h-7 rounded-full bg-black border-2 border-white/20 hover:scale-110 transition shadow"></button>
+                            <button onclick="setBrushColor('#ef4444')" class="w-7 h-7 rounded-full bg-red-500 border-2 border-white/20 hover:scale-110 transition shadow"></button>
+                            <button onclick="setBrushColor('#3b82f6')" class="w-7 h-7 rounded-full bg-blue-500 border-2 border-white/20 hover:scale-110 transition shadow"></button>
+                            <button onclick="setBrushColor('#22c55e')" class="w-7 h-7 rounded-full bg-green-500 border-2 border-white/20 hover:scale-110 transition shadow"></button>
+                            <button onclick="setBrushColor('#eab308')" class="w-7 h-7 rounded-full bg-yellow-500 border-2 border-white/20 hover:scale-110 transition shadow"></button>
+                            <button onclick="setBrushColor('#a855f7')" class="w-7 h-7 rounded-full bg-purple-500 border-2 border-white/20 hover:scale-110 transition shadow"></button>
+                            <input type="color" id="custom-color-picker" onchange="setBrushColor(this.value)" class="w-7 h-7 rounded-full cursor-pointer bg-transparent border-0 p-0">
+                        </div>
+
+                        <!-- Size Slider -->
+                        <div class="flex items-center space-x-2 space-x-reverse bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-700">
+                            <i class="fa-solid fa-circle text-[10px] text-slate-400"></i>
+                            <input type="range" id="brush-size" min="2" max="30" value="6" class="w-20 accent-indigo-500 cursor-pointer" oninput="updateBrushSize(this.value)">
+                            <span id="brush-size-val" class="text-xs font-mono text-slate-300 w-4 text-center">6</span>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex items-center space-x-2 space-x-reverse">
+                            <button onclick="toggleEraser()" id="btn-eraser" title="ممحاة" class="p-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl transition border border-slate-600">
+                                <i class="fa-solid fa-eraser"></i>
+                            </button>
+                            <button onclick="undoStroke()" title="تراجع" class="p-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl transition border border-slate-600">
+                                <i class="fa-solid fa-rotate-left"></i>
+                            </button>
+                            <button onclick="clearCanvas()" title="مسح اللوحة" class="p-2 bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 rounded-xl transition border border-rose-500/30">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Drawer Controls Panel -->
+                <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 flex flex-col justify-between space-y-4 shadow-xl">
+                    <div class="space-y-3">
+                        <h3 class="font-bold text-sm text-slate-200">تلميح إضافي (اختياري)</h3>
+                        <p class="text-xs text-slate-400 leading-relaxed">أدخل تلميحاً قصيراً لمساعدة المخمّن (مثل: حيوان، يبدأ بحرف م...):</p>
+                        <input id="input-hint" type="text" maxlength="40" placeholder="مثال: يطير في السماء..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500">
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-xs text-indigo-300 leading-relaxed">
+                            <i class="fa-solid fa-lightbulb text-amber-400 ml-1"></i>
+                            سيتم إرسال الرسمة تلقائياً عند انتهاء الوقت (60 ثانية).
+                        </div>
+
+                        <button onclick="sendDrawing()" class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black rounded-xl shadow-lg transition transform active:scale-95 flex items-center justify-center space-x-2 space-x-reverse">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>إرسال الرسمة الآن</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= GUESSER WAITING FOR DRAWER ================= -->
+        <section id="screen-guesser-waiting" class="w-full max-w-md bg-slate-800 border border-slate-700 rounded-3xl p-6 sm:p-8 shadow-2xl text-center space-y-6 hidden">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-pink-500/10 text-pink-400 rounded-2xl border border-pink-500/20">
+                <i class="fa-solid fa-paintbrush text-2xl animate-spin"></i>
+            </div>
+
+            <div class="space-y-1">
+                <h2 class="text-2xl font-black text-white">الرسام يرسم الآن...</h2>
+                <p class="text-slate-400 text-xs">يرجى الانتظار لحين الانتهاء وإرسال الرسمة (الوقت المتبقي للرسم: <span id="guesser-view-drawer-timer" class="font-bold text-amber-400 font-mono">01:00</span>)...</p>
+            </div>
+
+            <div class="p-4 bg-slate-900 rounded-2xl border border-slate-700 text-xs text-slate-400">
+                جهّز نفسك! ستحصل على <strong class="text-pink-400">25 ثانية</strong> فقط لتخمين الرسمة فور وصولها.
+            </div>
+        </section>
+
+        <!-- ================= DRAWER WAITING FOR GUESSER ================= -->
+        <section id="screen-drawer-waiting" class="w-full max-w-xl bg-slate-800 border border-slate-700 rounded-3xl p-6 sm:p-8 shadow-2xl text-center space-y-6 hidden">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-emerald-500/10 text-emerald-400 rounded-2xl border border-emerald-500/20">
+                <i class="fa-solid fa-paper-plane text-2xl animate-bounce"></i>
+            </div>
+
+            <div class="space-y-1">
+                <h2 class="text-2xl font-black text-white">تم إرسال الرسمة!</h2>
+                <p class="text-slate-400 text-xs">بانتظار المخمّن لإرسال إجابته (الوقت المتبقي: <span id="drawer-view-guesser-timer" class="font-bold text-amber-400 font-mono">25</span> ثانية)...</p>
+            </div>
+
+            <!-- Incoming Guess Box for Drawer -->
+            <div id="drawer-guess-review-card" class="bg-slate-900 p-5 rounded-2xl border border-slate-700 space-y-4 text-right">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                    <span class="text-xs text-slate-400 font-bold">تخمين المنافس الواصل:</span>
+                    <span id="guess-received-status-badge" class="text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2.5 py-0.5 rounded-full font-bold animate-pulse">في انتظار التخمين...</span>
+                </div>
+
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center">
+                    <span id="display-incoming-guess" class="text-xl font-black text-slate-400 italic">لم يرسل إجابة بعد...</span>
+                </div>
+
+                <!-- Decision buttons for Drawer (enabled once guess arrives) -->
+                <div id="drawer-decision-controls" class="space-y-3 hidden">
+                    <label class="block text-xs font-bold text-slate-300">أضف ملاحظة أو تعليق للمخمّن (اختياري):</label>
+                    <input id="input-drawer-comment" type="text" placeholder="مثال: عاشت ايدك قربت! أو هههه لا مو كذا..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+
+                    <div class="grid grid-cols-2 gap-3 pt-1">
+                        <button onclick="drawerDecideGuess(true)" class="py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-xl shadow-md transition flex items-center justify-center space-x-1.5 space-x-reverse">
+                            <i class="fa-solid fa-circle-check text-sm"></i>
+                            <span>إجابة صحيحة ✅</span>
+                        </button>
+                        <button onclick="drawerDecideGuess(false)" class="py-3 bg-rose-600 hover:bg-rose-500 text-white font-black text-xs rounded-xl shadow-md transition flex items-center justify-center space-x-1.5 space-x-reverse">
+                            <i class="fa-solid fa-circle-xmark text-sm"></i>
+                            <span>إجابة خاطئة ❌</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= GUESSING PHASE (Guesser UI) ================= -->
+        <section id="screen-guessing" class="w-full max-w-3xl space-y-4 hidden">
+            <!-- Header Bar -->
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center space-x-3 space-x-reverse">
+                    <span class="bg-pink-600/20 text-pink-400 border border-pink-500/30 px-3 py-1 rounded-full text-xs font-bold">دورك الآن: المخمّن 🤔</span>
+                    <span class="text-xs text-slate-400">اكتب تخمينك ودزّه للرسام حتى يقيّمه!</span>
+                </div>
+
+                <!-- Timer -->
+                <div class="flex items-center space-x-2 space-x-reverse bg-slate-900 px-4 py-2 rounded-xl border border-slate-700">
+                    <i class="fa-regular fa-clock text-amber-400"></i>
+                    <span id="guesser-timer" class="font-mono font-black text-2xl text-amber-400">25</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Received Canvas View -->
+                <div class="md:col-span-2 bg-slate-800 border border-slate-700 rounded-2xl p-2.5 flex flex-col justify-between shadow-xl">
+                    <div class="relative w-full aspect-[4/3] bg-white rounded-xl overflow-hidden shadow-inner flex items-center justify-center">
+                        <img id="guess-image-view" class="w-full h-full object-contain" alt="رسمة الرسام">
+                    </div>
+
+                    <!-- Hint Display -->
+                    <div id="hint-container" class="mt-2.5 p-3 bg-slate-900 rounded-xl border border-slate-700 flex items-center space-x-2 space-x-reverse text-xs hidden">
+                        <i class="fa-solid fa-lightbulb text-amber-400 text-base"></i>
+                        <span class="text-slate-400 font-bold">تلميح الرسام:</span>
+                        <span id="display-hint-text" class="font-bold text-slate-100"></span>
+                    </div>
+                </div>
+
+                <!-- Guess Input Form -->
+                <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 flex flex-col justify-between space-y-4 shadow-xl">
+                    <div class="space-y-3">
+                        <h3 class="font-bold text-sm text-slate-200">إجابتك والتخمين</h3>
+                        <div>
+                            <input id="input-guess" type="text" placeholder="اكتب إجابتك هنا..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-pink-500 font-bold" onkeydown="if(event.key==='Enter') submitGuess()">
+                        </div>
+
+                        <!-- Feedback Msg -->
+                        <div id="guess-feedback" class="p-3 rounded-xl text-xs font-bold text-center hidden"></div>
+                    </div>
+
+                    <button id="btn-send-guess" onclick="submitGuess()" class="w-full py-3.5 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-black rounded-xl shadow-lg transition transform active:scale-95 flex items-center justify-center space-x-2 space-x-reverse">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        <span>إرسال التخمين للرسام</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= ROUND OVER MODAL / VIEW ================= -->
+        <section id="screen-round-over" class="w-full max-w-lg bg-slate-800 border border-slate-700 rounded-3xl p-6 sm:p-8 shadow-2xl text-center space-y-5 hidden">
+            <!-- Result Icon -->
+            <div id="round-result-badge" class="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-1 border">
+                <i id="round-result-icon" class="text-3xl"></i>
+            </div>
+
+            <div class="space-y-1">
+                <h2 id="round-result-title" class="text-2xl font-black text-white">انتهت الجولة</h2>
+                <p id="round-result-subtitle" class="text-slate-400 text-xs font-bold"></p>
+            </div>
+
+            <!-- Drawer's Note Box -->
+            <div id="summary-drawer-note-card" class="bg-slate-900/80 p-3.5 rounded-2xl border border-indigo-500/30 text-right hidden">
+                <span class="text-[10px] text-indigo-400 font-bold block mb-0.5"><i class="fa-solid fa-comment-dots ml-1"></i>ملاحظة الرسام:</span>
+                <p id="summary-drawer-note-text" class="text-xs text-slate-200 font-semibold italic"></p>
+            </div>
+
+            <!-- Secret Word Announcement & Last Guess -->
+            <div class="grid grid-cols-2 gap-3 bg-slate-900 p-3.5 rounded-2xl border border-slate-700 text-right text-xs">
+                <div>
+                    <span class="text-slate-400 block text-[10px] font-bold">الكلمة السرية:</span>
+                    <span id="summary-secret-word" class="font-black text-emerald-400 text-base">---</span>
+                </div>
+                <div>
+                    <span class="text-slate-400 block text-[10px] font-bold">تخمين المخمّن:</span>
+                    <span id="summary-last-guess" class="font-black text-indigo-300 text-base">---</span>
+                </div>
+            </div>
+
+            <!-- Thumbnail -->
+            <div class="w-44 h-32 mx-auto bg-white rounded-2xl overflow-hidden border border-slate-700 shadow-inner">
+                <img id="summary-image-view" class="w-full h-full object-contain" alt="نتيجة الرسمة">
+            </div>
+
+            <!-- Actions -->
+            <div class="pt-2 space-y-3">
+                <button onclick="startNextRound()" class="w-full py-3.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:opacity-95 text-white font-black rounded-2xl shadow-lg transition transform active:scale-95 flex items-center justify-center space-x-2 space-x-reverse">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span>بدء الجولة التالية (تبادل الأدوار)</span>
+                </button>
+                <button onclick="leaveRoom()" class="w-full py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold rounded-xl text-xs transition">
+                    مغادرة الغرفة
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 text-xs text-slate-500 border-t border-slate-800">
+        ارسم وخمّن • نقل مباشر عبر P2P/WebRTC و BroadcastChannel
+    </footer>
+
+    <script>
+        function switchLobbyTab(tab) {
+            const tabCreate = document.getElementById('btn-tab-create');
+            const tabJoin = document.getElementById('btn-tab-join');
+            const contentCreate = document.getElementById('tab-create-content');
+            const contentJoin = document.getElementById('tab-join-content');
+
+            if (tab === 'create') {
+                tabCreate.className = "flex-1 py-2.5 text-xs font-bold rounded-xl bg-indigo-600 text-white shadow-md transition";
+                tabJoin.className = "flex-1 py-2.5 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition";
+                contentCreate.classList.remove('hidden');
+                contentJoin.classList.add('hidden');
+            } else {
+                tabJoin.className = "flex-1 py-2.5 text-xs font-bold rounded-xl bg-pink-600 text-white shadow-md transition";
+                tabCreate.className = "flex-1 py-2.5 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition";
+                contentJoin.classList.remove('hidden');
+                contentCreate.classList.add('hidden');
+            }
+        }
+
+        function showScreen(screenId) {
+            const screens = [
+                'screen-lobby', 'screen-waiting', 'screen-drawing', 
+                'screen-drawer-waiting', 'screen-guesser-waiting', 
+                'screen-guessing', 'screen-round-over'
+            ];
+            screens.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
+            const active = document.getElementById(screenId);
+            if (active) active.classList.remove('hidden');
+        }
+
+        const AudioFX = {
+            ctx: null,
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            },
+            playTick() {
+                try {
+                    this.init();
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + 0.05);
+                } catch(e){}
+            },
+            playWin() {
+                try {
+                    this.init();
+                    const now = this.ctx.currentTime;
+                    const notes = [523.25, 659.25, 783.99, 1046.50];
+                    notes.forEach((freq, idx) => {
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.1);
+                        gain.gain.setValueAtTime(0.2, now + idx * 0.1);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.3);
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start(now + idx * 0.1);
+                        osc.stop(now + idx * 0.1 + 0.3);
+                    });
+                } catch(e){}
+            },
+            playLose() {
+                try {
+                    this.init();
+                    const now = this.ctx.currentTime;
+                    const notes = [400, 350, 300, 250];
+                    notes.forEach((freq, idx) => {
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+                        gain.gain.setValueAtTime(0.15, now + idx * 0.12);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.2);
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start(now + idx * 0.12);
+                        osc.stop(now + idx * 0.12 + 0.2);
+                    });
+                } catch(e){}
+            }
+        };
+
+        const WORD_BANK = [
+            "تفاحة", "بيت", "سيارة", "شجرة", "شمس", "قطة", "كلب", "سمكة", "طائرة", "ساعة",
+            "مفتاح", "قمر", "بيتزا", "كعكة", "كتاب", "وردة", "قلعة", "صاروخ", "قلم", "قهوة",
+            "حذاء", "قبعة", "نظارة", "كرسي", "موزة", "تفاحة", "هاتف", "دراجة", "قارب", "طاولة"
+        ];
+
+        let roomCode = "";
+        let isHost = false; 
+        let currentRole = ""; 
+        let p1Score = 0;
+        let p2Score = 0;
+        let roundCount = 1;
+        let activeSecretWord = "";
+        let currentDrawingData = "";
+        let currentHintText = "";
+        let lastReceivedGuess = "";
+
+        let drawingTimerInterval = null;
+        let guesserTimerInterval = null;
+        let drawerSecondsLeft = 60;
+        let guesserSecondsLeft = 25;
+
+        let canvas, ctx;
+        let isDrawing = false;
+        let currentColor = "#000000";
+        let currentSize = 6;
+        let isEraser = false;
+        let drawingHistory = [];
+
+        let localChannel = null;
+        let peer = null;
+        let peerConnection = null;
+
+        function initNetworking() {
+            updateStatus('connecting', 'جاري تجهيز الشبكة...');
+            
+            if (window.BroadcastChannel) {
+                localChannel = new BroadcastChannel('sketch_game_channel');
+                localChannel.onmessage = (e) => handleGameMessage(e.data);
+            }
+
+            try {
+                peer = new Peer();
+                peer.on('open', (id) => {
+                    updateStatus('connected', 'الشبكة جاهزة');
+                });
+
+                peer.on('connection', (conn) => {
+                    peerConnection = conn;
+                    setupPeerConnection();
+                });
+
+                peer.on('error', (err) => {
+                    console.warn("PeerJS warning:", err);
+                    updateStatus('connected', 'جاهز (محلي)');
+                });
+            } catch(e) {
+                updateStatus('connected', 'جاهز (محلي)');
+            }
+        }
+
+        function updateStatus(state, msg) {
+            const dot = document.getElementById('status-dot');
+            const txt = document.getElementById('status-text');
+            if (txt) txt.innerText = msg;
+
+            if (dot) {
+                if (state === 'connected') {
+                    dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+                } else if (state === 'connecting') {
+                    dot.className = "w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse";
+                } else {
+                    dot.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
+                }
+            }
+        }
+
+        function setupPeerConnection() {
+            if (!peerConnection) return;
+            
+            peerConnection.on('open', () => {
+                updateStatus('connected', 'متصل بالمنافس أونلاين');
+                if (isHost) {
+                    broadcastMessage({ type: 'JOIN_ACK', hostRole: currentRole });
+                    startDrawingPhase();
+                }
+            });
+
+            peerConnection.on('data', (data) => {
+                handleGameMessage(data);
+            });
+        }
+
+        function broadcastMessage(data) {
+            data.roomCode = roomCode;
+            if (localChannel) {
+                localChannel.postMessage(data);
+            }
+            if (peerConnection && peerConnection.open) {
+                peerConnection.send(data);
+            }
+        }
+
+        function createRoom() {
+            roomCode = Math.random().toString(36).substring(2, 6).toUpperCase();
+            isHost = true;
+            currentRole = "drawer";
+            updateScoreboardLabels();
+
+            document.getElementById('display-room-code').innerText = roomCode;
+            showScreen('screen-waiting');
+        }
+
+        function joinRoom() {
+            const input = document.getElementById('input-room-code').value.trim().toUpperCase();
+            if (!input) {
+                alert("الرجاء إدخال رمز الغرفة المكون من 4 أرقام/حروف.");
+                return;
+            }
+            roomCode = input;
+            isHost = false;
+            currentRole = "guesser";
+            updateScoreboardLabels();
+
+            if (peer) {
+                try {
+                    peerConnection = peer.connect(roomCode);
+                    setupPeerConnection();
+                } catch(e){}
+            }
+
+            broadcastMessage({ type: 'JOIN', senderRole: 'guesser' });
+            showGuesserWaiting();
+        }
+
+        function copyRoomCode() {
+            const code = document.getElementById('display-room-code').innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                alert("تم نسخ رمز الغرفة للحافظة!");
+            }).catch(() => {
+                const el = document.createElement('textarea');
+                el.value = code;
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+                alert("تم نسخ رمز الغرفة!");
+            });
+        }
+
+        function leaveRoom() {
+            stopAllTimers();
+            showScreen('screen-lobby');
+            roomCode = "";
+            isHost = false;
+            p1Score = 0;
+            p2Score = 0;
+            roundCount = 1;
+            updateScoreboardUI();
+        }
+
+        function updateScoreboardLabels() {
+            const p1Label = document.getElementById('p1-label');
+            const p2Label = document.getElementById('p2-label');
+
+            if (isHost) {
+                p1Label.innerText = currentRole === 'drawer' ? "اللاعب 1 (الرسام)" : "اللاعب 1 (المخمّن)";
+                p2Label.innerText = currentRole === 'drawer' ? "اللاعب 2 (المخمّن)" : "اللاعب 2 (الرسام)";
+            } else {
+                p1Label.innerText = currentRole === 'guesser' ? "اللاعب 1 (الرسام)" : "اللاعب 1 (المخمّن)";
+                p2Label.innerText = currentRole === 'guesser' ? "اللاعب 2 (المخمّن)" : "اللاعب 2 (الرسام)";
+            }
+        }
+
+        function updateScoreboardUI() {
+            document.getElementById('score-p1').innerText = p1Score;
+            document.getElementById('score-p2').innerText = p2Score;
+        }
+
+        function startDrawingPhase() {
+            showScreen('screen-drawing');
+            newRandomWord();
+            drawerSecondsLeft = 60;
+            updateDrawerTimerUI();
+
+            setTimeout(() => {
+                initCanvas();
+            }, 100);
+
+            clearInterval(drawingTimerInterval);
+            drawingTimerInterval = setInterval(() => {
+                drawerSecondsLeft--;
+                updateDrawerTimerUI();
+
+                broadcastMessage({ type: 'DRAWING_TIMER_SYNC', secondsLeft: drawerSecondsLeft });
+
+                if (drawerSecondsLeft <= 0) {
+                    sendDrawing();
+                }
+            }, 1000);
+        }
+
+        function showGuesserWaiting() {
+            showScreen('screen-guesser-waiting');
+        }
+
+        function handleGameMessage(data) {
+            if (!data || data.roomCode !== roomCode) return;
+
+            switch (data.type) {
+                case 'JOIN':
+                    if (isHost) {
+                        broadcastMessage({ type: 'JOIN_ACK', hostRole: currentRole });
+                        startDrawingPhase();
+                    }
+                    break;
+
+                case 'JOIN_ACK':
+                    if (!isHost) {
+                        showGuesserWaiting();
+                    }
+                    break;
+
+                case 'START_DRAWING_PHASE':
+                    if (currentRole === 'drawer') {
+                        startDrawingPhase();
+                    } else {
+                        showGuesserWaiting();
+                    }
+                    break;
+
+                case 'DRAWING_TIMER_SYNC':
+                    if (currentRole === 'guesser') {
+                        const timerEl = document.getElementById('guesser-view-drawer-timer');
+                        if (timerEl) {
+                            const mins = Math.floor(data.secondsLeft / 60);
+                            const secs = data.secondsLeft % 60;
+                            timerEl.innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                        }
+                    }
+                    break;
+
+                case 'DRAWING_SUBMITTED':
+                    currentDrawingData = data.image;
+                    currentHintText = data.hint;
+                    activeSecretWord = data.secretWord;
+
+                    if (currentRole === 'guesser') {
+                        startGuessingPhase();
+                    }
+                    break;
+
+                case 'GUESS_SUBMITTED':
+                    lastReceivedGuess = data.guess;
+                    if (currentRole === 'drawer') {
+                        const guessDisplay = document.getElementById('display-incoming-guess');
+                        const statusBadge = document.getElementById('guess-received-status-badge');
+                        const controls = document.getElementById('drawer-decision-controls');
+
+                        if (guessDisplay) {
+                            guessDisplay.innerText = `"${data.guess}"`;
+                            guessDisplay.className = "text-xl font-black text-indigo-300";
+                        }
+                        if (statusBadge) {
+                            statusBadge.innerText = "وصل التخمين!";
+                            statusBadge.className = "text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full font-bold";
+                        }
+                        if (controls) controls.classList.remove('hidden');
+                    }
+                    break;
+
+                case 'DRAWER_DECISION':
+                    handleRoundOver(data.isCorrect, data.comment);
+                    break;
+
+                case 'GUESSER_TIMER_SYNC':
+                    if (currentRole === 'drawer') {
+                        const timerEl = document.getElementById('drawer-view-guesser-timer');
+                        if (timerEl) timerEl.innerText = data.secondsLeft;
+                    }
+                    break;
+
+                case 'ROUND_TIMEOUT':
+                    handleRoundOver(false, "انتهى الوقت المحدد دون استلام تقييم!");
+                    break;
+
+                case 'NEXT_ROUND_SYNC':
+                    roundCount = data.roundCount;
+                    p1Score = data.p1Score;
+                    p2Score = data.p2Score;
+                    updateScoreboardUI();
+
+                    currentRole = (currentRole === 'drawer') ? 'guesser' : 'drawer';
+                    updateScoreboardLabels();
+
+                    if (currentRole === 'drawer') {
+                        startDrawingPhase();
+                    } else {
+                        showGuesserWaiting();
+                    }
+                    break;
+            }
+        }
+
+        function sendDrawing() {
+            clearInterval(drawingTimerInterval);
+
+            const hint = document.getElementById('input-hint').value.trim();
+            const imageBase64 = canvas ? canvas.toDataURL('image/png') : "";
+
+            currentDrawingData = imageBase64;
+            currentHintText = hint;
+            lastReceivedGuess = "";
+
+            const guessDisplay = document.getElementById('display-incoming-guess');
+            const statusBadge = document.getElementById('guess-received-status-badge');
+            const controls = document.getElementById('drawer-decision-controls');
+            const commentInput = document.getElementById('input-drawer-comment');
+
+            if (guessDisplay) {
+                guessDisplay.innerText = "لم يرسل إجابة بعد...";
+                guessDisplay.className = "text-xl font-black text-slate-400 italic";
+            }
+            if (statusBadge) {
+                statusBadge.innerText = "في انتظار التخمين...";
+                statusBadge.className = "text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2.5 py-0.5 rounded-full font-bold animate-pulse";
+            }
+            if (controls) controls.classList.add('hidden');
+            if (commentInput) commentInput.value = "";
+
+            broadcastMessage({
+                type: 'DRAWING_SUBMITTED',
+                image: imageBase64,
+                hint: hint,
+                secretWord: activeSecretWord
+            });
+
+            showScreen('screen-drawer-waiting');
+        }
+
+        function submitGuess() {
+            const input = document.getElementById('input-guess').value.trim();
+            if (!input) return;
+
+            lastReceivedGuess = input;
+            showFeedback("تم إرسال تخمينك للرسام! بانتظار تقييمه...", true);
+
+            const btnSend = document.getElementById('btn-send-guess');
+            if (btnSend) {
+                btnSend.disabled = true;
+                btnSend.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+
+            broadcastMessage({
+                type: 'GUESS_SUBMITTED',
+                guess: input
+            });
+        }
+
+        function drawerDecideGuess(isCorrect) {
+            const comment = document.getElementById('input-drawer-comment').value.trim();
+
+            broadcastMessage({
+                type: 'DRAWER_DECISION',
+                isCorrect: isCorrect,
+                comment: comment
+            });
+
+            handleRoundOver(isCorrect, comment);
+        }
+
+        function handleRoundOver(isSuccess, drawerComment) {
+            stopAllTimers();
+            showScreen('screen-round-over');
+
+            const badge = document.getElementById('round-result-badge');
+            const icon = document.getElementById('round-result-icon');
+            const title = document.getElementById('round-result-title');
+            const subtitle = document.getElementById('round-result-subtitle');
+            const summaryWord = document.getElementById('summary-secret-word');
+            const summaryGuess = document.getElementById('summary-last-guess');
+            const summaryImg = document.getElementById('summary-image-view');
+            const noteCard = document.getElementById('summary-drawer-note-card');
+            const noteText = document.getElementById('summary-drawer-note-text');
+
+            summaryWord.innerText = activeSecretWord || "---";
+            summaryGuess.innerText = lastReceivedGuess ? `"${lastReceivedGuess}"` : "لم يُخمن";
+            summaryImg.src = currentDrawingData;
+
+            if (drawerComment) {
+                noteText.innerText = drawerComment;
+                noteCard.classList.remove('hidden');
+            } else {
+                noteCard.classList.add('hidden');
+            }
+
+            if (isSuccess) {
+                AudioFX.playWin();
+                if (currentRole === 'guesser' || (isHost && currentRole === 'drawer')) {
+                    p2Score++;
+                } else {
+                    p1Score++;
+                }
+                updateScoreboardUI();
+
+                badge.className = "inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+                icon.className = "fa-solid fa-trophy text-3xl";
+                title.innerText = "إجابة صحيحة! 🎉";
+                subtitle.innerText = "أكّد الرسام أن التخمين صحيح ومطابق.";
+            } else {
+                AudioFX.playLose();
+                badge.className = "inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-1 bg-rose-500/20 text-rose-400 border border-rose-500/30";
+                icon.className = "fa-solid fa-circle-xmark text-3xl";
+                title.innerText = "إجابة غير صحيحة ❌";
+                subtitle.innerText = "قيم الرسام التخمين بأنه غير صحيح أو انتهى الوقت.";
+            }
+        }
+
+        function startGuessingPhase() {
+            showScreen('screen-guessing');
+
+            const btnSend = document.getElementById('btn-send-guess');
+            if (btnSend) {
+                btnSend.disabled = false;
+                btnSend.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+
+            const imgEl = document.getElementById('guess-image-view');
+            imgEl.src = currentDrawingData;
+
+            const hintContainer = document.getElementById('hint-container');
+            const hintText = document.getElementById('display-hint-text');
+            if (currentHintText) {
+                hintText.innerText = currentHintText;
+                hintContainer.classList.remove('hidden');
+            } else {
+                hintContainer.classList.add('hidden');
+            }
+
+            const inputGuess = document.getElementById('input-guess');
+            inputGuess.value = "";
+            inputGuess.focus();
+            hideFeedback();
+
+            guesserSecondsLeft = 25;
+            updateGuesserTimerUI();
+
+            clearInterval(guesserTimerInterval);
+            guesserTimerInterval = setInterval(() => {
+                guesserSecondsLeft--;
+                updateGuesserTimerUI();
+
+                broadcastMessage({ type: 'GUESSER_TIMER_SYNC', secondsLeft: guesserSecondsLeft });
+
+                if (guesserSecondsLeft <= 0) {
+                    clearInterval(guesserTimerInterval);
+                    broadcastMessage({ type: 'ROUND_TIMEOUT' });
+                    handleRoundOver(false, "انتهى وقت التخمين دون إرسال إجابة.");
+                }
+            }, 1000);
+        }
+
+        function updateDrawerTimerUI() {
+            const timerEl = document.getElementById('drawer-timer');
+            const mins = Math.floor(drawerSecondsLeft / 60);
+            const secs = drawerSecondsLeft % 60;
+            if (timerEl) {
+                timerEl.innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            }
+            if (drawerSecondsLeft <= 10) {
+                AudioFX.playTick();
+            }
+        }
+
+        function updateGuesserTimerUI() {
+            const timerEl = document.getElementById('guesser-timer');
+            if (timerEl) timerEl.innerText = guesserSecondsLeft;
+            if (guesserSecondsLeft <= 5) {
+                AudioFX.playTick();
+            }
+        }
+
+        function newRandomWord() {
+            activeSecretWord = WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)];
+            document.getElementById('drawer-secret-word').innerText = activeSecretWord;
+        }
+
+        function showFeedback(text, isSuccess) {
+            const fb = document.getElementById('guess-feedback');
+            fb.innerText = text;
+            fb.className = isSuccess 
+                ? "p-3 rounded-xl text-xs font-bold text-center bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                : "p-3 rounded-xl text-xs font-bold text-center bg-rose-500/20 text-rose-400 border border-rose-500/30";
+            fb.classList.remove('hidden');
+        }
+
+        function hideFeedback() {
+            document.getElementById('guess-feedback').classList.add('hidden');
+        }
+
+        function startNextRound() {
+            roundCount++;
+            
+            currentRole = (currentRole === 'drawer') ? 'guesser' : 'drawer';
+            updateScoreboardLabels();
+
+            broadcastMessage({
+                type: 'NEXT_ROUND_SYNC',
+                roundCount: roundCount,
+                p1Score: p1Score,
+                p2Score: p2Score
+            });
+
+            if (currentRole === 'drawer') {
+                startDrawingPhase();
+            } else {
+                showGuesserWaiting();
+            }
+        }
+
+        function stopAllTimers() {
+            clearInterval(drawingTimerInterval);
+            clearInterval(guesserTimerInterval);
+        }
+
+        function initCanvas() {
+            canvas = document.getElementById('draw-canvas');
+            if (!canvas) return;
+
+            ctx = canvas.getContext('2d');
+
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            clearCanvas();
+
+            canvas.onmousedown = startDrawing;
+            canvas.onmousemove = draw;
+            canvas.onmouseup = stopDrawing;
+            canvas.onmouseleave = stopDrawing;
+
+            canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent("mousedown", {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
+                canvas.dispatchEvent(mouseEvent);
+            }, { passive: false });
+
+            canvas.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent("mousemove", {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
+                canvas.dispatchEvent(mouseEvent);
+            }, { passive: false });
+
+            canvas.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                const mouseEvent = new MouseEvent("mouseup", {});
+                canvas.dispatchEvent(mouseEvent);
+            }, { passive: false });
+        }
+
+        function getCanvasCoordinates(e) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: (e.clientX - rect.left) * (canvas.width / rect.width),
+                y: (e.clientY - rect.top) * (canvas.height / rect.height)
+            };
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            saveCanvasState();
+            const pos = getCanvasCoordinates(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const pos = getCanvasCoordinates(e);
+
+            ctx.strokeStyle = isEraser ? "#FFFFFF" : currentColor;
+            ctx.lineWidth = currentSize;
+
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        }
+
+        function stopDrawing() {
+            if (isDrawing) {
+                ctx.closePath();
+                isDrawing = false;
+            }
+        }
+
+        function setBrushColor(color) {
+            isEraser = false;
+            currentColor = color;
+            const btn = document.getElementById('btn-eraser');
+            if (btn) {
+                btn.classList.remove('bg-indigo-600', 'text-white');
+                btn.classList.add('bg-slate-700', 'text-slate-200');
+            }
+        }
+
+        function updateBrushSize(size) {
+            currentSize = size;
+            document.getElementById('brush-size-val').innerText = size;
+        }
+
+        function toggleEraser() {
+            isEraser = !isEraser;
+            const btn = document.getElementById('btn-eraser');
+            if (isEraser) {
+                btn.classList.add('bg-indigo-600', 'text-white');
+                btn.classList.remove('bg-slate-700', 'text-slate-200');
+            } else {
+                btn.classList.remove('bg-indigo-600', 'text-white');
+                btn.classList.add('bg-slate-700', 'text-slate-200');
+            }
+        }
+
+        function clearCanvas() {
+            if (!ctx || !canvas) return;
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            drawingHistory = [];
+        }
+
+        function saveCanvasState() {
+            if (!ctx || !canvas) return;
+            if (drawingHistory.length >= 15) drawingHistory.shift();
+            drawingHistory.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+        }
+
+        function undoStroke() {
+            if (drawingHistory.length > 0) {
+                const previousState = drawingHistory.pop();
+                ctx.putImageData(previousState, 0, 0);
+            } else {
+                clearCanvas();
+            }
+        }
+
+        // Window Init
+        window.onload = function() {
+            initNetworking();
+            showScreen('screen-lobby');
+        };
+    </script>
 </body>
 </html>
