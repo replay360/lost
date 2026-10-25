@@ -3,1166 +3,338 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ارسم وخمّن - لعبة تنافسية لشخصين</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- PeerJS for P2P connection -->
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    <!-- Arabic Font Cairo -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <title>تطبيق Buzz للدردشة</title>
     <style>
         * {
-            font-family: 'Cairo', sans-serif;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         body {
-            user-select: none;
-            -webkit-user-select: none;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
         }
-        canvas {
-            touch-action: none;
-            cursor: crosshair;
+        .container {
+            width: 100%;
+            max-width: 400px;
         }
-        ::-webkit-scrollbar {
-            width: 6px;
+        .card {
+            background-color: #1e1e1e;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+            text-align: center;
         }
-        ::-webkit-scrollbar-track {
-            background: #0f172a;
+        h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #ff5722;
         }
-        ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 9999px;
+        .input-group {
+            margin-bottom: 15px;
+            text-align: right;
+        }
+        label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: #ccc;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #444;
+            background-color: #2c2c2c;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+        }
+        input:focus {
+            border-color: #ff5722;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: background-color 0.3s, opacity 0.3s;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .btn-signup {
+            background-color: #ff5722;
+            color: white;
+        }
+        .btn-login {
+            background-color: #2196F3;
+            color: white;
+        }
+        .alert {
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            display: none;
+        }
+        .alert-error {
+            background-color: #5a1e1e;
+            color: #ff8a8a;
+            border: 1px solid #882222;
+        }
+        .alert-success {
+            background-color: #1e4a23;
+            color: #8aff9e;
+            border: 1px solid #228833;
+        }
+        
+        /* تصميم شاشة الدردشة */
+        #chatScreen {
+            display: none;
+            text-align: right;
+        }
+        .chat-box {
+            background-color: #2c2c2c;
+            border: 1px solid #444;
+            border-radius: 6px;
+            height: 250px;
+            padding: 10px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            text-align: right;
+        }
+        .message-row {
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .chat-input-area {
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input-area input {
+            margin: 0;
+        }
+        .chat-input-area button {
+            margin: 0;
+            width: 100px;
+            background-color: #4CAF50;
+            color: white;
         }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between">
+<body>
 
-    <!-- Top Navigation & Scoreboard Bar -->
-    <header class="bg-slate-800 border-b border-slate-700 shadow-lg sticky top-0 z-20">
-        <div class="max-w-5xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
-            <!-- Game Logo -->
-            <div class="flex items-center space-x-3 space-x-reverse">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-pink-500 flex items-center justify-center shadow-md">
-                    <i class="fa-solid fa-paintbrush text-white text-xl"></i>
-                </div>
-                <div>
-                    <h1 class="font-black text-xl tracking-wide bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">
-                        ارسم وخمّن
-                    </h1>
-                    <p class="text-[10px] text-slate-400 font-medium">لعبة رسم وتخمين أونلاين</p>
-                </div>
+    <div class="container">
+        <!-- 1. شاشة تسجيل الدخول وإنشاء الحساب -->
+        <div class="card" id="authCard">
+            <h2>تطبيق Buzz ⚡</h2>
+            
+            <div id="alertBox" class="alert"></div>
+
+            <div class="input-group">
+                <label for="email">البريد الإلكتروني</label>
+                <input type="email" id="email" placeholder="example@mail.com">
             </div>
 
-            <!-- Scoreboard -->
-            <div class="flex items-center bg-slate-900 px-5 py-2 rounded-2xl border border-slate-700 space-x-6 space-x-reverse text-sm font-bold shadow-inner">
-                <div class="flex items-center space-x-2 space-x-reverse">
-                    <span id="p1-label" class="text-indigo-400">اللاعب 1 (الرسام)</span>
-                    <span id="score-p1" class="bg-indigo-600 text-white px-3 py-0.5 rounded-full font-black text-base">0</span>
-                </div>
-                <span class="text-slate-600 font-black text-lg">:</span>
-                <div class="flex items-center space-x-2 space-x-reverse">
-                    <span id="score-p2" class="bg-pink-600 text-white px-3 py-0.5 rounded-full font-black text-base">0</span>
-                    <span id="p2-label" class="text-pink-400">اللاعب 2 (المخمّن)</span>
-                </div>
+            <div class="input-group">
+                <label for="password">كلمة المرور</label>
+                <input type="password" id="password" placeholder="6 أحرف أو أرقام على الأقل">
             </div>
 
-            <!-- Connection Status -->
-            <div class="flex items-center space-x-2 space-x-reverse text-xs font-semibold bg-slate-950 px-3.5 py-2 rounded-xl border border-slate-800">
-                <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
-                <span id="status-text" class="text-slate-300">جاري الاتصال...</span>
+            <button id="loginBtn" class="btn-login">تسجيل الدخول</button>
+            <button id="signupBtn" class="btn-signup">إنشاء حساب جديد</button>
+        </div>
+
+        <!-- 2. شاشة غرفة الدردشة (تظهر بعد الدخول بنجاح) -->
+        <div class="card" id="chatScreen">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h2 style="margin: 0;">غرفة الدردشة 💬</h2>
+                <button id="logoutBtn" style="width: auto; padding: 6px 12px; margin: 0; background-color: #d32f2f; font-size: 13px;">خروج</button>
+            </div>
+            
+            <p id="userWelcome" style="color: #aaa; font-size: 13px; margin-top: 0; margin-bottom: 10px;"></p>
+            
+            <!-- صندوق عرض الرسائل -->
+            <div class="chat-box" id="chatBox">
+                <div class="message-row" style="color: #888;">أهلاً بك في تطبيق Buzz! ابدأ بإرسال رسالتك الأولى...</div>
+            </div>
+
+            <!-- إرسال رسالة -->
+            <div class="chat-input-area">
+                <input type="text" id="messageInput" placeholder="اكتب رسالة...">
+                <button id="sendBtn">إرسال</button>
             </div>
         </div>
-    </header>
+    </div>
 
-    <!-- Main Container -->
-    <main class="max-w-4xl w-full mx-auto p-4 flex-grow flex flex-col items-center justify-center">
+    <!-- كود ربط الفايربيس والمنطق البرمجي -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        <!-- ================= LOBBY SCREEN ================= -->
-        <section id="screen-lobby" class="w-full max-w-md bg-slate-800 rounded-3xl border border-slate-700 shadow-2xl p-6 sm:p-8 space-y-6">
-            <div class="text-center space-y-2">
-                <h2 class="text-2xl font-black text-white">انضم للعبة أونلاين</h2>
-                <p class="text-slate-400 text-xs">قم بإنشاء غرفة جديدة أو انضم لغرفة صديقك بواسطة الرمز</p>
-            </div>
-
-            <!-- Tabs Toggle -->
-            <div class="flex bg-slate-900 p-1.5 rounded-2xl border border-slate-700">
-                <button id="btn-tab-create" onclick="switchLobbyTab('create')" class="flex-1 py-2.5 text-xs font-bold rounded-xl bg-indigo-600 text-white shadow-md transition">
-                    إنشاء غرفة
-                </button>
-                <button id="btn-tab-join" onclick="switchLobbyTab('join')" class="flex-1 py-2.5 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition">
-                    الانضمام لغرفة
-                </button>
-            </div>
-
-            <!-- Create Room Tab -->
-            <div id="tab-create-content" class="space-y-4">
-                <div class="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-xs text-indigo-300 leading-relaxed text-center">
-                    ستكون أنت <strong class="text-indigo-400">الرسام</strong> في الجولة الأولى.
-                </div>
-                <button onclick="createRoom()" class="w-full py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-black rounded-2xl shadow-lg transition transform active:scale-95 flex items-center justify-center space-x-2 space-x-reverse">
-                    <i class="fa-solid fa-plus-circle text-lg"></i>
-                    <span>إنشاء غرفة جديدة</span>
-                </button>
-            </div>
-
-            <!-- Join Room Tab -->
-            <div id="tab-join-content" class="space-y-4 hidden">
-                <div class="p-3 bg-pink-500/10 border border-pink-500/20 rounded-xl text-xs text-pink-300 leading-relaxed text-center">
-                    ستنضم بصفتك <strong class="text-pink-400">المخمّن</strong> في الجولة الأولى.
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 uppercase mb-2">رمز الغرفة (Room ID)</label>
-                    <input id="input-room-code" type="text" placeholder="أدخل الرمز هنا..." class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-4 py-3 text-white font-mono tracking-widest focus:outline-none focus:border-pink-500 text-center font-black text-lg uppercase">
-                </div>
-                <button onclick="joinRoom()" class="w-full py-3.5 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-black rounded-2xl shadow-lg transition transform active:scale-95 flex items-center justify-center space-x-2 space-x-reverse">
-                    <i class="fa-solid fa-right-to-bracket text-lg"></i>
-                    <span>الانضمام للغرفة</span>
-                </button>
-            </div>
-        </section>
-
-        <!-- ================= WAITING ROOM SCREEN ================= -->
-        <section id="screen-waiting" class="w-full max-w-md bg-slate-800 rounded-3xl border border-slate-700 shadow-2xl p-6 sm:p-8 space-y-6 text-center hidden">
-            <div class="space-y-2">
-                <div class="inline-flex items-center justify-center w-14 h-14 bg-indigo-500/10 text-indigo-400 rounded-2xl mb-2 border border-indigo-500/20">
-                    <i class="fa-solid fa-users text-2xl animate-pulse"></i>
-                </div>
-                <h2 class="text-2xl font-black text-white">تم إنشاء الغرفة!</h2>
-                <p class="text-slate-400 text-xs">شارِك الرمز التالي مع المنافس ليتمكن من الدخول للغرفة</p>
-            </div>
-
-            <!-- Room Code -->
-            <div class="bg-slate-900 p-4 rounded-2xl border border-slate-700 flex items-center justify-between">
-                <div>
-                    <span class="block text-[10px] text-slate-400 font-bold uppercase mb-0.5">رمز الغرفة</span>
-                    <span id="display-room-code" class="text-2xl font-mono font-black text-indigo-400 tracking-wider">----</span>
-                </div>
-                <button onclick="copyRoomCode()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2.5 rounded-xl border border-slate-600 transition flex items-center space-x-1.5 space-x-reverse text-xs font-bold">
-                    <i class="fa-solid fa-copy"></i>
-                    <span>نسخ الرمز</span>
-                </button>
-            </div>
-
-            <div class="py-3 border-t border-b border-slate-700/60">
-                <div class="flex items-center justify-center space-x-3 space-x-reverse text-amber-400 text-xs font-bold animate-pulse">
-                    <i class="fa-solid fa-spinner fa-spin"></i>
-                    <span id="waiting-status-msg">بانتظار انضمام المنافس للعب...</span>
-                </div>
-            </div>
-
-            <button onclick="leaveRoom()" class="w-full py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold rounded-xl text-xs transition">
-                إلغاء وخروج
-            </button>
-        </section>
-
-        <!-- ================= DRAWING PHASE (Drawer UI) ================= -->
-        <section id="screen-drawing" class="w-full max-w-4xl space-y-4 hidden">
-            <!-- Header Status -->
-            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4">
-                <div class="flex items-center space-x-3 space-x-reverse">
-                    <span class="bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 px-3 py-1 rounded-full text-xs font-bold">دورك الآن: الرسام ✏️</span>
-                    <div>
-                        <span class="text-[11px] text-slate-400 block">الكلمة السرية المطلوب رسمها:</span>
-                        <span id="drawer-secret-word" class="font-black text-emerald-400 text-xl tracking-wide">---</span>
-                    </div>
-                </div>
-
-                <!-- Timer -->
-                <div class="flex items-center space-x-2 space-x-reverse bg-slate-900 px-4 py-2 rounded-xl border border-slate-700">
-                    <i class="fa-regular fa-clock text-amber-400"></i>
-                    <span id="drawer-timer" class="font-mono font-black text-2xl text-amber-400">01:00</span>
-                </div>
-
-                <button onclick="newRandomWord()" class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-3.5 py-2 rounded-xl border border-slate-600 transition flex items-center space-x-1.5 space-x-reverse font-bold">
-                    <i class="fa-solid fa-arrows-rotate"></i>
-                    <span>تغيير الكلمة</span>
-                </button>
-            </div>
-
-            <!-- Canvas & Tools -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <!-- Canvas Area -->
-                <div class="md:col-span-3 bg-slate-800 border border-slate-700 rounded-2xl p-2.5 flex flex-col justify-between shadow-xl">
-                    <div class="relative w-full aspect-[4/3] bg-white rounded-xl overflow-hidden shadow-inner">
-                        <canvas id="draw-canvas" class="w-full h-full block"></canvas>
-                    </div>
-
-                    <!-- Tools Toolbar -->
-                    <div class="flex flex-wrap items-center justify-between gap-2 mt-3 px-1">
-                        <!-- Colors -->
-                        <div class="flex items-center space-x-1.5 space-x-reverse">
-                            <button onclick="setBrushColor('#000000')" class="w-7 h-7 rounded-full bg-black border-2 border-white/20 hover:scale-110 transition shadow"></button>
-                            <button onclick="setBrushColor('#ef4444')" class="w-7 h-7 rounded-full bg-red-500 border-2 border-white/20 hover:scale-110 transition shadow"></button>
-                            <button onclick="setBrushColor('#3b82f6')" class="w-7 h-7 rounded-full bg-blue-500 border-2 border-white/20 hover:scale-110 transition shadow"></button>
-                            <button onclick="setBrushColor('#22c55e')" class="w-7 h-7 rounded-full bg-green-500 border-2 border-white/20 hover:scale-110 transition shadow"></button>
-                            <button onclick="setBrushColor('#eab308')" class="w-7 h-7 rounded-full bg-yellow-500 border-2 border-white/20 hover:scale-110 transition shadow"></button>
-                            <button onclick="setBrushColor('#a855f7')" class="w-7 h-7 rounded-full bg-purple-500 border-2 border-white/20 hover:scale-110 transition shadow"></button>
-                            <input type="color" id="custom-color-picker" onchange="setBrushColor(this.value)" class="w-7 h-7 rounded-full cursor-pointer bg-transparent border-0 p-0">
-                        </div>
-
-                        <!-- Size Slider -->
-                        <div class="flex items-center space-x-2 space-x-reverse bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-700">
-                            <i class="fa-solid fa-circle text-[10px] text-slate-400"></i>
-                            <input type="range" id="brush-size" min="2" max="30" value="6" class="w-20 accent-indigo-500 cursor-pointer" oninput="updateBrushSize(this.value)">
-                            <span id="brush-size-val" class="text-xs font-mono text-slate-300 w-4 text-center">6</span>
-                        </div>
-
-                        <!-- Actions -->
-                        <div class="flex items-center space-x-2 space-x-reverse">
-                            <button onclick="toggleEraser()" id="btn-eraser" title="ممحاة" class="p-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl transition border border-slate-600">
-                                <i class="fa-solid fa-eraser"></i>
-                            </button>
-                            <button onclick="undoStroke()" title="تراجع" class="p-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl transition border border-slate-600">
-                                <i class="fa-solid fa-rotate-left"></i>
-                            </button>
-                            <button onclick="clearCanvas()" title="مسح اللوحة" class="p-2 bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 rounded-xl transition border border-rose-500/30">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Drawer Controls Panel -->
-                <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 flex flex-col justify-between space-y-4 shadow-xl">
-                    <div class="space-y-3">
-                        <h3 class="font-bold text-sm text-slate-200">تلميح إضافي (اختياري)</h3>
-                        <p class="text-xs text-slate-400 leading-relaxed">أدخل تلميحاً قصيراً لمساعدة المخمّن (مثل: حيوان، يبدأ بحرف م...):</p>
-                        <input id="input-hint" type="text" maxlength="40" placeholder="مثال: يطير في السماء..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500">
-                    </div>
-
-                    <div class="space-y-3">
-                        <div class="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-xs text-indigo-300 leading-relaxed">
-                            <i class="fa-solid fa-lightbulb text-amber-400 ml-1"></i>
-                            سيتم إرسال الرسمة تلقائياً عند انتهاء الوقت (60 ثانية).
-                        </div>
-
-                        <button onclick="sendDrawing()" class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black rounded-xl shadow-lg transition transform active:scale-95 flex items-center justify-center space-x-2 space-x-reverse">
-                            <i class="fa-solid fa-paper-plane"></i>
-                            <span>إرسال الرسمة الآن</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================= GUESSER WAITING FOR DRAWER ================= -->
-        <section id="screen-guesser-waiting" class="w-full max-w-md bg-slate-800 border border-slate-700 rounded-3xl p-6 sm:p-8 shadow-2xl text-center space-y-6 hidden">
-            <div class="inline-flex items-center justify-center w-16 h-16 bg-pink-500/10 text-pink-400 rounded-2xl border border-pink-500/20">
-                <i class="fa-solid fa-paintbrush text-2xl animate-spin"></i>
-            </div>
-
-            <div class="space-y-1">
-                <h2 class="text-2xl font-black text-white">الرسام يرسم الآن...</h2>
-                <p class="text-slate-400 text-xs">يرجى الانتظار لحين الانتهاء وإرسال الرسمة (الوقت المتبقي للرسم: <span id="guesser-view-drawer-timer" class="font-bold text-amber-400 font-mono">01:00</span>)...</p>
-            </div>
-
-            <div class="p-4 bg-slate-900 rounded-2xl border border-slate-700 text-xs text-slate-400">
-                جهّز نفسك! ستحصل على <strong class="text-pink-400">25 ثانية</strong> فقط لتخمين الرسمة فور وصولها.
-            </div>
-        </section>
-
-        <!-- ================= DRAWER WAITING FOR GUESSER ================= -->
-        <section id="screen-drawer-waiting" class="w-full max-w-xl bg-slate-800 border border-slate-700 rounded-3xl p-6 sm:p-8 shadow-2xl text-center space-y-6 hidden">
-            <div class="inline-flex items-center justify-center w-16 h-16 bg-emerald-500/10 text-emerald-400 rounded-2xl border border-emerald-500/20">
-                <i class="fa-solid fa-paper-plane text-2xl animate-bounce"></i>
-            </div>
-
-            <div class="space-y-1">
-                <h2 class="text-2xl font-black text-white">تم إرسال الرسمة!</h2>
-                <p class="text-slate-400 text-xs">بانتظار المخمّن لإرسال إجابته (الوقت المتبقي: <span id="drawer-view-guesser-timer" class="font-bold text-amber-400 font-mono">25</span> ثانية)...</p>
-            </div>
-
-            <!-- Incoming Guess Box for Drawer -->
-            <div id="drawer-guess-review-card" class="bg-slate-900 p-5 rounded-2xl border border-slate-700 space-y-4 text-right">
-                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                    <span class="text-xs text-slate-400 font-bold">تخمين المنافس الواصل:</span>
-                    <span id="guess-received-status-badge" class="text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2.5 py-0.5 rounded-full font-bold animate-pulse">في انتظار التخمين...</span>
-                </div>
-
-                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center">
-                    <span id="display-incoming-guess" class="text-xl font-black text-slate-400 italic">لم يرسل إجابة بعد...</span>
-                </div>
-
-                <!-- Decision buttons for Drawer (enabled once guess arrives) -->
-                <div id="drawer-decision-controls" class="space-y-3 hidden">
-                    <label class="block text-xs font-bold text-slate-300">أضف ملاحظة أو تعليق للمخمّن (اختياري):</label>
-                    <input id="input-drawer-comment" type="text" placeholder="مثال: عاشت ايدك قربت! أو هههه لا مو كذا..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
-
-                    <div class="grid grid-cols-2 gap-3 pt-1">
-                        <button onclick="drawerDecideGuess(true)" class="py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-xl shadow-md transition flex items-center justify-center space-x-1.5 space-x-reverse">
-                            <i class="fa-solid fa-circle-check text-sm"></i>
-                            <span>إجابة صحيحة ✅</span>
-                        </button>
-                        <button onclick="drawerDecideGuess(false)" class="py-3 bg-rose-600 hover:bg-rose-500 text-white font-black text-xs rounded-xl shadow-md transition flex items-center justify-center space-x-1.5 space-x-reverse">
-                            <i class="fa-solid fa-circle-xmark text-sm"></i>
-                            <span>إجابة خاطئة ❌</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================= GUESSING PHASE (Guesser UI) ================= -->
-        <section id="screen-guessing" class="w-full max-w-3xl space-y-4 hidden">
-            <!-- Header Bar -->
-            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4">
-                <div class="flex items-center space-x-3 space-x-reverse">
-                    <span class="bg-pink-600/20 text-pink-400 border border-pink-500/30 px-3 py-1 rounded-full text-xs font-bold">دورك الآن: المخمّن 🤔</span>
-                    <span class="text-xs text-slate-400">اكتب تخمينك ودزّه للرسام حتى يقيّمه!</span>
-                </div>
-
-                <!-- Timer -->
-                <div class="flex items-center space-x-2 space-x-reverse bg-slate-900 px-4 py-2 rounded-xl border border-slate-700">
-                    <i class="fa-regular fa-clock text-amber-400"></i>
-                    <span id="guesser-timer" class="font-mono font-black text-2xl text-amber-400">25</span>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <!-- Received Canvas View -->
-                <div class="md:col-span-2 bg-slate-800 border border-slate-700 rounded-2xl p-2.5 flex flex-col justify-between shadow-xl">
-                    <div class="relative w-full aspect-[4/3] bg-white rounded-xl overflow-hidden shadow-inner flex items-center justify-center">
-                        <img id="guess-image-view" class="w-full h-full object-contain" alt="رسمة الرسام">
-                    </div>
-
-                    <!-- Hint Display -->
-                    <div id="hint-container" class="mt-2.5 p-3 bg-slate-900 rounded-xl border border-slate-700 flex items-center space-x-2 space-x-reverse text-xs hidden">
-                        <i class="fa-solid fa-lightbulb text-amber-400 text-base"></i>
-                        <span class="text-slate-400 font-bold">تلميح الرسام:</span>
-                        <span id="display-hint-text" class="font-bold text-slate-100"></span>
-                    </div>
-                </div>
-
-                <!-- Guess Input Form -->
-                <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 flex flex-col justify-between space-y-4 shadow-xl">
-                    <div class="space-y-3">
-                        <h3 class="font-bold text-sm text-slate-200">إجابتك والتخمين</h3>
-                        <div>
-                            <input id="input-guess" type="text" placeholder="اكتب إجابتك هنا..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-pink-500 font-bold" onkeydown="if(event.key==='Enter') submitGuess()">
-                        </div>
-
-                        <!-- Feedback Msg -->
-                        <div id="guess-feedback" class="p-3 rounded-xl text-xs font-bold text-center hidden"></div>
-                    </div>
-
-                    <button id="btn-send-guess" onclick="submitGuess()" class="w-full py-3.5 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-black rounded-xl shadow-lg transition transform active:scale-95 flex items-center justify-center space-x-2 space-x-reverse">
-                        <i class="fa-solid fa-paper-plane"></i>
-                        <span>إرسال التخمين للرسام</span>
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================= ROUND OVER MODAL / VIEW ================= -->
-        <section id="screen-round-over" class="w-full max-w-lg bg-slate-800 border border-slate-700 rounded-3xl p-6 sm:p-8 shadow-2xl text-center space-y-5 hidden">
-            <!-- Result Icon -->
-            <div id="round-result-badge" class="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-1 border">
-                <i id="round-result-icon" class="text-3xl"></i>
-            </div>
-
-            <div class="space-y-1">
-                <h2 id="round-result-title" class="text-2xl font-black text-white">انتهت الجولة</h2>
-                <p id="round-result-subtitle" class="text-slate-400 text-xs font-bold"></p>
-            </div>
-
-            <!-- Drawer's Note Box -->
-            <div id="summary-drawer-note-card" class="bg-slate-900/80 p-3.5 rounded-2xl border border-indigo-500/30 text-right hidden">
-                <span class="text-[10px] text-indigo-400 font-bold block mb-0.5"><i class="fa-solid fa-comment-dots ml-1"></i>ملاحظة الرسام:</span>
-                <p id="summary-drawer-note-text" class="text-xs text-slate-200 font-semibold italic"></p>
-            </div>
-
-            <!-- Secret Word Announcement & Last Guess -->
-            <div class="grid grid-cols-2 gap-3 bg-slate-900 p-3.5 rounded-2xl border border-slate-700 text-right text-xs">
-                <div>
-                    <span class="text-slate-400 block text-[10px] font-bold">الكلمة السرية:</span>
-                    <span id="summary-secret-word" class="font-black text-emerald-400 text-base">---</span>
-                </div>
-                <div>
-                    <span class="text-slate-400 block text-[10px] font-bold">تخمين المخمّن:</span>
-                    <span id="summary-last-guess" class="font-black text-indigo-300 text-base">---</span>
-                </div>
-            </div>
-
-            <!-- Thumbnail -->
-            <div class="w-44 h-32 mx-auto bg-white rounded-2xl overflow-hidden border border-slate-700 shadow-inner">
-                <img id="summary-image-view" class="w-full h-full object-contain" alt="نتيجة الرسمة">
-            </div>
-
-            <!-- Actions -->
-            <div class="pt-2 space-y-3">
-                <button onclick="startNextRound()" class="w-full py-3.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:opacity-95 text-white font-black rounded-2xl shadow-lg transition transform active:scale-95 flex items-center justify-center space-x-2 space-x-reverse">
-                    <i class="fa-solid fa-rotate-right"></i>
-                    <span>بدء الجولة التالية (تبادل الأدوار)</span>
-                </button>
-                <button onclick="leaveRoom()" class="w-full py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold rounded-xl text-xs transition">
-                    مغادرة الغرفة
-                </button>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- Footer -->
-    <footer class="text-center py-4 text-xs text-slate-500 border-t border-slate-800">
-        ارسم وخمّن • نقل مباشر عبر P2P/WebRTC و BroadcastChannel
-    </footer>
-
-    <script>
-        function switchLobbyTab(tab) {
-            const tabCreate = document.getElementById('btn-tab-create');
-            const tabJoin = document.getElementById('btn-tab-join');
-            const contentCreate = document.getElementById('tab-create-content');
-            const contentJoin = document.getElementById('tab-join-content');
-
-            if (tab === 'create') {
-                tabCreate.className = "flex-1 py-2.5 text-xs font-bold rounded-xl bg-indigo-600 text-white shadow-md transition";
-                tabJoin.className = "flex-1 py-2.5 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition";
-                contentCreate.classList.remove('hidden');
-                contentJoin.classList.add('hidden');
-            } else {
-                tabJoin.className = "flex-1 py-2.5 text-xs font-bold rounded-xl bg-pink-600 text-white shadow-md transition";
-                tabCreate.className = "flex-1 py-2.5 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition";
-                contentJoin.classList.remove('hidden');
-                contentCreate.classList.add('hidden');
-            }
-        }
-
-        function showScreen(screenId) {
-            const screens = [
-                'screen-lobby', 'screen-waiting', 'screen-drawing', 
-                'screen-drawer-waiting', 'screen-guesser-waiting', 
-                'screen-guessing', 'screen-round-over'
-            ];
-            screens.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.classList.add('hidden');
-            });
-            const active = document.getElementById(screenId);
-            if (active) active.classList.remove('hidden');
-        }
-
-        const AudioFX = {
-            ctx: null,
-            init() {
-                if (!this.ctx) {
-                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-                }
-            },
-            playTick() {
-                try {
-                    this.init();
-                    const osc = this.ctx.createOscillator();
-                    const gain = this.ctx.createGain();
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(800, this.ctx.currentTime);
-                    gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05);
-                    osc.connect(gain);
-                    gain.connect(this.ctx.destination);
-                    osc.start();
-                    osc.stop(this.ctx.currentTime + 0.05);
-                } catch(e){}
-            },
-            playWin() {
-                try {
-                    this.init();
-                    const now = this.ctx.currentTime;
-                    const notes = [523.25, 659.25, 783.99, 1046.50];
-                    notes.forEach((freq, idx) => {
-                        const osc = this.ctx.createOscillator();
-                        const gain = this.ctx.createGain();
-                        osc.type = 'triangle';
-                        osc.frequency.setValueAtTime(freq, now + idx * 0.1);
-                        gain.gain.setValueAtTime(0.2, now + idx * 0.1);
-                        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.3);
-                        osc.connect(gain);
-                        gain.connect(this.ctx.destination);
-                        osc.start(now + idx * 0.1);
-                        osc.stop(now + idx * 0.1 + 0.3);
-                    });
-                } catch(e){}
-            },
-            playLose() {
-                try {
-                    this.init();
-                    const now = this.ctx.currentTime;
-                    const notes = [400, 350, 300, 250];
-                    notes.forEach((freq, idx) => {
-                        const osc = this.ctx.createOscillator();
-                        const gain = this.ctx.createGain();
-                        osc.type = 'sawtooth';
-                        osc.frequency.setValueAtTime(freq, now + idx * 0.12);
-                        gain.gain.setValueAtTime(0.15, now + idx * 0.12);
-                        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.2);
-                        osc.connect(gain);
-                        gain.connect(this.ctx.destination);
-                        osc.start(now + idx * 0.12);
-                        osc.stop(now + idx * 0.12 + 0.2);
-                    });
-                } catch(e){}
-            }
+        // إعدادات مشروعك الرسمية
+        const firebaseConfig = {
+            apiKey: "AIzaSyDUXP5zndjshNQhvEhTSmoS0mqBiWjp0Kc",
+            authDomain: "buzz-52d7e.firebaseapp.com",
+            projectId: "buzz-52d7e",
+            storageBucket: "buzz-52d7e.firebasestorage.app",
+            messagingSenderId: "14074681805",
+            appId: "1:14074681805:web:97dc13cc92089989e24c84"
         };
 
-        const WORD_BANK = [
-            "تفاحة", "بيت", "سيارة", "شجرة", "شمس", "قطة", "كلب", "سمكة", "طائرة", "ساعة",
-            "مفتاح", "قمر", "بيتزا", "كعكة", "كتاب", "وردة", "قلعة", "صاروخ", "قلم", "قهوة",
-            "حذاء", "قبعة", "نظارة", "كرسي", "موزة", "تفاحة", "هاتف", "دراجة", "قارب", "طاولة"
-        ];
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
 
-        let roomCode = "";
-        let isHost = false; 
-        let currentRole = ""; 
-        let p1Score = 0;
-        let p2Score = 0;
-        let roundCount = 1;
-        let activeSecretWord = "";
-        let currentDrawingData = "";
-        let currentHintText = "";
-        let lastReceivedGuess = "";
+        // عناصر واجهة المستخدم
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('loginBtn');
+        const signupBtn = document.getElementById('signupBtn');
+        const alertBox = document.getElementById('alertBox');
+        
+        const authCard = document.getElementById('authCard');
+        const chatScreen = document.getElementById('chatScreen');
+        const userWelcome = document.getElementById('userWelcome');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const sendBtn = document.getElementById('sendBtn');
+        const messageInput = document.getElementById('messageInput');
+        const chatBox = document.getElementById('chatBox');
 
-        let drawingTimerInterval = null;
-        let guesserTimerInterval = null;
-        let drawerSecondsLeft = 60;
-        let guesserSecondsLeft = 25;
+        let currentUser = null;
 
-        let canvas, ctx;
-        let isDrawing = false;
-        let currentColor = "#000000";
-        let currentSize = 6;
-        let isEraser = false;
-        let drawingHistory = [];
-
-        let localChannel = null;
-        let peer = null;
-        let peerConnection = null;
-
-        function initNetworking() {
-            updateStatus('connecting', 'جاري تجهيز الشبكة...');
-            
-            if (window.BroadcastChannel) {
-                localChannel = new BroadcastChannel('sketch_game_channel');
-                localChannel.onmessage = (e) => handleGameMessage(e.data);
-            }
-
-            try {
-                peer = new Peer();
-                peer.on('open', (id) => {
-                    updateStatus('connected', 'الشبكة جاهزة');
-                });
-
-                peer.on('connection', (conn) => {
-                    peerConnection = conn;
-                    setupPeerConnection();
-                });
-
-                peer.on('error', (err) => {
-                    console.warn("PeerJS warning:", err);
-                    updateStatus('connected', 'جاهز (محلي)');
-                });
-            } catch(e) {
-                updateStatus('connected', 'جاهز (محلي)');
-            }
+        function showAlert(message, isError = true) {
+            alertBox.style.display = 'block';
+            alertBox.textContent = message;
+            alertBox.className = isError ? 'alert alert-error' : 'alert alert-success';
         }
 
-        function updateStatus(state, msg) {
-            const dot = document.getElementById('status-dot');
-            const txt = document.getElementById('status-text');
-            if (txt) txt.innerText = msg;
+        function hideAlert() {
+            alertBox.style.display = 'none';
+        }
 
-            if (dot) {
-                if (state === 'connected') {
-                    dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
-                } else if (state === 'connecting') {
-                    dot.className = "w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse";
-                } else {
-                    dot.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
-                }
+        function setLoading(loading) {
+            loginBtn.disabled = loading;
+            signupBtn.disabled = loading;
+            loginBtn.textContent = loading ? 'جاري المعالجة...' : 'تسجيل الدخول';
+            signupBtn.textContent = loading ? 'جاري المعالجة...' : 'إنشاء حساب جديد';
+        }
+
+        function handleAuthError(error) {
+            console.error(error);
+            switch (error.code) {
+                case 'auth/email-already-in-use':
+                    showAlert('هذا البريد مستخدم بالفعل! سجل دخول به.');
+                    break;
+                case 'auth/invalid-email':
+                    showAlert('صيغة البريد الإلكتروني غير صحيحة.');
+                    break;
+                case 'auth/weak-password':
+                    showAlert('كلمة المرور ضعيفة (6 خانات على الأقل).');
+                    break;
+                case 'auth/user-not-found':
+                case 'auth/wrong-password':
+                case 'auth/invalid-credential':
+                    showAlert('البريد الإلكتروني أو كلمة المرور غير صحيحة.');
+                    break;
+                case 'auth/quota-exceeded':
+                case 'auth/too-many-requests':
+                    showAlert('تم حظر المحاولات مؤقتاً. انتظر دقيقة وجرب مجدداً.');
+                    break;
+                default:
+                    showAlert('حدث خطأ: ' + error.message);
             }
         }
 
-        function setupPeerConnection() {
-            if (!peerConnection) return;
-            
-            peerConnection.on('open', () => {
-                updateStatus('connected', 'متصل بالمنافس أونلاين');
-                if (isHost) {
-                    broadcastMessage({ type: 'JOIN_ACK', hostRole: currentRole });
-                    startDrawingPhase();
-                }
-            });
-
-            peerConnection.on('data', (data) => {
-                handleGameMessage(data);
-            });
+        // الانتقال لشاشة الشات عند نجاح الدخول
+        function goToChat(user) {
+            currentUser = user;
+            authCard.style.display = 'none';
+            chatScreen.style.display = 'block';
+            userWelcome.textContent = "المستخدم: " + user.email;
         }
 
-        function broadcastMessage(data) {
-            data.roomCode = roomCode;
-            if (localChannel) {
-                localChannel.postMessage(data);
-            }
-            if (peerConnection && peerConnection.open) {
-                peerConnection.send(data);
-            }
-        }
+        // تسجيل الدخول
+        loginBtn.addEventListener('click', async () => {
+            hideAlert();
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
 
-        function createRoom() {
-            roomCode = Math.random().toString(36).substring(2, 6).toUpperCase();
-            isHost = true;
-            currentRole = "drawer";
-            updateScoreboardLabels();
-
-            document.getElementById('display-room-code').innerText = roomCode;
-            showScreen('screen-waiting');
-        }
-
-        function joinRoom() {
-            const input = document.getElementById('input-room-code').value.trim().toUpperCase();
-            if (!input) {
-                alert("الرجاء إدخال رمز الغرفة المكون من 4 أرقام/حروف.");
+            if (!email || !password) {
+                showAlert('يرجى إدخال البريد وكلمة المرور.');
                 return;
             }
-            roomCode = input;
-            isHost = false;
-            currentRole = "guesser";
-            updateScoreboardLabels();
 
-            if (peer) {
-                try {
-                    peerConnection = peer.connect(roomCode);
-                    setupPeerConnection();
-                } catch(e){}
+            setLoading(true);
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                goToChat(userCredential.user);
+            } catch (error) {
+                handleAuthError(error);
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        // إنشاء حساب جديد
+        signupBtn.addEventListener('click', async () => {
+            hideAlert();
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            if (!email || !password) {
+                showAlert('يرجى إدخال البريد وكلمة المرور.');
+                return;
             }
 
-            broadcastMessage({ type: 'JOIN', senderRole: 'guesser' });
-            showGuesserWaiting();
-        }
-
-        function copyRoomCode() {
-            const code = document.getElementById('display-room-code').innerText;
-            navigator.clipboard.writeText(code).then(() => {
-                alert("تم نسخ رمز الغرفة للحافظة!");
-            }).catch(() => {
-                const el = document.createElement('textarea');
-                el.value = code;
-                document.body.appendChild(el);
-                el.select();
-                document.execCommand('copy');
-                document.body.removeChild(el);
-                alert("تم نسخ رمز الغرفة!");
-            });
-        }
-
-        function leaveRoom() {
-            stopAllTimers();
-            showScreen('screen-lobby');
-            roomCode = "";
-            isHost = false;
-            p1Score = 0;
-            p2Score = 0;
-            roundCount = 1;
-            updateScoreboardUI();
-        }
-
-        function updateScoreboardLabels() {
-            const p1Label = document.getElementById('p1-label');
-            const p2Label = document.getElementById('p2-label');
-
-            if (isHost) {
-                p1Label.innerText = currentRole === 'drawer' ? "اللاعب 1 (الرسام)" : "اللاعب 1 (المخمّن)";
-                p2Label.innerText = currentRole === 'drawer' ? "اللاعب 2 (المخمّن)" : "اللاعب 2 (الرسام)";
-            } else {
-                p1Label.innerText = currentRole === 'guesser' ? "اللاعب 1 (الرسام)" : "اللاعب 1 (المخمّن)";
-                p2Label.innerText = currentRole === 'guesser' ? "اللاعب 2 (المخمّن)" : "اللاعب 2 (الرسام)";
-            }
-        }
-
-        function updateScoreboardUI() {
-            document.getElementById('score-p1').innerText = p1Score;
-            document.getElementById('score-p2').innerText = p2Score;
-        }
-
-        function startDrawingPhase() {
-            showScreen('screen-drawing');
-            newRandomWord();
-            drawerSecondsLeft = 60;
-            updateDrawerTimerUI();
-
-            setTimeout(() => {
-                initCanvas();
-            }, 100);
-
-            clearInterval(drawingTimerInterval);
-            drawingTimerInterval = setInterval(() => {
-                drawerSecondsLeft--;
-                updateDrawerTimerUI();
-
-                broadcastMessage({ type: 'DRAWING_TIMER_SYNC', secondsLeft: drawerSecondsLeft });
-
-                if (drawerSecondsLeft <= 0) {
-                    sendDrawing();
-                }
-            }, 1000);
-        }
-
-        function showGuesserWaiting() {
-            showScreen('screen-guesser-waiting');
-        }
-
-        function handleGameMessage(data) {
-            if (!data || data.roomCode !== roomCode) return;
-
-            switch (data.type) {
-                case 'JOIN':
-                    if (isHost) {
-                        broadcastMessage({ type: 'JOIN_ACK', hostRole: currentRole });
-                        startDrawingPhase();
-                    }
-                    break;
-
-                case 'JOIN_ACK':
-                    if (!isHost) {
-                        showGuesserWaiting();
-                    }
-                    break;
-
-                case 'START_DRAWING_PHASE':
-                    if (currentRole === 'drawer') {
-                        startDrawingPhase();
-                    } else {
-                        showGuesserWaiting();
-                    }
-                    break;
-
-                case 'DRAWING_TIMER_SYNC':
-                    if (currentRole === 'guesser') {
-                        const timerEl = document.getElementById('guesser-view-drawer-timer');
-                        if (timerEl) {
-                            const mins = Math.floor(data.secondsLeft / 60);
-                            const secs = data.secondsLeft % 60;
-                            timerEl.innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-                        }
-                    }
-                    break;
-
-                case 'DRAWING_SUBMITTED':
-                    currentDrawingData = data.image;
-                    currentHintText = data.hint;
-                    activeSecretWord = data.secretWord;
-
-                    if (currentRole === 'guesser') {
-                        startGuessingPhase();
-                    }
-                    break;
-
-                case 'GUESS_SUBMITTED':
-                    lastReceivedGuess = data.guess;
-                    if (currentRole === 'drawer') {
-                        const guessDisplay = document.getElementById('display-incoming-guess');
-                        const statusBadge = document.getElementById('guess-received-status-badge');
-                        const controls = document.getElementById('drawer-decision-controls');
-
-                        if (guessDisplay) {
-                            guessDisplay.innerText = `"${data.guess}"`;
-                            guessDisplay.className = "text-xl font-black text-indigo-300";
-                        }
-                        if (statusBadge) {
-                            statusBadge.innerText = "وصل التخمين!";
-                            statusBadge.className = "text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full font-bold";
-                        }
-                        if (controls) controls.classList.remove('hidden');
-                    }
-                    break;
-
-                case 'DRAWER_DECISION':
-                    handleRoundOver(data.isCorrect, data.comment);
-                    break;
-
-                case 'GUESSER_TIMER_SYNC':
-                    if (currentRole === 'drawer') {
-                        const timerEl = document.getElementById('drawer-view-guesser-timer');
-                        if (timerEl) timerEl.innerText = data.secondsLeft;
-                    }
-                    break;
-
-                case 'ROUND_TIMEOUT':
-                    handleRoundOver(false, "انتهى الوقت المحدد دون استلام تقييم!");
-                    break;
-
-                case 'NEXT_ROUND_SYNC':
-                    roundCount = data.roundCount;
-                    p1Score = data.p1Score;
-                    p2Score = data.p2Score;
-                    updateScoreboardUI();
-
-                    currentRole = (currentRole === 'drawer') ? 'guesser' : 'drawer';
-                    updateScoreboardLabels();
-
-                    if (currentRole === 'drawer') {
-                        startDrawingPhase();
-                    } else {
-                        showGuesserWaiting();
-                    }
-                    break;
-            }
-        }
-
-        function sendDrawing() {
-            clearInterval(drawingTimerInterval);
-
-            const hint = document.getElementById('input-hint').value.trim();
-            const imageBase64 = canvas ? canvas.toDataURL('image/png') : "";
-
-            currentDrawingData = imageBase64;
-            currentHintText = hint;
-            lastReceivedGuess = "";
-
-            const guessDisplay = document.getElementById('display-incoming-guess');
-            const statusBadge = document.getElementById('guess-received-status-badge');
-            const controls = document.getElementById('drawer-decision-controls');
-            const commentInput = document.getElementById('input-drawer-comment');
-
-            if (guessDisplay) {
-                guessDisplay.innerText = "لم يرسل إجابة بعد...";
-                guessDisplay.className = "text-xl font-black text-slate-400 italic";
-            }
-            if (statusBadge) {
-                statusBadge.innerText = "في انتظار التخمين...";
-                statusBadge.className = "text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2.5 py-0.5 rounded-full font-bold animate-pulse";
-            }
-            if (controls) controls.classList.add('hidden');
-            if (commentInput) commentInput.value = "";
-
-            broadcastMessage({
-                type: 'DRAWING_SUBMITTED',
-                image: imageBase64,
-                hint: hint,
-                secretWord: activeSecretWord
-            });
-
-            showScreen('screen-drawer-waiting');
-        }
-
-        function submitGuess() {
-            const input = document.getElementById('input-guess').value.trim();
-            if (!input) return;
-
-            lastReceivedGuess = input;
-            showFeedback("تم إرسال تخمينك للرسام! بانتظار تقييمه...", true);
-
-            const btnSend = document.getElementById('btn-send-guess');
-            if (btnSend) {
-                btnSend.disabled = true;
-                btnSend.classList.add('opacity-50', 'cursor-not-allowed');
+            if (password.length < 6) {
+                showAlert('كلمة المرور يجب أن تكون 6 خانات على الأقل.');
+                return;
             }
 
-            broadcastMessage({
-                type: 'GUESS_SUBMITTED',
-                guess: input
-            });
-        }
-
-        function drawerDecideGuess(isCorrect) {
-            const comment = document.getElementById('input-drawer-comment').value.trim();
-
-            broadcastMessage({
-                type: 'DRAWER_DECISION',
-                isCorrect: isCorrect,
-                comment: comment
-            });
-
-            handleRoundOver(isCorrect, comment);
-        }
-
-        function handleRoundOver(isSuccess, drawerComment) {
-            stopAllTimers();
-            showScreen('screen-round-over');
-
-            const badge = document.getElementById('round-result-badge');
-            const icon = document.getElementById('round-result-icon');
-            const title = document.getElementById('round-result-title');
-            const subtitle = document.getElementById('round-result-subtitle');
-            const summaryWord = document.getElementById('summary-secret-word');
-            const summaryGuess = document.getElementById('summary-last-guess');
-            const summaryImg = document.getElementById('summary-image-view');
-            const noteCard = document.getElementById('summary-drawer-note-card');
-            const noteText = document.getElementById('summary-drawer-note-text');
-
-            summaryWord.innerText = activeSecretWord || "---";
-            summaryGuess.innerText = lastReceivedGuess ? `"${lastReceivedGuess}"` : "لم يُخمن";
-            summaryImg.src = currentDrawingData;
-
-            if (drawerComment) {
-                noteText.innerText = drawerComment;
-                noteCard.classList.remove('hidden');
-            } else {
-                noteCard.classList.add('hidden');
+            setLoading(true);
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                goToChat(userCredential.user);
+            } catch (error) {
+                handleAuthError(error);
+            } finally {
+                setLoading(false);
             }
+        });
 
-            if (isSuccess) {
-                AudioFX.playWin();
-                if (currentRole === 'guesser' || (isHost && currentRole === 'drawer')) {
-                    p2Score++;
-                } else {
-                    p1Score++;
-                }
-                updateScoreboardUI();
+        // زر إرسال رسالة (تجريبي محلي حالياً)
+        sendBtn.addEventListener('click', () => {
+            const text = messageInput.value.trim();
+            if (!text) return;
 
-                badge.className = "inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
-                icon.className = "fa-solid fa-trophy text-3xl";
-                title.innerText = "إجابة صحيحة! 🎉";
-                subtitle.innerText = "أكّد الرسام أن التخمين صحيح ومطابق.";
-            } else {
-                AudioFX.playLose();
-                badge.className = "inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-1 bg-rose-500/20 text-rose-400 border border-rose-500/30";
-                icon.className = "fa-solid fa-circle-xmark text-3xl";
-                title.innerText = "إجابة غير صحيحة ❌";
-                subtitle.innerText = "قيم الرسام التخمين بأنه غير صحيح أو انتهى الوقت.";
-            }
-        }
-
-        function startGuessingPhase() {
-            showScreen('screen-guessing');
-
-            const btnSend = document.getElementById('btn-send-guess');
-            if (btnSend) {
-                btnSend.disabled = false;
-                btnSend.classList.remove('opacity-50', 'cursor-not-allowed');
-            }
-
-            const imgEl = document.getElementById('guess-image-view');
-            imgEl.src = currentDrawingData;
-
-            const hintContainer = document.getElementById('hint-container');
-            const hintText = document.getElementById('display-hint-text');
-            if (currentHintText) {
-                hintText.innerText = currentHintText;
-                hintContainer.classList.remove('hidden');
-            } else {
-                hintContainer.classList.add('hidden');
-            }
-
-            const inputGuess = document.getElementById('input-guess');
-            inputGuess.value = "";
-            inputGuess.focus();
-            hideFeedback();
-
-            guesserSecondsLeft = 25;
-            updateGuesserTimerUI();
-
-            clearInterval(guesserTimerInterval);
-            guesserTimerInterval = setInterval(() => {
-                guesserSecondsLeft--;
-                updateGuesserTimerUI();
-
-                broadcastMessage({ type: 'GUESSER_TIMER_SYNC', secondsLeft: guesserSecondsLeft });
-
-                if (guesserSecondsLeft <= 0) {
-                    clearInterval(guesserTimerInterval);
-                    broadcastMessage({ type: 'ROUND_TIMEOUT' });
-                    handleRoundOver(false, "انتهى وقت التخمين دون إرسال إجابة.");
-                }
-            }, 1000);
-        }
-
-        function updateDrawerTimerUI() {
-            const timerEl = document.getElementById('drawer-timer');
-            const mins = Math.floor(drawerSecondsLeft / 60);
-            const secs = drawerSecondsLeft % 60;
-            if (timerEl) {
-                timerEl.innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-            }
-            if (drawerSecondsLeft <= 10) {
-                AudioFX.playTick();
-            }
-        }
-
-        function updateGuesserTimerUI() {
-            const timerEl = document.getElementById('guesser-timer');
-            if (timerEl) timerEl.innerText = guesserSecondsLeft;
-            if (guesserSecondsLeft <= 5) {
-                AudioFX.playTick();
-            }
-        }
-
-        function newRandomWord() {
-            activeSecretWord = WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)];
-            document.getElementById('drawer-secret-word').innerText = activeSecretWord;
-        }
-
-        function showFeedback(text, isSuccess) {
-            const fb = document.getElementById('guess-feedback');
-            fb.innerText = text;
-            fb.className = isSuccess 
-                ? "p-3 rounded-xl text-xs font-bold text-center bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                : "p-3 rounded-xl text-xs font-bold text-center bg-rose-500/20 text-rose-400 border border-rose-500/30";
-            fb.classList.remove('hidden');
-        }
-
-        function hideFeedback() {
-            document.getElementById('guess-feedback').classList.add('hidden');
-        }
-
-        function startNextRound() {
-            roundCount++;
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message-row';
+            msgDiv.innerHTML = `<b style="color: #2196F3;">${currentUser.email.split('@')[0]}:</b> ${text}`;
+            chatBox.appendChild(msgDiv);
             
-            currentRole = (currentRole === 'drawer') ? 'guesser' : 'drawer';
-            updateScoreboardLabels();
+            messageInput.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
 
-            broadcastMessage({
-                type: 'NEXT_ROUND_SYNC',
-                roundCount: roundCount,
-                p1Score: p1Score,
-                p2Score: p2Score
-            });
-
-            if (currentRole === 'drawer') {
-                startDrawingPhase();
-            } else {
-                showGuesserWaiting();
-            }
-        }
-
-        function stopAllTimers() {
-            clearInterval(drawingTimerInterval);
-            clearInterval(guesserTimerInterval);
-        }
-
-        function initCanvas() {
-            canvas = document.getElementById('draw-canvas');
-            if (!canvas) return;
-
-            ctx = canvas.getContext('2d');
-
-            const rect = canvas.parentElement.getBoundingClientRect();
-            canvas.width = rect.width;
-            canvas.height = rect.height;
-
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            clearCanvas();
-
-            canvas.onmousedown = startDrawing;
-            canvas.onmousemove = draw;
-            canvas.onmouseup = stopDrawing;
-            canvas.onmouseleave = stopDrawing;
-
-            canvas.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                const touch = e.touches[0];
-                const mouseEvent = new MouseEvent("mousedown", {
-                    clientX: touch.clientX,
-                    clientY: touch.clientY
-                });
-                canvas.dispatchEvent(mouseEvent);
-            }, { passive: false });
-
-            canvas.addEventListener('touchmove', (e) => {
-                e.preventDefault();
-                const touch = e.touches[0];
-                const mouseEvent = new MouseEvent("mousemove", {
-                    clientX: touch.clientX,
-                    clientY: touch.clientY
-                });
-                canvas.dispatchEvent(mouseEvent);
-            }, { passive: false });
-
-            canvas.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                const mouseEvent = new MouseEvent("mouseup", {});
-                canvas.dispatchEvent(mouseEvent);
-            }, { passive: false });
-        }
-
-        function getCanvasCoordinates(e) {
-            const rect = canvas.getBoundingClientRect();
-            return {
-                x: (e.clientX - rect.left) * (canvas.width / rect.width),
-                y: (e.clientY - rect.top) * (canvas.height / rect.height)
-            };
-        }
-
-        function startDrawing(e) {
-            isDrawing = true;
-            saveCanvasState();
-            const pos = getCanvasCoordinates(e);
-            ctx.beginPath();
-            ctx.moveTo(pos.x, pos.y);
-        }
-
-        function draw(e) {
-            if (!isDrawing) return;
-            const pos = getCanvasCoordinates(e);
-
-            ctx.strokeStyle = isEraser ? "#FFFFFF" : currentColor;
-            ctx.lineWidth = currentSize;
-
-            ctx.lineTo(pos.x, pos.y);
-            ctx.stroke();
-        }
-
-        function stopDrawing() {
-            if (isDrawing) {
-                ctx.closePath();
-                isDrawing = false;
-            }
-        }
-
-        function setBrushColor(color) {
-            isEraser = false;
-            currentColor = color;
-            const btn = document.getElementById('btn-eraser');
-            if (btn) {
-                btn.classList.remove('bg-indigo-600', 'text-white');
-                btn.classList.add('bg-slate-700', 'text-slate-200');
-            }
-        }
-
-        function updateBrushSize(size) {
-            currentSize = size;
-            document.getElementById('brush-size-val').innerText = size;
-        }
-
-        function toggleEraser() {
-            isEraser = !isEraser;
-            const btn = document.getElementById('btn-eraser');
-            if (isEraser) {
-                btn.classList.add('bg-indigo-600', 'text-white');
-                btn.classList.remove('bg-slate-700', 'text-slate-200');
-            } else {
-                btn.classList.remove('bg-indigo-600', 'text-white');
-                btn.classList.add('bg-slate-700', 'text-slate-200');
-            }
-        }
-
-        function clearCanvas() {
-            if (!ctx || !canvas) return;
-            ctx.fillStyle = "#FFFFFF";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            drawingHistory = [];
-        }
-
-        function saveCanvasState() {
-            if (!ctx || !canvas) return;
-            if (drawingHistory.length >= 15) drawingHistory.shift();
-            drawingHistory.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
-        }
-
-        function undoStroke() {
-            if (drawingHistory.length > 0) {
-                const previousState = drawingHistory.pop();
-                ctx.putImageData(previousState, 0, 0);
-            } else {
-                clearCanvas();
-            }
-        }
-
-        // Window Init
-        window.onload = function() {
-            initNetworking();
-            showScreen('screen-lobby');
-        };
+        // زر تسجيل الخروج
+        logoutBtn.addEventListener('click', async () => {
+            await signOut(auth);
+            chatScreen.style.display = 'none';
+            authCard.style.display = 'block';
+            passwordInput.value = '';
+            hideAlert();
+        });
     </script>
 </body>
 </html>
