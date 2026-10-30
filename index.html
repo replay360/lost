@@ -3,419 +3,293 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تطبيق Buzz للدردشة</title>
+    <title>مساعد Gemini الذكي</title>
+    <!-- تضمين الخطوط وأيقونات FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         * {
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
         }
         body {
             background-color: #121212;
-            color: #ffffff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            width: 100%;
-            max-width: 420px;
-        }
-        .card {
-            background-color: #1e1e1e;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-            text-align: center;
-        }
-        h2 {
-            margin-top: 0;
-            margin-bottom: 20px;
-            color: #ff5722;
-        }
-        .input-group {
-            margin-bottom: 15px;
-            text-align: right;
-        }
-        label {
-            display: block;
-            font-size: 14px;
-            margin-bottom: 5px;
-            color: #ccc;
-        }
-        input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid #444;
-            background-color: #2c2c2c;
-            color: #fff;
-            font-size: 15px;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-        input:focus {
-            border-color: #ff5722;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            margin-top: 10px;
-            transition: background-color 0.3s, opacity 0.3s;
-        }
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        .btn-signup {
-            background-color: #ff5722;
-            color: white;
-        }
-        .btn-signup:hover:not(:disabled) {
-            background-color: #e64a19;
-        }
-        .btn-login {
-            background-color: #2196F3;
-            color: white;
-        }
-        .btn-login:hover:not(:disabled) {
-            background-color: #1976D2;
-        }
-        .alert {
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            font-size: 14px;
-            display: none;
-        }
-        .alert-error {
-            background-color: #5a1e1e;
-            color: #ff8a8a;
-            border: 1px solid #882222;
-        }
-        .alert-success {
-            background-color: #1e4a23;
-            color: #8aff9e;
-            border: 1px solid #228833;
-        }
-        
-        /* تصميم شاشة الدردشة العامة */
-        #chatScreen {
-            display: none;
-            text-align: right;
-        }
-        .chat-box {
-            background-color: #2c2c2c;
-            border: 1px solid #444;
-            border-radius: 8px;
-            height: 320px;
-            padding: 12px;
-            overflow-y: auto;
-            margin-bottom: 15px;
+            color: #e0e0e0;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            height: 100vh;
+            overflow: hidden;
         }
-        .message-bubble {
-            background-color: #383838;
-            padding: 8px 12px;
-            border-radius: 8px;
-            max-width: 85%;
-            word-break: break-word;
+        header {
+            background-color: #1e1e1e;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-bottom: 1px solid #2d2d2d;
+            color: #fff;
         }
-        .message-bubble.mine {
-            background-color: #1e4a7a;
-            align-self: flex-start;
-        }
-        .message-bubble.other {
-            background-color: #2e3b2b;
-            align-self: flex-end;
-        }
-        .sender-name {
-            font-size: 11px;
-            color: #ff9800;
-            margin-bottom: 3px;
-            font-weight: bold;
-        }
-        .message-text {
-            font-size: 14px;
-        }
-        .chat-input-area {
-            display: flex;
-            gap: 8px;
-        }
-        .chat-input-area input {
-            margin: 0;
+        #chat-container {
             flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            scroll-behavior: smooth;
         }
-        .chat-input-area button {
-            margin: 0;
-            width: 90px;
-            background-color: #ff5722;
+        .message {
+            max-width: 75%;
+            padding: 12px 16px;
+            border-radius: 15px;
+            line-height: 1.6;
+            word-wrap: break-word;
+            font-size: 0.95rem;
+        }
+        .user-message {
+            background-color: #2b5278;
+            color: #fff;
+            align-self: flex-end;
+            border-bottom-left-radius: 4px;
+        }
+        .bot-message {
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            align-self: flex-start;
+            border-bottom-right-radius: 4px;
+            border: 1px solid #2d2d2d;
+        }
+        .message img {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-top: 8px;
+        }
+        #input-container {
+            background-color: #1e1e1e;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-top: 1px solid #2d2d2d;
+        }
+        .file-input-label, button {
+            background: none;
+            border: none;
+            color: #aaa;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        .file-input-label:hover, button:hover {
+            color: #fff;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        textarea {
+            flex: 1;
+            background-color: #2a2a2a;
+            border: 1px solid #3d3d3d;
+            border-radius: 20px;
+            padding: 10px 15px;
+            color: #fff;
+            resize: none;
+            max-height: 100px;
+            font-size: 0.95rem;
+            outline: none;
+        }
+        textarea:focus {
+            border-color: #2b5278;
+        }
+        #send-btn {
+            background-color: #2b5278;
             color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .recording {
+            color: #ff4444 !important;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.4; }
+            100% { opacity: 1; }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <!-- 1. شاشة تسجيل الدخول وإنشاء الحساب -->
-        <div class="card" id="authCard">
-            <h2>تطبيق Buzz ⚡</h2>
-            
-            <div id="alertBox" class="alert"></div>
+    <header>
+        <i class="fa-solid fa-robot"></i> مساعد Gemini الذكي
+    </header>
 
-            <div class="input-group">
-                <label for="email">البريد الإلكتروني</label>
-                <input type="email" id="email" placeholder="example@mail.com">
-            </div>
-
-            <div class="input-group">
-                <label for="password">كلمة المرور</label>
-                <input type="password" id="password" placeholder="6 أحرف أو أرقام على الأقل">
-            </div>
-
-            <button id="loginBtn" class="btn-login">تسجيل الدخول</button>
-            <button id="signupBtn" class="btn-signup">إنشاء حساب جديد</button>
-        </div>
-
-        <!-- 2. شاشة غرفة الدردشة العامة -->
-        <div class="card" id="chatScreen">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h2 style="margin: 0; font-size: 20px;">الدردشة العامة 💬</h2>
-                <button id="logoutBtn" style="width: auto; padding: 6px 12px; margin: 0; background-color: #d32f2f; font-size: 13px;">خروج</button>
-            </div>
-            
-            <p id="userWelcome" style="color: #aaa; font-size: 12px; margin-top: 0; margin-bottom: 10px;"></p>
-            
-            <!-- صندوق عرض الرسائل حياً -->
-            <div class="chat-box" id="chatBox">
-                <div style="text-align: center; color: #888; font-size: 13px;">جاري تحميل الرسائل...</div>
-            </div>
-
-            <!-- إرسال رسالة -->
-            <form id="chatForm" class="chat-input-area">
-                <input type="text" id="messageInput" placeholder="اكتب رسالتك هنا..." autocomplete="off">
-                <button type="submit" id="sendBtn">إرسال</button>
-            </form>
+    <div id="chat-container">
+        <div class="message bot-message">
+            أهلاً بك! أنا جاهز، اكتب لي رسالة أو ارفع صورا أو سجل صوت لنبدأ.
         </div>
     </div>
 
-    <!-- كود الربط والمنطق البرمجي مع الفايربيس -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    <div id="input-container">
+        <!-- زر رفع الصور -->
+        <label class="file-input-label" for="image-input">
+            <i class="fa-solid fa-image"></i>
+        </label>
+        <input type="file" id="image-input" accept="image/*">
 
-        // إعدادات مشروعك
-        const firebaseConfig = {
-            apiKey: "AIzaSyDUXP5zndjshNQhvEhTSmoS0mqBiWjp0Kc",
-            authDomain: "buzz-52d7e.firebaseapp.com",
-            projectId: "buzz-52d7e",
-            storageBucket: "buzz-52d7e.firebasestorage.app",
-            messagingSenderId: "14074681805",
-            appId: "1:14074681805:web:97dc13cc92089989e24c84"
-        };
+        <!-- زر الميكروفون (تسجيل صوتي) -->
+        <button id="mic-btn" title="تسجيل صوت">
+            <i class="fa-solid fa-microphone"></i>
+        </button>
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        <!-- حقل ادخال النص -->
+        <textarea id="user-input" rows="1" placeholder="اكتب رسالتك هنا..."></textarea>
 
-        // عناصر الواجهة
-        const emailInput = document.getElementById('email');
-        const passwordInput = document.getElementById('password');
-        const loginBtn = document.getElementById('loginBtn');
-        const signupBtn = document.getElementById('signupBtn');
-        const alertBox = document.getElementById('alertBox');
-        
-        const authCard = document.getElementById('authCard');
-        const chatScreen = document.getElementById('chatScreen');
-        const userWelcome = document.getElementById('userWelcome');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const chatForm = document.getElementById('chatForm');
-        const messageInput = document.getElementById('messageInput');
-        const chatBox = document.getElementById('chatBox');
+        <!-- زر الإرسال -->
+        <button id="send-btn">
+            <i class="fa-solid fa-paper-plane"></i>
+        </button>
+    </div>
 
-        let currentUser = null;
-        let unsubscribeMessages = null;
+    <script>
+        const workerUrl = "https://lively-wind-5aff.r3160977.workers.dev"; // رابط السيرفر مالتك
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const imageInput = document.getElementById('image-input');
+        const micBtn = document.getElementById('mic-btn');
 
-        function showAlert(message, isError = true) {
-            alertBox.style.display = 'block';
-            alertBox.textContent = message;
-            alertBox.className = isError ? 'alert alert-error' : 'alert alert-success';
-        }
+        let selectedImageBase64 = null;
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
 
-        function hideAlert() {
-            alertBox.style.display = 'none';
-        }
-
-        function setLoading(loading) {
-            loginBtn.disabled = loading;
-            signupBtn.disabled = loading;
-            loginBtn.textContent = loading ? 'جاري المعالجة...' : 'تسجيل الدخول';
-            signupBtn.textContent = loading ? 'جاري المعالجة...' : 'إنشاء حساب جديد';
-        }
-
-        function handleAuthError(error) {
-            console.error(error);
-            switch (error.code) {
-                case 'auth/email-already-in-use':
-                    showAlert('هذا البريد مستخدم بالفعل! سجل دخول به.');
-                    break;
-                case 'auth/invalid-email':
-                    showAlert('صيغة البريد الإلكتروني غير صحيحة.');
-                    break;
-                case 'auth/weak-password':
-                    showAlert('كلمة المرور ضعيفة (6 خانات على الأقل).');
-                    break;
-                case 'auth/user-not-found':
-                case 'auth/wrong-password':
-                case 'auth/invalid-credential':
-                    showAlert('البريد الإلكتروني أو كلمة المرور غير صحيحة.');
-                    break;
-                case 'auth/quota-exceeded':
-                case 'auth/too-many-requests':
-                    showAlert('تم حظر المحاولات مؤقتاً. انتظر دقيقة وجرب مجدداً.');
-                    break;
-                default:
-                    showAlert('حدث خطأ: ' + error.message);
+        // تحويل الصورة المرفوعة إلى Base64
+        imageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(uploadzení) {
+                    selectedImageBase64 = uploadzení.target.result;
+                    appendMessage(`تم إرفاق صورة بنجاح 📷`, 'user', selectedImageBase64);
+                };
+                reader.readAsDataURL(file);
             }
-        }
+        });
 
-        // الانتقال لشاشة الدردشة واستماع الرسائل الحية
-        function goToChat(user) {
-            currentUser = user;
-            authCard.style.display = 'none';
-            chatScreen.style.display = 'block';
-            userWelcome.textContent = "المستخدم الحالی: " + user.email;
-            
-            loadRealtimeMessages();
-        }
-
-        // جلب الرسائل من Firestore وتحديثها لحظياً
-        function loadRealtimeMessages() {
-            const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
-            
-            unsubscribeMessages = onSnapshot(q, (snapshot) => {
-                chatBox.innerHTML = '';
-                if (snapshot.empty) {
-                    chatBox.innerHTML = '<div style="text-align: center; color: #888; font-size: 13px;">لا توجد رسائل بعد.. كن أول من يرسل!</div>';
-                    return;
-                }
-
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const isMine = data.senderId === currentUser.uid;
-
-                    const msgDiv = document.createElement('div');
-                    msgDiv.className = `message-bubble ${isMine ? 'mine' : 'other'}`;
+        // التعامل مع التسجيل الصوتي
+        micBtn.addEventListener('click', async () => {
+            if (!isRecording) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
                     
-                    const senderName = document.createElement('div');
-                    senderName.className = 'sender-name';
-                    senderName.textContent = isMine ? 'أنت' : (data.senderEmail ? data.senderEmail.split('@')[0] : 'مستخدم');
+                    mediaRecorder.ondataavailable = event => {
+                        audioChunks.push(event.data);
+                    };
 
-                    const msgText = document.createElement('div');
-                    msgText.className = 'message-text';
-                    msgText.textContent = data.text;
+                    mediaRecorder.onstop = async () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        // هنا تگدر تحول الصوت لـ Base64 أو ترسله للسيرفر إذا كنت مبرمج الـ Worker يستقبله
+                        appendMessage("تم إرسال تسجيل صوتي 🎤", 'user');
+                        sendToGemini("ملاحظة صوتية من المستخدم");
+                    };
 
-                    msgDiv.appendChild(senderName);
-                    msgDiv.appendChild(msgText);
-                    chatBox.appendChild(msgDiv);
-                });
+                    mediaRecorder.start();
+                    isRecording = true;
+                    micBtn.classList.add('recording');
+                } catch (err) {
+                    alert("لا يمكن الوصول إلى الميكروفون!");
+                }
+            } else {
+                mediaRecorder.stop();
+                isRecording = false;
+                micBtn.classList.remove('recording');
+            }
+        });
 
-                chatBox.scrollTop = chatBox.scrollHeight;
-            }, (error) => {
-                console.error("خطأ جلب الرسائل:", error);
-                chatBox.innerHTML = '<div style="text-align: center; color: #f44336; font-size: 13px;">خطأ في الصلاحيات أو الاتصال بقاعدة البيانات!</div>';
-            });
+        // حدث إرسال الرسالة
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        function sendMessage() {
+            const text = userInput.value.trim();
+            if (!text && !selectedImageBase64) return;
+
+            appendMessage(text || "صورة مرفقة", 'user', selectedImageBase64);
+            
+            const promptToSend = text;
+            const imgToSend = selectedImageBase64;
+
+            userInput.value = '';
+            selectedImageBase64 = null;
+            imageInput.value = '';
+
+            sendToGemini(promptToSend, imgToSend);
         }
 
-        // إرسال رسالة جديدة
-        chatForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const text = messageInput.value.trim();
-            if (!text || !currentUser) return;
+        function appendMessage(text, sender, imgSrc = null) {
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('message');
+            msgDiv.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
+            
+            let content = `<p>${text}</p>`;
+            if (imgSrc) {
+                content += `<img src="${imgSrc}" alt="Uploaded Image">`;
+            }
+            msgDiv.innerHTML = content;
+            chatContainer.appendChild(msgDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
 
-            messageInput.value = '';
+        async function sendToGemini(prompt, image = null) {
+            // إضافة مؤشر جاري الكتابة
+            const loadingId = 'loading-' + Date.now();
+            const loadingDiv = document.createElement('div');
+            loadingDiv.id = loadingId;
+            loadingDiv.classList.add('message', 'bot-message');
+            loadingDiv.innerHTML = `<p><i class="fa-solid fa-spinner fa-spin"></i> جاري التفكير...</p>`;
+            chatContainer.appendChild(loadingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
 
             try {
-                await addDoc(collection(db, "messages"), {
-                    text: text,
-                    senderId: currentUser.uid,
-                    senderEmail: currentUser.email,
-                    createdAt: serverTimestamp()
+                const response = await fetch(workerUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        prompt: prompt,
+                        image: image // إذا كنت داعم معالجة الصور بالـ Worker
+                    })
                 });
+
+                const data = await response.json();
+                
+                // إزالة مؤشر التحميل
+                document.getElementById(loadingId).remove();
+
+                if (response.ok) {
+                    appendMessage(data.response || "تم الرد بنجاح", 'bot');
+                } else {
+                    appendMessage("حدث خطأ في الاتصال بالسيرفر.", 'bot');
+                }
             } catch (error) {
-                console.error("خطأ الإرسال:", error);
-                alert("تعذر إرسال الرسالة: " + error.message);
+                document.getElementById(loadingId).remove();
+                appendMessage("تعذر الاتصال بالخادم. تأكد من الإنترنت.", 'bot');
             }
-        });
-
-        // تسجيل الدخول
-        loginBtn.addEventListener('click', async () => {
-            hideAlert();
-            const email = emailInput.value.trim();
-            const password = passwordInput.value.trim();
-
-            if (!email || !password) {
-                showAlert('يرجى إدخال البريد وكلمة المرور.');
-                return;
-            }
-
-            setLoading(true);
-            try {
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                goToChat(userCredential.user);
-            } catch (error) {
-                handleAuthError(error);
-            } finally {
-                setLoading(false);
-            }
-        });
-
-        // إنشاء حساب جديد
-        signupBtn.addEventListener('click', async () => {
-            hideAlert();
-            const email = emailInput.value.trim();
-            const password = passwordInput.value.trim();
-
-            if (!email || !password) {
-                showAlert('يرجى إدخال البريد وكلمة المرور.');
-                return;
-            }
-
-            if (password.length < 6) {
-                showAlert('كلمة المرور يجب أن تكون 6 خانات على الأقل.');
-                return;
-            }
-
-            setLoading(true);
-            try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                goToChat(userCredential.user);
-            } catch (error) {
-                handleAuthError(error);
-            } finally {
-                setLoading(false);
-            }
-        });
-
-        // تسجيل الخروج
-        logoutBtn.addEventListener('click', async () => {
-            if (unsubscribeMessages) unsubscribeMessages();
-            await signOut(auth);
-            chatScreen.style.display = 'none';
-            authCard.style.display = 'block';
-            passwordInput.value = '';
-            hideAlert();
-        });
+        }
     </script>
 </body>
 </html>
