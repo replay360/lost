@@ -3,62 +3,393 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شات الذكاء الاصطناعي</title>
+    <title>مساعد البوسترات الرياضية الذكي</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f9; text-align: center; }
-        .chat-box { max-width: 500px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        textarea { width: 100%; height: 80px; margin-bottom: 10px; padding: 10px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; }
-        button { background-color: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; }
-        button:hover { background-color: #218838; }
-        #responseArea { margin-top: 20px; padding: 10px; background: #e9ecef; border-radius: 5px; min-height: 50px; text-align: right; white-space: pre-wrap; }
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --accent: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        header {
+            background-color: var(--card-bg);
+            padding: 15px 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .container {
+            flex: 1;
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 90px; /* مساحة للشريط السفلي */
+        }
+
+        /* التبويبات والشاشات */
+        .screen {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* صندوق المحادثة أو النتائج */
+        .output-box {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15px;
+            min-height: 250px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        /* حقول الإدخال والأزرار */
+        textarea, input[type="text"] {
+            width: 100%;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px;
+            color: var(--text-main);
+            resize: none;
+            font-size: 1rem;
+            margin-bottom: 10px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus, input:focus {
+            border-color: var(--primary);
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        /* قسم رفع الصور وتوضيحها */
+        .upload-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            background-color: var(--card-bg);
+            cursor: pointer;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .upload-section input[type="file"] {
+            display: none;
+        }
+
+        .preview-container {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .preview-box {
+            flex: 1;
+            min-width: 200px;
+            max-width: 260px;
+            text-align: center;
+        }
+
+        .preview-box img {
+            width: 100%;
+            max-height: 220px;
+            object-fit: contain;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: #000;
+        }
+
+        .preview-box p {
+            margin-top: 5px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* الشريط السفلي الاحترافي */
+        nav.bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--card-bg);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            transition: 0.2s;
+            flex: 1;
+        }
+
+        .nav-item svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+            transition: transform 0.2s;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .nav-item.active svg {
+            transform: scale(1.15); /* تكبير الخيار المحدد مثلما طلبت */
+        }
+
+        /* مؤشر التحميل (Loader) */
+        .loader {
+            display: none;
+            text-align: center;
+            color: var(--primary);
+            margin: 10px 0;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
 
-<div class="chat-box">
-    <h2>تحدث مع الذكاء الاصطناعي</h2>
-    <textarea id="userInput" placeholder="اكتب سؤالك هنا..."></textarea>
-    <button onclick="sendToAI()">إرسال</button>
-    
-    <div id="responseArea">الرد سيظهر هنا...</div>
-</div>
+    <header>مساعد التصميم والأخبار الرياضية</header>
 
-<script>
-async function sendToAI() {
-    const userMessage = document.getElementById("userInput").value;
-    const responseArea = document.getElementById("responseArea");
+    <div class="container">
 
-    if (!userMessage.trim()) {
-        alert("يرجى كتابة سؤالك أولاً!");
-        return;
-    }
+        <!-- ================= الشاشة الأولى: صياغة الأخبار الرياضية ================= -->
+        <div id="newsScreen" class="screen active">
+            <h3 style="margin-bottom: 10px; font-size: 1.1rem;">صياغة الأخبار الرياضية بالذكاء الاصطناعي</h3>
+            <div class="output-box" id="newsOutput">أهلاً بك! اكتب تفاصيل الخبر أو رؤوس أقلام هنا، وسيقوم الذكاء الاصطناعي بصياغته كخبر رياضي احترافي ومباشر.</div>
+            
+            <textarea id="newsPrompt" rows="3" placeholder="اكتب فكرة الخبر الرياضي هنا..."></textarea>
+            <button class="btn" onclick="generateNews()">إرسال وصياغة الخبر</button>
+            <div id="newsLoader" class="loader">جاري صياغة الخبر... ⏳</div>
+        </div>
 
-    responseArea.innerText = "جاري التفكير والأجابة...";
+        <!-- ================= الشاشة الثانية: توضيح وتصفية الصور ================= -->
+        <div id="imageScreen" class="screen">
+            <h3 style="margin-bottom: 10px; font-size: 1.1rem;">توضيح وتكبير دقة الصور (AI Upscaler)</h3>
+            
+            <label class="upload-section" for="imageInput">
+                <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <span>اضغط هنا لاختيار صورة لتوضيحها</span>
+                <input type="file" id="imageInput" accept="image/*" onchange="previewImage(event)">
+            </label>
 
-    // رابط الـ Worker الجديد والصحيح 100%
-    const WORKER_URL = "https://lively-wind-5aff.r3160977.workers.dev/";
+            <div class="preview-container" id="previewArea" style="display: none;">
+                <div class="preview-box">
+                    <p>الصورة الأصلية</p>
+                    <img id="originalImg" src="" alt="Original">
+                </div>
+                <div class="preview-box" id="enhancedBox" style="display: none;">
+                    <p>الصورة الصافية (بعد التوضيح)</p>
+                    <img id="enhancedImg" src="" alt="Enhanced">
+                </div>
+            </div>
 
-    try {
-        const response = await fetch(WORKER_URL, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ prompt: userMessage })
-        });
+            <button class="btn" id="enhanceBtn" style="margin-top: 15px; display: none;" onclick="enhanceImage()">بدء توضيح وتصفية الصورة 🚀</button>
+            <div id="imgLoader" class="loader">جاري معالجة وتوضيح الصورة بالذكاء الاصطناعي... قد يستغرق بضع ثواني ⏳</div>
+        </div>
 
-        const data = await response.json();
+    </div>
 
-        if (response.ok) {
-            responseArea.innerText = data.response;
-        } else {
-            responseArea.innerText = "خطأ من السيرفر: " + (data.error || "حدث خطأ غير معروف");
+    <!-- الشريط السفلي (Navigation Bar) مع التكبير المطلوب -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="switchScreen('news', this)">
+            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+            الأخبار الرياضية
+        </button>
+        <button class="nav-item" onclick="switchScreen('image', this)">
+            <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+            توضيح الصور
+        </button>
+    </nav>
+
+    <script>
+        // ضع رابط الـ Cloudflare Worker الخاص بك هنا مباشرة
+        const WORKER_URL = "https://lively-wind-5aff.r3160977.workers.dev/";
+
+        // التنقل بين الشاشات
+        function switchScreen(screenName, element) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+            if (screenName === 'news') {
+                document.getElementById('newsScreen').classList.add('active');
+            } else {
+                document.getElementById('imageScreen').classList.add('active');
+            }
+            element.classList.add('active');
         }
-    } catch (err) {
-        responseArea.innerText = "حدث خطأ في الاتصال بالسيرفر: " + err.message;
-    }
-}
-</script>
 
+        // دالة توليد الأخبار الرياضية عبر Gemini
+        async function generateNews() {
+            const prompt = document.getElementById('newsPrompt').value.trim();
+            const outputBox = document.getElementById('newsOutput');
+            const loader = document.getElementById('newsLoader');
+
+            if (!prompt) {
+                alert('يرجى كتابة فكرة الخبر أولاً!');
+                return;
+            }
+
+            loader.style.display = 'block';
+            outputBox.innerText = '';
+
+            try {
+                const response = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: prompt })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    outputBox.innerText = data.response;
+                } else {
+                    outputBox.innerText = 'خطأ: ' + (data.error || 'حدث خطأ غير معروف');
+                }
+            } catch (err) {
+                outputBox.innerText = 'فشل الاتصال بالسيرفر: ' + err.message;
+            } finally {
+                loader.style.display = 'none';
+            }
+        }
+
+        let selectedFileBase64 = null;
+        let selectedFileBlob = null;
+
+        // معاينة الصورة المرفوعة
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                selectedFileBlob = file;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    selectedFileBase64 = e.target.result;
+                    document.getElementById('originalImg').src = selectedFileBase64;
+                    document.getElementById('previewArea').style.display = 'flex';
+                    document.getElementById('enhanceBtn').style.display = 'block';
+                    document.getElementById('enhancedBox').style.display = 'none';
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // دالة إرسال الصورة لتوضيحها عبر Hugging Face في الـ Worker
+        async function enhanceImage() {
+            if (!selectedFileBlob) return;
+
+            const loader = document.getElementById('imgLoader');
+            const enhancedBox = document.getElementById('enhancedBox');
+            const enhancedImg = document.getElementById('enhancedImg');
+            
+            loader.style.display = 'block';
+            enhancedBox.style.display = 'none';
+
+            try {
+                // إرسال الصورة كـ Binary مباشر للسيرفر المدمج
+                const response = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': selectedFileBlob.type || 'image/jpeg' 
+                    },
+                    body: selectedFileBlob
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const imageUrl = URL.createObjectURL(blob);
+                    enhancedImg.src = imageUrl;
+                    enhancedBox.style.display = 'block';
+                } else {
+                    const errText = await response.text();
+                    alert('فشل توضيح الصورة: ' + errText);
+                }
+            } catch (err) {
+                alert('خطأ في الاتصال: ' + err.message);
+            } finally {
+                loader.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>
