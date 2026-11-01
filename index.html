@@ -3,293 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مساعد Gemini الذكي</title>
-    <!-- تضمين الخطوط وأيقونات FontAwesome -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <title>شات الذكاء الاصطناعي</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Cairo', sans-serif;
-        }
-        body {
-            background-color: #121212;
-            color: #e0e0e0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
-        header {
-            background-color: #1e1e1e;
-            padding: 15px;
-            text-align: center;
-            font-size: 1.2rem;
-            font-weight: 700;
-            border-bottom: 1px solid #2d2d2d;
-            color: #fff;
-        }
-        #chat-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            scroll-behavior: smooth;
-        }
-        .message {
-            max-width: 75%;
-            padding: 12px 16px;
-            border-radius: 15px;
-            line-height: 1.6;
-            word-wrap: break-word;
-            font-size: 0.95rem;
-        }
-        .user-message {
-            background-color: #2b5278;
-            color: #fff;
-            align-self: flex-end;
-            border-bottom-left-radius: 4px;
-        }
-        .bot-message {
-            background-color: #1e1e1e;
-            color: #e0e0e0;
-            align-self: flex-start;
-            border-bottom-right-radius: 4px;
-            border: 1px solid #2d2d2d;
-        }
-        .message img {
-            max-width: 100%;
-            border-radius: 10px;
-            margin-top: 8px;
-        }
-        #input-container {
-            background-color: #1e1e1e;
-            padding: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-top: 1px solid #2d2d2d;
-        }
-        .file-input-label, button {
-            background: none;
-            border: none;
-            color: #aaa;
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: color 0.3s;
-        }
-        .file-input-label:hover, button:hover {
-            color: #fff;
-        }
-        input[type="file"] {
-            display: none;
-        }
-        textarea {
-            flex: 1;
-            background-color: #2a2a2a;
-            border: 1px solid #3d3d3d;
-            border-radius: 20px;
-            padding: 10px 15px;
-            color: #fff;
-            resize: none;
-            max-height: 100px;
-            font-size: 0.95rem;
-            outline: none;
-        }
-        textarea:focus {
-            border-color: #2b5278;
-        }
-        #send-btn {
-            background-color: #2b5278;
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .recording {
-            color: #ff4444 !important;
-            animation: pulse 1.5s infinite;
-        }
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.4; }
-            100% { opacity: 1; }
-        }
+        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f9; text-align: center; }
+        .chat-box { max-width: 500px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        textarea { width: 100%; height: 80px; margin-bottom: 10px; padding: 10px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; }
+        button { background-color: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #218838; }
+        #responseArea { margin-top: 20px; padding: 10px; background: #e9ecef; border-radius: 5px; min-height: 50px; text-align: right; white-space: pre-wrap; }
     </style>
 </head>
 <body>
 
-    <header>
-        <i class="fa-solid fa-robot"></i> مساعد Gemini الذكي
-    </header>
+<div class="chat-box">
+    <h2>تحدث مع الذكاء الاصطناعي</h2>
+    <textarea id="userInput" placeholder="اكتب سؤالك هنا..."></textarea>
+    <button onclick="sendToAI()">إرسال</button>
+    
+    <div id="responseArea">الرد سيظهر هنا...</div>
+</div>
 
-    <div id="chat-container">
-        <div class="message bot-message">
-            أهلاً بك! أنا جاهز، اكتب لي رسالة أو ارفع صورا أو سجل صوت لنبدأ.
-        </div>
-    </div>
+<script>
+async function sendToAI() {
+    const userMessage = document.getElementById("userInput").value;
+    const responseArea = document.getElementById("responseArea");
 
-    <div id="input-container">
-        <!-- زر رفع الصور -->
-        <label class="file-input-label" for="image-input">
-            <i class="fa-solid fa-image"></i>
-        </label>
-        <input type="file" id="image-input" accept="image/*">
+    if (!userMessage.trim()) {
+        alert("يرجى كتابة سؤالك أولاً!");
+        return;
+    }
 
-        <!-- زر الميكروفون (تسجيل صوتي) -->
-        <button id="mic-btn" title="تسجيل صوت">
-            <i class="fa-solid fa-microphone"></i>
-        </button>
+    responseArea.innerText = "جاري التفكير والأجابة...";
 
-        <!-- حقل ادخال النص -->
-        <textarea id="user-input" rows="1" placeholder="اكتب رسالتك هنا..."></textarea>
+    // رابط الـ Worker الحقيقي الخاص بك مقترن مباشرةً
+    const WORKER_URL = "https://lively-wind-5aff.ingtra0977.workers.dev";
 
-        <!-- زر الإرسال -->
-        <button id="send-btn">
-            <i class="fa-solid fa-paper-plane"></i>
-        </button>
-    </div>
-
-    <script>
-        const workerUrl = "https://lively-wind-5aff.r3160977.workers.dev"; // رابط السيرفر مالتك
-        const chatContainer = document.getElementById('chat-container');
-        const userInput = document.getElementById('user-input');
-        const sendBtn = document.getElementById('send-btn');
-        const imageInput = document.getElementById('image-input');
-        const micBtn = document.getElementById('mic-btn');
-
-        let selectedImageBase64 = null;
-        let mediaRecorder;
-        let audioChunks = [];
-        let isRecording = false;
-
-        // تحويل الصورة المرفوعة إلى Base64
-        imageInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(uploadzení) {
-                    selectedImageBase64 = uploadzení.target.result;
-                    appendMessage(`تم إرفاق صورة بنجاح 📷`, 'user', selectedImageBase64);
-                };
-                reader.readAsDataURL(file);
-            }
+    try {
+        const response = await fetch(WORKER_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ prompt: userMessage })
         });
 
-        // التعامل مع التسجيل الصوتي
-        micBtn.addEventListener('click', async () => {
-            if (!isRecording) {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    mediaRecorder = new MediaRecorder(stream);
-                    audioChunks = [];
-                    
-                    mediaRecorder.ondataavailable = event => {
-                        audioChunks.push(event.data);
-                    };
+        const data = await response.json();
 
-                    mediaRecorder.onstop = async () => {
-                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                        // هنا تگدر تحول الصوت لـ Base64 أو ترسله للسيرفر إذا كنت مبرمج الـ Worker يستقبله
-                        appendMessage("تم إرسال تسجيل صوتي 🎤", 'user');
-                        sendToGemini("ملاحظة صوتية من المستخدم");
-                    };
-
-                    mediaRecorder.start();
-                    isRecording = true;
-                    micBtn.classList.add('recording');
-                } catch (err) {
-                    alert("لا يمكن الوصول إلى الميكروفون!");
-                }
-            } else {
-                mediaRecorder.stop();
-                isRecording = false;
-                micBtn.classList.remove('recording');
-            }
-        });
-
-        // حدث إرسال الرسالة
-        sendBtn.addEventListener('click', sendMessage);
-        userInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
-
-        function sendMessage() {
-            const text = userInput.value.trim();
-            if (!text && !selectedImageBase64) return;
-
-            appendMessage(text || "صورة مرفقة", 'user', selectedImageBase64);
-            
-            const promptToSend = text;
-            const imgToSend = selectedImageBase64;
-
-            userInput.value = '';
-            selectedImageBase64 = null;
-            imageInput.value = '';
-
-            sendToGemini(promptToSend, imgToSend);
+        if (response.ok) {
+            responseArea.innerText = data.response;
+        } else {
+            responseArea.innerText = "خطأ: " + (data.error || "حدث خطأ غير معروف");
         }
+    } catch (err) {
+        responseArea.innerText = "حدث خطأ في الاتصال بالسيرفر: " + err.message;
+    }
+}
+</script>
 
-        function appendMessage(text, sender, imgSrc = null) {
-            const msgDiv = document.createElement('div');
-            msgDiv.classList.add('message');
-            msgDiv.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
-            
-            let content = `<p>${text}</p>`;
-            if (imgSrc) {
-                content += `<img src="${imgSrc}" alt="Uploaded Image">`;
-            }
-            msgDiv.innerHTML = content;
-            chatContainer.appendChild(msgDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-
-        async function sendToGemini(prompt, image = null) {
-            // إضافة مؤشر جاري الكتابة
-            const loadingId = 'loading-' + Date.now();
-            const loadingDiv = document.createElement('div');
-            loadingDiv.id = loadingId;
-            loadingDiv.classList.add('message', 'bot-message');
-            loadingDiv.innerHTML = `<p><i class="fa-solid fa-spinner fa-spin"></i> جاري التفكير...</p>`;
-            chatContainer.appendChild(loadingDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-
-            try {
-                const response = await fetch(workerUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        prompt: prompt,
-                        image: image // إذا كنت داعم معالجة الصور بالـ Worker
-                    })
-                });
-
-                const data = await response.json();
-                
-                // إزالة مؤشر التحميل
-                document.getElementById(loadingId).remove();
-
-                if (response.ok) {
-                    appendMessage(data.response || "تم الرد بنجاح", 'bot');
-                } else {
-                    appendMessage("حدث خطأ في الاتصال بالسيرفر.", 'bot');
-                }
-            } catch (error) {
-                document.getElementById(loadingId).remove();
-                appendMessage("تعذر الاتصال بالخادم. تأكد من الإنترنت.", 'bot');
-            }
-        }
-    </script>
 </body>
 </html>
