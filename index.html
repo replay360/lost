@@ -35,7 +35,7 @@ async function sendToAI() {
 
     responseArea.innerText = "جاري التفكير والأجابة...";
 
-    // رابط الـ Worker الحقيقي الخاص بك مقترن مباشرةً
+    // رابط الـ Worker الحقيقي الخاص بك
     const WORKER_URL = "https://lively-wind-5aff.ingtra0977.workers.dev";
 
     try {
@@ -52,7 +52,7 @@ async function sendToAI() {
         if (response.ok) {
             responseArea.innerText = data.response;
         } else {
-            responseArea.innerText = "خطأ: " + (data.error || "حدث خطأ غير معروف");
+            responseArea.innerText = "خطأ من السيرفر: " + (data.error || "حدث خطأ غير معروف");
         }
     } catch (err) {
         responseArea.innerText = "حدث خطأ في الاتصال بالسيرفر: " + err.message;
