@@ -1,395 +1,1065 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مساعد البوسترات الرياضية الذكي</title>
-    <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --primary: #3b82f6;
-            --primary-hover: #2563eb;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border: #334155;
-            --accent: #10b981;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        header {
-            background-color: var(--card-bg);
-            padding: 15px 20px;
-            text-align: center;
-            border-bottom: 1px solid var(--border);
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: var(--primary);
-        }
-
-        .container {
-            flex: 1;
-            max-width: 600px;
-            width: 100%;
-            margin: 0 auto;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            padding-bottom: 90px; /* مساحة للشريط السفلي */
-        }
-
-        /* التبويبات والشاشات */
-        .screen {
-            display: none;
-            flex-direction: column;
-            flex: 1;
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        .screen.active {
-            display: flex;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* صندوق المحادثة أو النتائج */
-        .output-box {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 15px;
-            min-height: 250px;
-            max-height: 400px;
-            overflow-y: auto;
-            margin-bottom: 15px;
-            line-height: 1.6;
-            font-size: 0.95rem;
-        }
-
-        /* حقول الإدخال والأزرار */
-        textarea, input[type="text"] {
-            width: 100%;
-            background-color: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 12px;
-            color: var(--text-main);
-            resize: none;
-            font-size: 1rem;
-            margin-bottom: 10px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        textarea:focus, input:focus {
-            border-color: var(--primary);
-        }
-
-        .btn {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            padding: 12px 20px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-            text-align: center;
-        }
-
-        .btn:hover {
-            background-color: var(--primary-hover);
-        }
-
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        /* قسم رفع الصور وتوضيحها */
-        .upload-section {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            align-items: center;
-            justify-content: center;
-            border: 2px dashed var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            background-color: var(--card-bg);
-            cursor: pointer;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .upload-section input[type="file"] {
-            display: none;
-        }
-
-        .preview-container {
-            display: flex;
-            gap: 10px;
-            width: 100%;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .preview-box {
-            flex: 1;
-            min-width: 200px;
-            max-width: 260px;
-            text-align: center;
-        }
-
-        .preview-box img {
-            width: 100%;
-            max-height: 220px;
-            object-fit: contain;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: #000;
-        }
-
-        .preview-box p {
-            margin-top: 5px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
-        /* الشريط السفلي الاحترافي */
-        nav.bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: var(--card-bg);
-            border-top: 1px solid var(--border);
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            z-index: 1000;
-        }
-
-        .nav-item {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            transition: 0.2s;
-            flex: 1;
-        }
-
-        .nav-item svg {
-            width: 24px;
-            height: 24px;
-            fill: currentColor;
-            transition: transform 0.2s;
-        }
-
-        .nav-item.active {
-            color: var(--primary);
-            font-weight: bold;
-        }
-
-        .nav-item.active svg {
-            transform: scale(1.15); /* تكبير الخيار المحدد مثلما طلبت */
-        }
-
-        /* مؤشر التحميل (Loader) */
-        .loader {
-            display: none;
-            text-align: center;
-            color: var(--primary);
-            margin: 10px 0;
-            font-size: 0.9rem;
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Globle ♾️ خمّن الدولة</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  font-family:'Cairo','Tajawal',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  color:#0b0b0b;min-height:100vh;
+  background:linear-gradient(180deg,#d9f3fb 0%,#8fd4ee 14%,#cfeaf1 34%,#c3dccd 60%,#e3e4c4 82%,#f9ecd2 100%) fixed;
+}
+#app{max-width:520px;margin:0 auto;padding:0 20px 60px}
+header{direction:ltr;text-align:center;padding-top:6px}
+h1{font-size:58px;line-height:1;margin:6px 0 0;font-weight:800;letter-spacing:-1px;font-family:'Cairo',system-ui,sans-serif}
+.bar{display:flex;align-items:flex-end;justify-content:space-between;border-bottom:2px solid #000;height:56px;position:relative;margin-top:2px}
+.bar .l,.bar .r{display:flex;align-items:center;gap:10px;padding-bottom:8px}
+.ib{background:none;border:0;padding:2px;cursor:pointer;color:#000;display:flex;align-items:center;justify-content:center;font-size:24px;line-height:1}
+.ib svg{width:30px;height:30px}
+.inf{position:absolute;left:50%;transform:translateX(-50%);bottom:-2px;width:56px;height:56px;border-radius:13px;background:linear-gradient(145deg,#b44fd0,#8d2fa8);display:flex;align-items:center;justify-content:center;color:#fff;font-size:48px;font-weight:800;line-height:1;box-shadow:inset 0 2px 3px rgba(255,255,255,.35)}
+#roomBar{margin-top:14px;background:rgba(255,255,255,.7);border-radius:12px;padding:8px 12px;font-size:15px;cursor:pointer;border:1px solid rgba(0,0,0,.08)}
+#roomBar .t{font-weight:700}
+#roomBar .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:99px;color:#fff;font-size:13px;font-weight:600}
+.inputRow{direction:ltr;display:flex;align-items:center;gap:14px;margin-top:38px}
+#inp{flex:1;min-width:0;height:48px;border:1px solid #d8d8d8;border-radius:8px;padding:0 12px;font:inherit;font-size:20px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.12);outline:none;direction:rtl;text-align:right}
+#inp:focus{box-shadow:0 0 0 3px rgba(240,160,60,.55)}
+#inp:disabled{opacity:.6}
+#bEnter{background:none;border:0;color:#fff;font:inherit;font-weight:800;font-size:22px;cursor:pointer;text-shadow:0 1px 3px rgba(0,0,0,.35);padding:6px 4px;min-width:64px}
+#turnBar{margin-top:12px;border-radius:12px;padding:8px 12px;text-align:center;font-size:20px;font-weight:800;background:rgba(255,255,255,.7)}
+#turnBar.mine{background:#c8f2cf;box-shadow:0 0 0 2px #3aa55a}
+#msg{min-height:26px;margin-top:8px;font-size:16px;font-weight:600;color:#7a1d1d;text-align:center}
+#msg.ok{color:#1c5c2b}
+#globeWrap{position:relative;width:100%;margin-top:6px;aspect-ratio:1/1;user-select:none;-webkit-user-select:none}
+#cv{width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+#tip{position:absolute;pointer-events:none;background:rgba(10,20,35,.88);color:#fff;padding:5px 14px;border-radius:10px;font-weight:700;font-size:20px;white-space:nowrap;transform:translate(-50%,-100%);opacity:0;transition:opacity .25s;z-index:5}
+#tip.on{opacity:1}
+#loading{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;font-weight:700;text-align:center;padding:20px;z-index:6}
+#loading button{font:inherit;padding:8px 18px;border-radius:10px;border:1px solid #e08a2e;background:#f7bd62;cursor:pointer;font-weight:700}
+.spin{width:38px;height:38px;border-radius:50%;border:4px solid rgba(0,0,0,.15);border-top-color:#2a7bc9;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.zoom{display:flex;justify-content:space-between;direction:ltr;margin-top:10px}
+.zb{width:60px;height:38px;border-radius:10px;border:2px solid #f0883e;background:#f7bd62;font-size:24px;font-weight:700;cursor:pointer;color:#111;line-height:1;padding:0}
+.zb:active{transform:scale(.94)}
+#banner{margin-top:22px;border-radius:16px;padding:16px;text-align:center;background:rgba(255,255,255,.8);box-shadow:0 2px 10px rgba(0,0,0,.12);font-size:20px;font-weight:700}
+#banner small{display:block;font-size:15px;font-weight:600;color:#444;margin-top:4px}
+.btn{font:inherit;font-weight:700;padding:9px 18px;border-radius:12px;border:2px solid #e08a2e;background:#f7bd62;cursor:pointer;color:#111;font-size:17px}
+.btn.alt{background:#fff;border-color:#bbb}
+.btn.red{background:#f6b4b4;border-color:#d96a6a}
+.btn:disabled{opacity:.5}
+#banner .btn{margin-top:12px}
+h2{font-size:30px;margin:34px 0 8px;font-weight:800}
+.row{display:flex;align-items:center;gap:12px;padding:6px 0;font-size:24px}
+.row .fl{font-size:30px;line-height:1;width:44px;text-align:center;font-family:"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif}
+.row .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .ds{font-size:17px;font-weight:700;padding:2px 10px;border-radius:99px;color:#222;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);white-space:nowrap;direction:rtl}
+.row .by{font-size:12px;color:#fff;padding:1px 8px;border-radius:99px;font-weight:600}
+#last{margin-top:24px;font-size:24px;font-weight:600}
+#cnt{margin-top:6px;font-size:16px;color:#444}
+#giveup{margin-top:18px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal[hidden]{display:none}
+.card{background:#fff;border-radius:18px;padding:20px;width:100%;max-width:440px;max-height:90vh;overflow:auto;position:relative;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+.card h3{margin:0 0 14px;font-size:26px;font-weight:800}
+.card .x{position:absolute;top:10px;left:12px;border:0;background:none;font-size:26px;cursor:pointer;color:#555}
+.set{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #eee;font-size:18px}
+.set input[type=checkbox]{width:24px;height:24px}
+.set select,.card input[type=text]{font:inherit;font-size:18px;padding:7px 10px;border-radius:10px;border:1px solid #ccc;min-width:0}
+.card input[type=text]{width:100%}
+.stat{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat div{background:#f3f7fa;border-radius:12px;padding:12px;text-align:center}
+.stat b{display:block;font-size:30px}
+.pl{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #eee;font-size:19px}
+.pl .sc{margin-inline-start:auto;font-weight:800}
+.code{font-size:40px;font-weight:800;letter-spacing:6px;text-align:center;direction:ltr;background:#f3f7fa;border-radius:14px;padding:8px;cursor:pointer}
+.sub{font-size:14px;color:#666;margin:6px 0 12px}
+.fr{display:flex;gap:8px;margin:10px 0;flex-wrap:wrap}
+.fr .btn{flex:1}
+.ltr{direction:ltr}
+</style>
 </head>
 <body>
-
-    <header>مساعد التصميم والأخبار الرياضية</header>
-
-    <div class="container">
-
-        <!-- ================= الشاشة الأولى: صياغة الأخبار الرياضية ================= -->
-        <div id="newsScreen" class="screen active">
-            <h3 style="margin-bottom: 10px; font-size: 1.1rem;">صياغة الأخبار الرياضية بالذكاء الاصطناعي</h3>
-            <div class="output-box" id="newsOutput">أهلاً بك! اكتب تفاصيل الخبر أو رؤوس أقلام هنا، وسيقوم الذكاء الاصطناعي بصياغته كخبر رياضي احترافي ومباشر.</div>
-            
-            <textarea id="newsPrompt" rows="3" placeholder="اكتب فكرة الخبر الرياضي هنا..."></textarea>
-            <button class="btn" onclick="generateNews()">إرسال وصياغة الخبر</button>
-            <div id="newsLoader" class="loader">جاري صياغة الخبر... ⏳</div>
-        </div>
-
-        <!-- ================= الشاشة الثانية: توضيح وتصفية الصور ================= -->
-        <div id="imageScreen" class="screen">
-            <h3 style="margin-bottom: 10px; font-size: 1.1rem;">توضيح وتكبير دقة الصور (AI Upscaler)</h3>
-            
-            <label class="upload-section" for="imageInput">
-                <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                <span>اضغط هنا لاختيار صورة لتوضيحها</span>
-                <input type="file" id="imageInput" accept="image/*" onchange="previewImage(event)">
-            </label>
-
-            <div class="preview-container" id="previewArea" style="display: none;">
-                <div class="preview-box">
-                    <p>الصورة الأصلية</p>
-                    <img id="originalImg" src="" alt="Original">
-                </div>
-                <div class="preview-box" id="enhancedBox" style="display: none;">
-                    <p>الصورة الصافية (بعد التوضيح)</p>
-                    <img id="enhancedImg" src="" alt="Enhanced">
-                </div>
-            </div>
-
-            <button class="btn" id="enhanceBtn" style="margin-top: 15px; display: none;" onclick="enhanceImage()">بدء توضيح وتصفية الصورة 🚀</button>
-            <div id="imgLoader" class="loader">جاري معالجة وتوضيح الصورة بالذكاء الاصطناعي... قد يستغرق بضع ثواني ⏳</div>
-        </div>
-
+<div id="app">
+  <header>
+    <h1>Globle</h1>
+    <div class="bar">
+      <div class="l"><button class="ib" id="bNew" title="لعبة جديدة"><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 3v5h-5"/></svg></button></div>
+      <div class="inf">∞</div>
+      <div class="r">
+        <button class="ib" id="bNet" title="أونلاين">🌐</button>
+        <button class="ib" id="bStats" title="الإحصائيات"><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.4" stroke-linejoin="round"><rect x="3" y="11" width="5" height="9"/><rect x="9.5" y="3" width="5" height="17"/><rect x="16" y="8" width="5" height="12"/></svg></button>
+        <button class="ib" id="bSet" title="الإعدادات"><svg viewBox="0 0 24 24" fill="#000"><path d="M19.4 13a7.7 7.7 0 0 0 0-2l2.1-1.6a.5.5 0 0 0 .1-.6l-2-3.5a.5.5 0 0 0-.6-.2l-2.5 1a7.4 7.4 0 0 0-1.7-1l-.4-2.6a.5.5 0 0 0-.5-.4h-4a.5.5 0 0 0-.5.4l-.4 2.6a7.4 7.4 0 0 0-1.7 1l-2.5-1a.5.5 0 0 0-.6.2l-2 3.5a.5.5 0 0 0 .1.6L4.6 11a7.7 7.7 0 0 0 0 2l-2.1 1.6a.5.5 0 0 0-.1.6l2 3.5c.1.2.4.3.6.2l2.5-1c.5.4 1.1.7 1.7 1l.4 2.6c0 .2.2.4.5.4h4c.3 0 .5-.2.5-.4l.4-2.6c.6-.3 1.2-.6 1.7-1l2.5 1c.2.1.5 0 .6-.2l2-3.5a.5.5 0 0 0-.1-.6L19.4 13zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg></button>
+      </div>
     </div>
+  </header>
 
-    <!-- الشريط السفلي (Navigation Bar) مع التكبير المطلوب -->
-    <nav class="bottom-nav">
-        <button class="nav-item active" onclick="switchScreen('news', this)">
-            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-            الأخبار الرياضية
-        </button>
-        <button class="nav-item" onclick="switchScreen('image', this)">
-            <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
-            توضيح الصور
-        </button>
-    </nav>
+  <div id="roomBar" hidden></div>
 
-    <script>
-        // ضع رابط الـ Cloudflare Worker الخاص بك هنا مباشرة
-        const WORKER_URL = "https://lively-wind-5aff.r3160977.workers.dev/";
+  <div class="inputRow">
+    <input id="inp" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="اسم الدولة">
+    <button id="bEnter">إدخال</button>
+  </div>
+  <div id="turnBar" hidden></div>
+  <div id="msg"></div>
 
-        // التنقل بين الشاشات
-        function switchScreen(screenName, element) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  <div id="globeWrap">
+    <canvas id="cv"></canvas>
+    <div id="tip"></div>
+    <div id="loading"><div class="spin"></div><div>جاري تحميل الخريطة…</div></div>
+  </div>
+  <div class="zoom"><button class="zb" id="zOut">-</button><button class="zb" id="zIn">+</button></div>
 
-            if (screenName === 'news') {
-                document.getElementById('newsScreen').classList.add('active');
-            } else {
-                document.getElementById('imageScreen').classList.add('active');
-            }
-            element.classList.add('active');
+  <div id="banner" hidden></div>
+
+  <section>
+    <h2>الأقرب</h2>
+    <div id="list"></div>
+    <div id="last"></div>
+    <div id="cnt"></div>
+    <button class="btn alt" id="giveup" hidden>استسلام 🏳️</button>
+  </section>
+</div>
+
+<div class="modal" id="mSet" hidden><div class="card"><button class="x">✕</button><h3>الإعدادات</h3>
+  <div class="set"><span>إظهار حدود الدول</span><input type="checkbox" id="sBorders"></div>
+  <div class="set"><span>تضمين الدول الصغيرة جداً (صعب)</span><input type="checkbox" id="sSmall"></div>
+  <div class="set"><span>المسافة بالأميال</span><input type="checkbox" id="sMiles"></div>
+  <div class="set"><span>سيرفر الأونلاين</span><select id="sServer"></select></div>
+  <div class="set" style="display:block"><div style="margin-bottom:6px">اسمك باللعب الأونلاين</div><input type="text" id="sName" maxlength="14"></div>
+  <div class="sub">دوس على أي دولة بالكوكب وراح يطلع اسمها لثواني.</div>
+</div></div>
+<div class="modal" id="mStats" hidden><div class="card"><button class="x">✕</button><h3>الإحصائيات</h3><div class="stat" id="statBody"></div></div></div>
+<div class="modal" id="mNet" hidden><div class="card"><button class="x">✕</button><h3>🌐 لعب أونلاين</h3><div id="netBody"></div></div></div>
+
+<script>
+(()=>{
+'use strict';
+/* ====================== بيانات الدول (ISO رقمي، رمز، الاسم، مرادفات، دولة أساسية) ====================== */
+const COUNTRIES = [[4, "AF", "أفغانستان", [], 1], [8, "AL", "ألبانيا", [], 1], [12, "DZ", "الجزائر", [], 1], [20, "AD", "أندورا", [], 1], [24, "AO", "أنغولا", ["انجولا"], 1], [28, "AG", "أنتيغوا وباربودا", ["انتيغوا", "انتيجوا وبربودا"], 1], [32, "AR", "الأرجنتين", ["الارجنتين"], 1], [51, "AM", "أرمينيا", [], 1], [36, "AU", "أستراليا", ["استراليا"], 1], [40, "AT", "النمسا", [], 1], [31, "AZ", "أذربيجان", ["اذربيجان"], 1], [44, "BS", "جزر البهاما", ["البهاما"], 1], [48, "BH", "البحرين", [], 1], [50, "BD", "بنغلاديش", ["بنغلادش", "بنجلاديش"], 1], [52, "BB", "بربادوس", ["باربادوس"], 1], [112, "BY", "بيلاروسيا", ["روسيا البيضاء", "بيلاروس"], 1], [56, "BE", "بلجيكا", [], 1], [84, "BZ", "بليز", [], 1], [204, "BJ", "بنين", [], 1], [64, "BT", "بوتان", [], 1], [68, "BO", "بوليفيا", [], 1], [70, "BA", "البوسنة والهرسك", ["البوسنه", "البوسنة"], 1], [72, "BW", "بوتسوانا", [], 1], [76, "BR", "البرازيل", [], 1], [96, "BN", "بروناي", [], 1], [100, "BG", "بلغاريا", [], 1], [854, "BF", "بوركينا فاسو", ["بوركينافاسو"], 1], [108, "BI", "بوروندي", [], 1], [132, "CV", "الرأس الأخضر", ["الراس الاخضر", "كاب فيردي"], 1], [116, "KH", "كمبوديا", [], 1], [120, "CM", "الكاميرون", [], 1], [124, "CA", "كندا", [], 1], [140, "CF", "أفريقيا الوسطى", ["افريقيا الوسطى", "جمهورية افريقيا الوسطى"], 1], [148, "TD", "تشاد", [], 1], [152, "CL", "تشيلي", [], 1], [156, "CN", "الصين", [], 1], [170, "CO", "كولومبيا", [], 1], [174, "KM", "جزر القمر", ["القمر"], 1], [178, "CG", "الكونغو", ["جمهورية الكونغو", "كونغو برازافيل", "الكونغو برازافيل", "الكونجو"], 1], [180, "CD", "الكونغو الديمقراطية", ["جمهورية الكونغو الديمقراطية", "الكونجو الديمقراطية", "كونغو كينشاسا"], 1], [188, "CR", "كوستاريكا", [], 1], [384, "CI", "ساحل العاج", ["كوت ديفوار"], 1], [191, "HR", "كرواتيا", [], 1], [192, "CU", "كوبا", [], 1], [196, "CY", "قبرص", [], 1], [203, "CZ", "التشيك", ["جمهورية التشيك", "تشيكيا"], 1], [208, "DK", "الدنمارك", ["الدنمارك"], 1], [262, "DJ", "جيبوتي", [], 1], [212, "DM", "دومينيكا", [], 1], [214, "DO", "جمهورية الدومينيكان", ["الدومينيكان"], 1], [218, "EC", "الإكوادور", ["الاكوادور", "اكوادور"], 1], [818, "EG", "مصر", [], 1], [222, "SV", "السلفادور", [], 1], [226, "GQ", "غينيا الاستوائية", ["غينيا الإستوائية"], 1], [232, "ER", "إريتريا", ["اريتريا"], 1], [233, "EE", "إستونيا", ["استونيا"], 1], [748, "SZ", "إسواتيني", ["سوازيلاند", "اسواتيني"], 1], [231, "ET", "إثيوبيا", ["اثيوبيا", "الحبشة"], 1], [242, "FJ", "فيجي", ["فيغي", "فيجى"], 1], [246, "FI", "فنلندا", [], 1], [250, "FR", "فرنسا", [], 1], [266, "GA", "الغابون", [], 1], [270, "GM", "غامبيا", ["جامبيا"], 1], [268, "GE", "جورجيا", [], 1], [276, "DE", "ألمانيا", ["المانيا"], 1], [288, "GH", "غانا", [], 1], [300, "GR", "اليونان", [], 1], [308, "GD", "غرينادا", ["جرينادا"], 1], [320, "GT", "غواتيمالا", ["جواتيمالا"], 1], [324, "GN", "غينيا", [], 1], [624, "GW", "غينيا بيساو", ["غينيا بيساو"], 1], [328, "GY", "غيانا", ["جيانا"], 1], [332, "HT", "هايتي", [], 1], [340, "HN", "هندوراس", [], 1], [348, "HU", "المجر", ["هنغاريا", "هنجاريا"], 1], [352, "IS", "آيسلندا", ["ايسلندا", "ايسلند"], 1], [356, "IN", "الهند", [], 1], [360, "ID", "إندونيسيا", ["اندونيسيا"], 1], [364, "IR", "إيران", ["ايران"], 1], [368, "IQ", "العراق", [], 1], [372, "IE", "أيرلندا", ["ايرلندا", "ايرلاند"], 1], [376, "IL", "إسرائيل", ["اسرائيل"], 1], [380, "IT", "إيطاليا", ["ايطاليا"], 1], [388, "JM", "جامايكا", ["جاميكا"], 1], [392, "JP", "اليابان", [], 1], [400, "JO", "الأردن", ["الاردن"], 1], [398, "KZ", "كازاخستان", [], 1], [404, "KE", "كينيا", [], 1], [296, "KI", "كيريباتي", [], 1], [408, "KP", "كوريا الشمالية", [], 1], [410, "KR", "كوريا الجنوبية", [], 1], [414, "KW", "الكويت", [], 1], [417, "KG", "قرغيزستان", ["قيرغيزستان", "كيرغيزستان"], 1], [418, "LA", "لاوس", [], 1], [428, "LV", "لاتفيا", [], 1], [422, "LB", "لبنان", [], 1], [426, "LS", "ليسوتو", [], 1], [430, "LR", "ليبيريا", [], 1], [434, "LY", "ليبيا", [], 1], [438, "LI", "ليختنشتاين", ["لختنشتاين", "ليشتنشتاين"], 1], [440, "LT", "ليتوانيا", [], 1], [442, "LU", "لوكسمبورغ", ["لوكسمبورج"], 1], [450, "MG", "مدغشقر", [], 1], [454, "MW", "مالاوي", [], 1], [458, "MY", "ماليزيا", [], 1], [462, "MV", "المالديف", ["جزر المالديف"], 1], [466, "ML", "مالي", [], 1], [470, "MT", "مالطا", [], 1], [584, "MH", "جزر مارشال", [], 1], [478, "MR", "موريتانيا", [], 1], [480, "MU", "موريشيوس", [], 1], [484, "MX", "المكسيك", [], 1], [583, "FM", "ميكرونيزيا", [], 1], [498, "MD", "مولدوفا", [], 1], [492, "MC", "موناكو", [], 1], [496, "MN", "منغوليا", ["منغوليا"], 1], [499, "ME", "الجبل الأسود", ["الجبل الاسود"], 1], [504, "MA", "المغرب", [], 1], [508, "MZ", "موزمبيق", [], 1], [104, "MM", "ميانمار", ["بورما"], 1], [516, "NA", "ناميبيا", [], 1], [520, "NR", "ناورو", [], 1], [524, "NP", "نيبال", [], 1], [528, "NL", "هولندا", [], 1], [554, "NZ", "نيوزيلندا", ["نيوزلندا"], 1], [558, "NI", "نيكاراغوا", ["نيكاراجوا"], 1], [562, "NE", "النيجر", [], 1], [566, "NG", "نيجيريا", [], 1], [807, "MK", "مقدونيا الشمالية", ["مقدونيا"], 1], [578, "NO", "النرويج", [], 1], [512, "OM", "عُمان", ["عمان", "سلطنة عمان"], 1], [586, "PK", "باكستان", [], 1], [585, "PW", "بالاو", [], 1], [591, "PA", "بنما", [], 1], [598, "PG", "بابوا غينيا الجديدة", ["بابوا"], 1], [600, "PY", "باراغواي", ["باراجواي"], 1], [604, "PE", "بيرو", [], 1], [608, "PH", "الفلبين", [], 1], [616, "PL", "بولندا", [], 1], [620, "PT", "البرتغال", [], 1], [634, "QA", "قطر", [], 1], [642, "RO", "رومانيا", [], 1], [643, "RU", "روسيا", [], 1], [646, "RW", "رواندا", [], 1], [659, "KN", "سانت كيتس ونيفيس", [], 1], [662, "LC", "سانت لوسيا", [], 1], [670, "VC", "سانت فنسنت والغرينادين", ["سانت فينسنت"], 1], [882, "WS", "ساموا", [], 1], [674, "SM", "سان مارينو", [], 1], [678, "ST", "ساو تومي وبرينسيبي", ["ساوتومي"], 1], [682, "SA", "السعودية", ["المملكة العربية السعودية"], 1], [686, "SN", "السنغال", [], 1], [688, "RS", "صربيا", [], 1], [690, "SC", "سيشل", ["سيشيل"], 1], [694, "SL", "سيراليون", [], 1], [702, "SG", "سنغافورة", [], 1], [703, "SK", "سلوفاكيا", [], 1], [705, "SI", "سلوفينيا", [], 1], [90, "SB", "جزر سليمان", [], 1], [706, "SO", "الصومال", [], 1], [710, "ZA", "جنوب أفريقيا", ["جنوب افريقيا"], 1], [728, "SS", "جنوب السودان", [], 1], [724, "ES", "إسبانيا", ["اسبانيا"], 1], [144, "LK", "سريلانكا", [], 1], [729, "SD", "السودان", [], 1], [740, "SR", "سورينام", [], 1], [752, "SE", "السويد", [], 1], [756, "CH", "سويسرا", [], 1], [760, "SY", "سوريا", [], 1], [762, "TJ", "طاجيكستان", ["طاجكستان"], 1], [834, "TZ", "تنزانيا", [], 1], [764, "TH", "تايلاند", [], 1], [626, "TL", "تيمور الشرقية", ["تيمور ليشتي"], 1], [768, "TG", "توغو", ["توجو"], 1], [776, "TO", "تونغا", [], 1], [780, "TT", "ترينيداد وتوباغو", ["ترينيداد"], 1], [788, "TN", "تونس", [], 1], [792, "TR", "تركيا", [], 1], [795, "TM", "تركمانستان", [], 1], [798, "TV", "توفالو", [], 1], [800, "UG", "أوغندا", ["اوغندا"], 1], [804, "UA", "أوكرانيا", ["اوكرانيا"], 1], [784, "AE", "الإمارات", ["الامارات العربية المتحدة", "امارات", "الامارات"], 1], [826, "GB", "بريطانيا", ["المملكة المتحدة", "انكلترا", "انجلترا", "بريطانيا العظمى"], 1], [840, "US", "أمريكا", ["الولايات المتحدة", "الولايات المتحدة الامريكية", "امريكا", "اميركا"], 1], [858, "UY", "الأوروغواي", ["اورغواي", "الاوروغواي", "اوروجواي"], 1], [860, "UZ", "أوزبكستان", ["اوزباكستان"], 1], [548, "VU", "فانواتو", [], 1], [336, "VA", "الفاتيكان", [], 1], [862, "VE", "فنزويلا", [], 1], [704, "VN", "فيتنام", [], 1], [887, "YE", "اليمن", [], 1], [894, "ZM", "زامبيا", [], 1], [716, "ZW", "زيمبابوي", [], 1], [275, "PS", "فلسطين", [], 1], [158, "TW", "تايوان", [], 1], [0, "XK", "كوسوفو", [], 1], [732, "EH", "الصحراء الغربية", [], 0], [304, "GL", "غرينلاند", ["جرينلاند"], 0], [630, "PR", "بورتوريكو", [], 0], [540, "NC", "كاليدونيا الجديدة", [], 0], [238, "FK", "جزر فوكلاند", ["فوكلاند"], 0], [0, "XC", "قبرص الشمالية", ["شمال قبرص"], 0], [0, "XS", "أرض الصومال", ["صوماليلاند"], 0]];
+const ENMAP = {'kosovo':'XK','n. cyprus':'XC','somaliland':'XS','france':'FR','norway':'NO','palestine':'PS','taiwan':'TW','w. sahara':'EH','greenland':'GL','falkland is.':'FK','puerto rico':'PR','new caledonia':'NC'};
+const TOPO_URLS = [
+  'https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-50m.json',
+  'https://unpkg.com/world-atlas@2.0.2/countries-50m.json',
+  'https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json',
+  'https://unpkg.com/world-atlas@2.0.2/countries-110m.json'
+];
+const SERVERS = [['EMQX','wss://broker.emqx.io:8084/mqtt'],['HiveMQ','wss://broker.hivemq.com:8884/mqtt'],['Mosquitto','wss://test.mosquitto.org:8081']];
+const TOPIC_PREFIX = 'globle-ar-v1/room/';
+
+/* ====================== أدوات ====================== */
+const $ = s => document.querySelector(s);
+const D2R = Math.PI/180, R2D = 180/Math.PI;
+const LS = {
+  get(k,d){ try{ const v=localStorage.getItem(k); return v==null?d:JSON.parse(v); }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+};
+function el(tag,attrs,...kids){
+  const e=document.createElement(tag);
+  if(attrs) for(const k in attrs){
+    const v=attrs[k];
+    if(k==='class') e.className=v;
+    else if(k==='text') e.textContent=v;
+    else if(k==='style') e.style.cssText=v;
+    else if(k.slice(0,2)==='on') e.addEventListener(k.slice(2),v);
+    else e.setAttribute(k,v);
+  }
+  kids.flat().forEach(c=>{ if(c==null||c===false) return; e.append(c.nodeType?c:document.createTextNode(String(c))); });
+  return e;
+}
+function hash(s){ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
+function rid(n){ const a='abcdefghijklmnopqrstuvwxyz0123456789'; let s=''; for(let i=0;i<n;i++) s+=a[Math.floor(Math.random()*a.length)]; return s; }
+function flag(a2){ if(!/^[A-Z]{2}$/.test(a2)) return '🏳️'; return String.fromCodePoint(...[...a2].map(c=>127397+c.charCodeAt(0))); }
+function plColor(id){ return 'hsl('+(hash(id)%360)+' 62% 42%)'; }
+
+const S = Object.assign({borders:true,small:false,miles:false,server:0,name:''}, LS.get('gbl_settings',{}));
+function saveS(){ LS.set('gbl_settings',S); }
+if(!S.name) S.name='لاعب'+Math.floor(Math.random()*900+100);
+
+function fmtDist(km){
+  const v = S.miles ? Math.round(km*0.621371) : Math.round(km);
+  return v.toLocaleString('en-US')+' '+(S.miles?'ميل':'كم');
+}
+
+/* ====================== المطابقة (أخطاء إملائية) ====================== */
+function norm(s){
+  return (s||'').toString().toLowerCase()
+   .replace(/[\u064B-\u065F\u0670\u0640]/g,'')
+   .replace(/[أإآٱ]/g,'ا').replace(/ى/g,'ي').replace(/ئ/g,'ي').replace(/ؤ/g,'و').replace(/ة/g,'ه')
+   .replace(/ک/g,'ك').replace(/[یے]/g,'ي').replace(/گ/g,'ك').replace(/چ/g,'ج').replace(/پ/g,'ب').replace(/ڤ/g,'ف')
+   .replace(/[^\u0621-\u064Aa-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+}
+function mkey(s){
+  const t=norm(s).split(' ').filter(Boolean).map(w=> (w.length>3&&w.startsWith('ال'))?w.slice(2):w);
+  return t.join('');
+}
+function fold(k){ return k.replace(/ظ/g,'ض').replace(/ذ/g,'ز').replace(/[ثص]/g,'س').replace(/ط/g,'ت').replace(/ء/g,''); }
+function lev(a,b){
+  if(a===b) return 0;
+  const m=a.length,n=b.length; if(!m) return n; if(!n) return m;
+  let p=new Array(n+1),c=new Array(n+1);
+  for(let j=0;j<=n;j++) p[j]=j;
+  for(let i=1;i<=m;i++){
+    c[0]=i;
+    for(let j=1;j<=n;j++){
+      const cost=a.charCodeAt(i-1)===b.charCodeAt(j-1)?0:1;
+      c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+cost);
+      if(i>1&&j>1&&a[i-1]===b[j-2]&&a[i-2]===b[j-1]) c[j]=Math.min(c[j],p[j-1]-cost+1>0?(i>2?0:0)+Math.min(c[j],(prev2?prev2[j-2]:0)+1):c[j]);
+    }
+    prev2=p; const t=p; p=c; c=t;
+  }
+  return p[n];
+}
+let prev2=null;
+function levSimple(a,b){
+  prev2=null; return lev(a,b);
+}
+
+/* ====================== بناء الخريطة ====================== */
+let countries=[], byKey={}, loaded=false;
+
+function decodeTopo(topo){
+  const t=topo.transform;
+  const arcs=topo.arcs.map(a=>{
+    const o=new Array(a.length); let x=0,y=0;
+    for(let i=0;i<a.length;i++){
+      if(t){ x+=a[i][0]; y+=a[i][1]; o[i]=[x*t.scale[0]+t.translate[0], y*t.scale[1]+t.translate[1]]; }
+      else o[i]=[a[i][0],a[i][1]];
+    }
+    return o;
+  });
+  return arcs;
+}
+function ringPts(arcs,idxs,used){
+  const pts=[];
+  idxs.forEach((ai,k)=>{
+    const rev=ai<0, id=rev?~ai:ai, a=arcs[id];
+    used.add(id);
+    if(rev){ for(let i=a.length-1-(k?1:0);i>=0;i--) pts.push(a[i]); }
+    else { for(let i=k?1:0;i<a.length;i++) pts.push(a[i]); }
+  });
+  return pts;
+}
+function ringAreaKm2(ll,n){
+  let s=0,latm=0; for(let i=0;i<n;i++) latm+=ll[2*i+1]; latm/=n;
+  const k=Math.cos(latm*D2R);
+  for(let i=0,j=n-1;i<n;j=i++){
+    const x1=ll[2*j]*k,y1=ll[2*j+1],x2=ll[2*i]*k,y2=ll[2*i+1];
+    s+=x1*y2-x2*y1;
+  }
+  return Math.abs(s)/2*111.2*111.2;
+}
+const SAMPLE_FRAC={FR:0.5,NL:0.5,NO:0.3,DK:0.5,US:0.15,GB:0.1,ES:0.2,PT:0.5};
+function buildCountries(topo){
+  const arcs=decodeTopo(topo);
+  const geoms=topo.objects.countries.geometries;
+  const byNum={}, byA2={};
+  COUNTRIES.forEach(r=>{ if(r[0]>0) byNum[r[0]]=r; byA2[r[1]]=r; });
+  const list=[];
+  geoms.forEach((g,gi)=>{
+    const name=(g.properties&&g.properties.name)||'';
+    const nid=g.id!=null?parseInt(g.id,10):NaN;
+    if(nid===10||name==='Antarctica') return;
+    let row=(!isNaN(nid)&&byNum[nid])||null;
+    if(!row){ const a2=ENMAP[name.toLowerCase()]; if(a2) row=byA2[a2]; }
+    const polysRaw = g.type==='Polygon'?[g.arcs]:(g.type==='MultiPolygon'?g.arcs:[]);
+    const used=new Set();
+    const polys=[];
+    polysRaw.forEach(pr=>{
+      const rings=[];
+      pr.forEach(rr=>{
+        const pts=ringPts(arcs,rr,used); const n=pts.length; if(n<3) return;
+        const v=new Float32Array(n*3), ll=new Float32Array(n*2);
+        for(let i=0;i<n;i++){
+          const lon=pts[i][0], lat=pts[i][1], la=lat*D2R, lo=lon*D2R, cl=Math.cos(la);
+          v[3*i]=cl*Math.cos(lo); v[3*i+1]=cl*Math.sin(lo); v[3*i+2]=Math.sin(la);
+          ll[2*i]=lon; ll[2*i+1]=lat;
         }
+        rings.push({v,ll,n});
+      });
+      if(!rings.length) return;
+      const o=rings[0];
+      let sx=0,sy=0,sz=0, mnx=999,mny=999,mxx=-999,mxy=-999;
+      for(let i=0;i<o.n;i++){ sx+=o.v[3*i]; sy+=o.v[3*i+1]; sz+=o.v[3*i+2];
+        const lo=o.ll[2*i],la=o.ll[2*i+1]; if(lo<mnx)mnx=lo; if(lo>mxx)mxx=lo; if(la<mny)mny=la; if(la>mxy)mxy=la; }
+      let L=Math.hypot(sx,sy,sz), cap, rho;
+      if(L<1e-6){ cap=[1,0,0]; rho=Math.PI; }
+      else {
+        cap=[sx/L,sy/L,sz/L]; rho=0;
+        for(let i=0;i<o.n;i++){ const d=o.v[3*i]*cap[0]+o.v[3*i+1]*cap[1]+o.v[3*i+2]*cap[2]; const a=Math.acos(Math.max(-1,Math.min(1,d))); if(a>rho) rho=a; }
+      }
+      polys.push({rings,cap,rho:rho+0.01,bb:[mnx,mny,mxx,mxy],area:ringAreaKm2(o.ll,o.n)});
+    });
+    if(!polys.length) return;
+    polys.sort((a,b)=>b.area-a.area);
+    const key=row?row[1]:('Z'+gi);
+    const C={key,a2:row?row[1]:'',ar:row?row[2]:null,aliases:row?row[3]:[],core:row?!!row[4]:false,
+      polys,arcs:used,area:polys.reduce((s,p)=>s+p.area,0)};
+    const mp=polys[0];
+    C.capVec=mp.cap; C.rhoMax=mp.rho;
+    C.cen=[Math.atan2(mp.cap[1],mp.cap[0])*R2D, Math.asin(Math.max(-1,Math.min(1,mp.cap[2])))*R2D];
+    // نقاط قياس المسافة
+    const frac=SAMPLE_FRAC[C.a2]!==undefined?SAMPLE_FRAC[C.a2]:0.08;
+    const pts=[];
+    polys.forEach(p=>{ if(p.area>=mp.area*frac||p===mp) p.rings.forEach(r=>{ for(let i=0;i<r.n;i++) pts.push(r.v[3*i],r.v[3*i+1],r.v[3*i+2]); }); });
+    const tot=pts.length/3, step=Math.max(1,Math.ceil(tot/1200));
+    const sm=[]; for(let i=0;i<tot;i+=step) sm.push(pts[3*i],pts[3*i+1],pts[3*i+2]);
+    C.sample=Float64Array.from(sm);
+    // لون الأرض
+    const lat=Math.abs(C.cen[1]), jit=((hash(C.key)%100)/100-0.5)*22;
+    C.terrain=terrainColor(lat,jit);
+    list.push(C);
+  });
+  countries=list; byKey={}; list.forEach(c=>{ byKey[c.key]=c; });
+}
+const TSTOPS=[[0,[88,138,68]],[12,[118,148,70]],[22,[206,186,132]],[32,[198,176,122]],[42,[128,158,84]],[55,[84,124,74]],[66,[122,142,112]],[76,[226,232,236]],[90,[238,242,245]]];
+function terrainColor(lat,jit){
+  let a=TSTOPS[0],b=TSTOPS[TSTOPS.length-1];
+  for(let i=0;i<TSTOPS.length-1;i++) if(lat>=TSTOPS[i][0]&&lat<=TSTOPS[i+1][0]){ a=TSTOPS[i]; b=TSTOPS[i+1]; break; }
+  const t=(lat-a[0])/Math.max(1e-6,(b[0]-a[0]));
+  const c=[0,1,2].map(i=>Math.max(0,Math.min(255,Math.round(a[1][i]+(b[1][i]-a[1][i])*t+jit))));
+  return 'rgb('+c.join(',')+')';
+}
 
-        // دالة توليد الأخبار الرياضية عبر Gemini
-        async function generateNews() {
-            const prompt = document.getElementById('newsPrompt').value.trim();
-            const outputBox = document.getElementById('newsOutput');
-            const loader = document.getElementById('newsLoader');
+/* ====================== المسافة ====================== */
+function arcNeighbors(a,b){
+  const [s,l]=a.arcs.size<b.arcs.size?[a.arcs,b.arcs]:[b.arcs,a.arcs];
+  for(const x of s) if(l.has(x)) return true;
+  return false;
+}
+function distKm(a,b){
+  if(a===b) return 0;
+  if(arcNeighbors(a,b)) return 0;
+  const A=a.sample,B=b.sample; let best=1e9;
+  for(let i=0;i<A.length;i+=3){
+    const x=A[i],y=A[i+1],z=A[i+2];
+    for(let j=0;j<B.length;j+=3){
+      const dx=x-B[j],dy=y-B[j+1],dz=z-B[j+2], q=dx*dx+dy*dy+dz*dz;
+      if(q<best) best=q;
+    }
+  }
+  return 2*Math.asin(Math.min(1,Math.sqrt(best)/2))*6371;
+}
+const CSTOPS=[[0,[122,0,0]],[500,[183,28,28]],[1500,[230,74,25]],[3000,[245,124,0]],[5000,[255,183,77]],[8000,[255,224,178]],[16000,[255,243,224]]];
+function colorFor(d){
+  if(d<=0) return 'rgb(100,0,0)';
+  let a=CSTOPS[0],b=CSTOPS[CSTOPS.length-1];
+  for(let i=0;i<CSTOPS.length-1;i++) if(d>=CSTOPS[i][0]&&d<=CSTOPS[i+1][0]){ a=CSTOPS[i]; b=CSTOPS[i+1]; break; }
+  if(d>=16000) return 'rgb('+CSTOPS[CSTOPS.length-1][1].join(',')+')';
+  const t=(d-a[0])/(b[0]-a[0]);
+  return 'rgb('+[0,1,2].map(i=>Math.round(a[1][i]+(b[1][i]-a[1][i])*t)).join(',')+')';
+}
 
-            if (!prompt) {
-                alert('يرجى كتابة فكرة الخبر أولاً!');
-                return;
-            }
+/* ====================== فهرس الأسماء ====================== */
+let nameIndex=[];
+function buildNameIndex(){
+  nameIndex=[];
+  countries.forEach(c=>{
+    if(!c.ar) return;
+    [c.ar,...c.aliases].forEach(n=>{ const k=mkey(n); if(k) nameIndex.push({k,f:fold(k),c,n}); });
+  });
+}
+function matchGuess(text){
+  const q=mkey(text);
+  if(!q) return {err:'اكتب اسم دولة'};
+  let hit=nameIndex.find(e=>e.k===q); if(hit) return {c:hit.c};
+  const fq=fold(q);
+  hit=nameIndex.find(e=>e.f===fq); if(hit) return {c:hit.c};
+  // تقريبي
+  const best=new Map(); let bestD=99;
+  nameIndex.forEach(e=>{
+    const th=e.k.length<=3?0:(e.k.length<=5?1:(e.k.length<=9?2:3));
+    let d=levSimple(fq,e.f);
+    if(d<=th){ const prev=best.get(e.c); if(prev===undefined||d<prev) best.set(e.c,d); if(d<bestD) bestD=d; }
+  });
+  if(best.size){
+    const top=[...best.entries()].filter(x=>x[1]===bestD);
+    if(top.length===1) return {c:top[0][0]};
+    return {err:'قصدك: '+top.slice(0,3).map(x=>x[0].ar).join(' أو ')+'؟ اكتبها أوضح'};
+  }
+  if(q.length>=3){
+    const subs=[...new Set(nameIndex.filter(e=>e.k.includes(q)||q.includes(e.k)&&e.k.length>=4).map(e=>e.c))];
+    if(subs.length>1) return {err:'حدّد أكثر: '+subs.slice(0,4).map(c=>c.ar).join(' / ')};
+    if(subs.length===1) return {c:subs[0]};
+  }
+  return {err:'ما لكيت هالدولة 🤔'};
+}
 
-            loader.style.display = 'block';
-            outputBox.innerText = '';
+/* ====================== حالة اللعبة ====================== */
+const G={mode:'solo',target:null,guesses:[],over:false,revealed:false,winner:null};
+let guessMap=new Map();
+function pickTarget(){
+  const pool=countries.filter(c=>c.core&&c.ar&&(S.small||c.area>=3000));
+  return pool[Math.floor(Math.random()*pool.length)].key;
+}
+function resetRound(target){
+  G.target=target; G.guesses=[]; G.over=false; G.revealed=false; G.winner=null; guessMap=new Map();
+  hideBanner(); setMsg(''); renderList(); draw(); updateUI();
+}
+function newSolo(){
+  if(!loaded) return;
+  G.mode='solo';
+  resetRound(pickTarget());
+  $('#inp').value=''; $('#inp').disabled=false;
+}
+function addGuess(c,by){
+  const t=byKey[G.target]; const d=distKm(c,t);
+  G.guesses.push({key:c.key,d,by:by||null});
+  guessMap.set(c.key,d);
+  renderList(); updateUI();
+  flyTo(c.cen[0],c.cen[1]);
+  return d;
+}
+function submit(){
+  const inp=$('#inp'); const text=inp.value.trim(); if(!text) return;
+  if(!loaded){ setMsg('الخريطة لسه تتحمل…'); return; }
+  if(G.mode==='online'){
+    if(NET.status!=='online'){ setMsg('الاتصال مقطوع…'); return; }
+    if(!NET.active){ setMsg(G.over?'الجولة خلصت — انتظر المضيف يبدي جولة جديدة':'انتظر المضيف يبدي الجولة'); return; }
+    if(NET.turn.id!==NET.id||Date.now()>=NET.turn.dl){ setMsg('مو دورك!'); return; }
+  } else if(G.over){ setMsg('اللعبة خلصت — دوس ↻ للعبة جديدة'); return; }
+  const m=matchGuess(text);
+  if(m.err){ setMsg(m.err); return; }
+  if(guessMap.has(m.c.key)){ setMsg('خمّنتها قبل ('+m.c.ar+')'); inp.value=''; flyTo(m.c.cen[0],m.c.cen[1]); return; }
+  inp.value=''; setMsg('');
+  if(G.mode==='online'){
+    netSend({t:'guess',id:NET.id,n:S.name,c:m.c.key,r:NET.round,k:NET.turn.k});
+  } else {
+    const d=addGuess(m.c,null);
+    if(m.c.key===G.target) soloWin();
+  }
+}
+function soloWin(){
+  G.over=true; G.revealed=true; draw();
+  const st=LS.get('gbl_stats',{played:0,won:0,total:0,best:0});
+  st.played++; st.won++; st.total+=G.guesses.length; if(!st.best||G.guesses.length<st.best) st.best=G.guesses.length;
+  LS.set('gbl_stats',st);
+  const c=byKey[G.target];
+  showBanner('🎉 صح! الدولة هي '+c.ar+' '+flag(c.a2),'خمّنتها بـ '+G.guesses.length+' محاولة',[el('button',{class:'btn',onclick:newSolo,text:'لعبة جديدة'})]);
+  updateUI();
+}
+function soloGiveUp(){
+  if(G.over) return;
+  G.over=true; G.revealed=true;
+  const st=LS.get('gbl_stats',{played:0,won:0,total:0,best:0}); st.played++; LS.set('gbl_stats',st);
+  const c=byKey[G.target]; flyTo(c.cen[0],c.cen[1]); draw();
+  showBanner('الدولة كانت: '+c.ar+' '+flag(c.a2),'',[el('button',{class:'btn',onclick:newSolo,text:'لعبة جديدة'})]);
+  updateUI();
+}
 
-            try {
-                const response = await fetch(WORKER_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: prompt })
-                });
+/* ====================== واجهة ====================== */
+let msgT=null;
+function setMsg(t,ok){ const m=$('#msg'); m.textContent=t; m.className=ok?'ok':''; clearTimeout(msgT); if(t) msgT=setTimeout(()=>{ if(m.textContent===t) m.textContent=''; },5000); }
+function showBanner(title,sub,btns){ const b=$('#banner'); b.hidden=false; b.replaceChildren(el('div',{text:title}), sub?el('small',{text:sub}):null, ...(btns||[])); }
+function hideBanner(){ $('#banner').hidden=true; }
+function renderList(){
+  const L=$('#list'); L.replaceChildren();
+  const arr=G.guesses.slice().sort((a,b)=>a.d-b.d);
+  arr.forEach(g=>{
+    const c=byKey[g.key]; if(!c) return;
+    L.append(el('div',{class:'row'},
+      el('span',{class:'fl',text:flag(c.a2)}),
+      el('span',{class:'nm',text:c.ar}),
+      g.by?el('span',{class:'by',style:'background:'+plColor(g.by.id),text:g.by.n}):null,
+      el('span',{class:'ds',style:'background:'+colorFor(g.d)+';color:'+(g.d<1500?'#fff':'#222'),text:g.d===0&&c.key===G.target?'✓':fmtDist(g.d)})
+    ));
+  });
+  const last=G.guesses[G.guesses.length-1];
+  const ln=$('#last');
+  if(last){ ln.textContent='أقرب حدود: '+fmtDist(last.d); }
+  else ln.textContent='';
+  $('#cnt').textContent=G.guesses.length?('عدد التخمينات: '+G.guesses.length):'';
+}
+function updateUI(){
+  const online=G.mode==='online';
+  $('#giveup').hidden=!(G.guesses.length>0&&!G.over&&(!online||(online&&amHost())));
+  $('#roomBar').hidden=!online;
+  if(online) renderRoomBar();
+  renderTurn();
+}
+function setInputState(){
+  const inp=$('#inp'), online=G.mode==='online';
+  const can=!online||(NET.active&&NET.status==='online'&&NET.turn.id===NET.id&&Date.now()<NET.turn.dl);
+  inp.placeholder=online&&!can?(NET.active?'مو دورك…':(G.over?'انتظر الجولة الجاية…':'بانتظار المضيف…')):'';
+  if(inp.disabled===!can) return;
+  inp.disabled=!can; if(can&&online) inp.focus();
+}
+function renderTurn(){
+  const tb=$('#turnBar');
+  if(G.mode!=='online'||!NET.room||!NET.active){ tb.hidden=true; setInputState(); return; }
+  tb.hidden=false;
+  const t=NET.turn;
+  if(!t.id){ tb.textContent='⏳ …'; tb.className=''; }
+  else {
+    const left=Math.max(0,Math.ceil((t.dl-Date.now())/1000)), mine=t.id===NET.id;
+    tb.textContent=(mine?'🟢 دورك! خمّن — ':'⏳ دور '+(NET.names[t.id]||'لاعب')+' — ')+left+' ث';
+    tb.className=mine?'mine':'';
+  }
+  setInputState();
+}
 
-                const data = await response.json();
-                if (response.ok) {
-                    outputBox.innerText = data.response;
-                } else {
-                    outputBox.innerText = 'خطأ: ' + (data.error || 'حدث خطأ غير معروف');
-                }
-            } catch (err) {
-                outputBox.innerText = 'فشل الاتصال بالسيرفر: ' + err.message;
-            } finally {
-                loader.style.display = 'none';
-            }
-        }
+/* ====================== الرسم ====================== */
+const cv=$('#cv'), ctx=cv.getContext('2d');
+const view={lon:44,lat:28,zoom:1,size:360,dpr:1};
+let hl=null, hlT=null, anim=null, needDraw=false;
+function resize(){
+  const w=$('#globeWrap').clientWidth; view.size=w; view.dpr=Math.min(3,window.devicePixelRatio||1);
+  cv.width=Math.round(w*view.dpr); cv.height=Math.round(w*view.dpr);
+  ctx.setTransform(view.dpr,0,0,view.dpr,0,0); draw();
+}
+function basis(){
+  const l=view.lon*D2R, p=view.lat*D2R, cl=Math.cos(l), sl=Math.sin(l), cp=Math.cos(p), sp=Math.sin(p);
+  return {cx:cp*cl,cy:cp*sl,cz:sp, ex:-sl,ey:cl, nx:-sp*cl,ny:-sp*sl,nz:cp};
+}
+let dep=new Float32Array(4096);
+function clipRing(r,P,S,B,CX,CY,R){
+  const v=r.v,n=r.n,ll=r.ll;
+  if(dep.length<n) dep=new Float32Array(n*2);
+  let vis=0;
+  for(let i=0;i<n;i++){ const d=v[3*i]*B.cx+v[3*i+1]*B.cy+v[3*i+2]*B.cz; dep[i]=d; if(d>=0) vis++; }
+  if(!vis) return;
+  const X=i=>CX+R*(v[3*i]*B.ex+v[3*i+1]*B.ey);
+  const Y=i=>CY-R*(v[3*i]*B.nx+v[3*i+1]*B.ny+v[3*i+2]*B.nz);
+  const am=i=>Math.abs(ll[2*i])>=179.98;
+  if(vis===n){
+    P.moveTo(X(0),Y(0)); S.moveTo(X(0),Y(0));
+    for(let i=1;i<n;i++){
+      const x=X(i),y=Y(i); P.lineTo(x,y);
+      if(am(i)&&am(i-1)) S.moveTo(x,y); else S.lineTo(x,y);
+    }
+    P.closePath(); return;
+  }
+  let s=-1;
+  for(let i=0;i<n;i++){ const pi=(i-1+n)%n; if(dep[i]>=0&&dep[pi]<0){ s=i; break; } }
+  if(s<0) return;
+  const cross=(a,b)=>{
+    const t=dep[a]/(dep[a]-dep[b]);
+    let x=v[3*a]+t*(v[3*b]-v[3*a]), y=v[3*a+1]+t*(v[3*b+1]-v[3*a+1]), z=v[3*a+2]+t*(v[3*b+2]-v[3*a+2]);
+    const L=Math.hypot(x,y,z)||1; x/=L; y/=L; z/=L;
+    const ve=x*B.ex+y*B.ey, vn=x*B.nx+y*B.ny+z*B.nz;
+    return {x:CX+R*ve,y:CY-R*vn,a:Math.atan2(vn,ve)};
+  };
+  const arc=(a1,a2)=>{
+    let da=a2-a1; while(da>Math.PI) da-=2*Math.PI; while(da<-Math.PI) da+=2*Math.PI;
+    const steps=Math.ceil(Math.abs(da)/0.12);
+    for(let m=1;m<steps;m++){ const a=a1+da*m/steps; P.lineTo(CX+R*Math.cos(a),CY-R*Math.sin(a)); }
+  };
+  const X0=cross((s-1+n)%n,s);
+  P.moveTo(X0.x,X0.y); P.lineTo(X(s),Y(s));
+  S.moveTo(X0.x,X0.y); S.lineTo(X(s),Y(s));
+  let exitA=null;
+  for(let k=0;k<n-1;k++){
+    const i=(s+k)%n, j=(s+k+1)%n, vi=dep[i]>=0, vj=dep[j]>=0;
+    if(vi&&vj){ const x=X(j),y=Y(j); P.lineTo(x,y); if(am(i)&&am(j)) S.moveTo(x,y); else S.lineTo(x,y); }
+    else if(vi&&!vj){ const c=cross(i,j); P.lineTo(c.x,c.y); S.lineTo(c.x,c.y); exitA=c.a; }
+    else if(!vi&&vj){ const c=cross(i,j); if(exitA!==null) arc(exitA,c.a); P.lineTo(c.x,c.y); S.moveTo(c.x,c.y); const x=X(j),y=Y(j); P.lineTo(x,y); S.lineTo(x,y); }
+  }
+  if(exitA!==null) arc(exitA,X0.a);
+  P.closePath();
+}
+function draw(){
+  needDraw=false;
+  const W=view.size; if(!W) return;
+  const R=W*0.44*view.zoom, cx=W/2, cy=W/2, B=basis();
+  ctx.clearRect(0,0,W,W);
+  // هالة الغلاف الجوي
+  if(R<W*1.2){
+    const ag=ctx.createRadialGradient(cx,cy,R*0.97,cx,cy,R*1.13);
+    ag.addColorStop(0,'rgba(120,200,255,.55)'); ag.addColorStop(1,'rgba(120,200,255,0)');
+    ctx.fillStyle=ag; ctx.beginPath(); ctx.arc(cx,cy,R*1.13,0,7); ctx.fill();
+  }
+  ctx.save(); ctx.beginPath(); ctx.arc(cx,cy,R,0,7); ctx.clip();
+  const og=ctx.createRadialGradient(cx-R*.3,cy-R*.35,R*.05,cx,cy,R);
+  og.addColorStop(0,'#2f86d8'); og.addColorStop(.6,'#0f5ca8'); og.addColorStop(1,'#073a70');
+  ctx.fillStyle=og; ctx.fillRect(0,0,W,W);
+  if(loaded){
+    ctx.lineJoin='round';
+    const target=G.revealed?byKey[G.target]:null;
+    for(const C of countries){
+      const P=new Path2D(), Sp=new Path2D();
+      let any=false;
+      for(const p of C.polys){
+        const dd=p.cap[0]*B.cx+p.cap[1]*B.cy+p.cap[2]*B.cz;
+        if(dd<-Math.sin(Math.min(1.5,p.rho))-0.005 && p.rho<1.55) continue;
+        if(p.rho*R<0.35) continue;
+        any=true;
+        for(const r of p.rings) clipRing(r,P,Sp,B,cx,cy,R);
+      }
+      if(!any) continue;
+      let fill=C.terrain, guessed=guessMap.has(C.key);
+      if(guessed) fill=colorFor(guessMap.get(C.key));
+      if(target&&C===target) fill='#2fbf5b';
+      ctx.fillStyle=fill; ctx.fill(P,'evenodd');
+      if(C===hl){ ctx.fillStyle='rgba(255,255,255,.28)'; ctx.fill(P,'evenodd'); }
+      if(S.borders||guessed||C===hl){
+        ctx.lineWidth=C===hl?2.6:(guessed?1:0.7);
+        ctx.strokeStyle=C===hl?'#fff':(guessed?'rgba(70,25,0,.55)':'rgba(255,255,255,.55)');
+        ctx.stroke(Sp);
+      }
+    }
+    // علامات للدول الصغيرة
+    const mark=(C,color)=>{
+      if(C.rhoMax*R>=5) return;
+      const d=C.capVec[0]*B.cx+C.capVec[1]*B.cy+C.capVec[2]*B.cz; if(d<0.04) return;
+      const x=cx+R*(C.capVec[0]*B.ex+C.capVec[1]*B.ey), y=cy-R*(C.capVec[0]*B.nx+C.capVec[1]*B.ny+C.capVec[2]*B.nz);
+      ctx.beginPath(); ctx.arc(x,y,6,0,7); ctx.fillStyle=color; ctx.fill(); ctx.lineWidth=1.8; ctx.strokeStyle='#2b1400'; ctx.stroke();
+    };
+    guessMap.forEach((d,k)=>{ const C=byKey[k]; if(C) mark(C,(target&&C===target)?'#2fbf5b':colorFor(d)); });
+    if(target&&!guessMap.has(target.key)) mark(target,'#2fbf5b');
+  }
+  const sh=ctx.createRadialGradient(cx-R*.35,cy-R*.4,R*.1,cx,cy,R);
+  sh.addColorStop(0,'rgba(255,255,255,.2)'); sh.addColorStop(.55,'rgba(255,255,255,0)'); sh.addColorStop(1,'rgba(0,12,45,.5)');
+  ctx.fillStyle=sh; ctx.fillRect(0,0,W,W);
+  ctx.restore();
+}
+function reqDraw(){ if(!needDraw){ needDraw=true; requestAnimationFrame(draw); } }
+function flyTo(lon,lat){
+  const from={lon:view.lon,lat:view.lat};
+  let dl=lon-from.lon; while(dl>180) dl-=360; while(dl<-180) dl+=360;
+  const to={lon:from.lon+dl,lat:Math.max(-70,Math.min(70,lat))};
+  const t0=performance.now(), dur=850; const id=Symbol(); anim=id;
+  (function step(now){
+    if(anim!==id) return;
+    let t=Math.min(1,(now-t0)/dur); t=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+    view.lon=from.lon+(to.lon-from.lon)*t; view.lat=from.lat+(to.lat-from.lat)*t;
+    draw(); if(t<1) requestAnimationFrame(step);
+  })(t0);
+}
+function setZoom(z){ view.zoom=Math.max(0.8,Math.min(9,z)); reqDraw(); }
 
-        let selectedFileBase64 = null;
-        let selectedFileBlob = null;
+/* تفاعل اللمس */
+const ptrs=new Map(); let drag=null, pinch=0;
+cv.addEventListener('pointerdown',e=>{
+  cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY}); anim=null;
+  if(ptrs.size===1) drag={x:e.clientX,y:e.clientY,t:performance.now(),moved:0};
+  if(ptrs.size===2){ const [a,b]=[...ptrs.values()]; pinch=Math.hypot(a.x-b.x,a.y-b.y); drag=null; }
+  cv.style.cursor='grabbing';
+});
+cv.addEventListener('pointermove',e=>{
+  const p=ptrs.get(e.pointerId); if(!p) return;
+  const dx=e.clientX-p.x, dy=e.clientY-p.y; p.x=e.clientX; p.y=e.clientY;
+  if(ptrs.size===2){
+    const [a,b]=[...ptrs.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y);
+    if(pinch>0) setZoom(view.zoom*d/pinch); pinch=d; return;
+  }
+  if(!drag) return;
+  drag.moved+=Math.abs(dx)+Math.abs(dy);
+  const k=0.32/view.zoom;
+  view.lon-=dx*k; view.lat=Math.max(-85,Math.min(85,view.lat+dy*k));
+  while(view.lon>180) view.lon-=360; while(view.lon<-180) view.lon+=360;
+  reqDraw();
+});
+function endPtr(e){
+  const had=ptrs.has(e.pointerId); ptrs.delete(e.pointerId); cv.style.cursor='grab';
+  if(had&&drag&&ptrs.size===0&&drag.moved<9&&performance.now()-drag.t<600) tap(e.clientX,e.clientY);
+  if(ptrs.size<2) pinch=0; if(ptrs.size===0) drag=null;
+}
+cv.addEventListener('pointerup',endPtr); cv.addEventListener('pointercancel',endPtr);
+cv.addEventListener('wheel',e=>{ e.preventDefault(); setZoom(view.zoom*Math.exp(-e.deltaY*0.0015)); },{passive:false});
 
-        // معاينة الصورة المرفوعة
-        function previewImage(event) {
-            const file = event.target.files[0];
-            if (file) {
-                selectedFileBlob = file;
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    selectedFileBase64 = e.target.result;
-                    document.getElementById('originalImg').src = selectedFileBase64;
-                    document.getElementById('previewArea').style.display = 'flex';
-                    document.getElementById('enhanceBtn').style.display = 'block';
-                    document.getElementById('enhancedBox').style.display = 'none';
-                }
-                reader.readAsDataURL(file);
-            }
-        }
+function pip(poly,lon,lat){
+  const b=poly.bb; if(lon<b[0]||lon>b[2]||lat<b[1]||lat>b[3]) return false;
+  let inside=false;
+  for(const r of poly.rings){
+    const ll=r.ll,n=r.n;
+    for(let i=0,j=n-1;i<n;j=i++){
+      const xi=ll[2*i],yi=ll[2*i+1],xj=ll[2*j],yj=ll[2*j+1];
+      if(((yi>lat)!==(yj>lat))&&(lon<(xj-xi)*(lat-yi)/(yj-yi)+xi)) inside=!inside;
+    }
+  }
+  return inside;
+}
+function tap(px,py){
+  if(!loaded) return;
+  const rc=cv.getBoundingClientRect(), x=px-rc.left, y=py-rc.top;
+  const W=view.size, R=W*0.44*view.zoom, cx=W/2, cy=W/2, B=basis();
+  const sx=(x-cx)/R, sy=(cy-y)/R, r2=sx*sx+sy*sy;
+  let found=null;
+  if(r2<=1){
+    const sz=Math.sqrt(1-r2);
+    const vx=sx*B.ex+sy*B.nx+sz*B.cx, vy=sx*B.ey+sy*B.ny+sz*B.cy, vz=sy*B.nz+sz*B.cz;
+    const lat=Math.asin(Math.max(-1,Math.min(1,vz)))*R2D, lon=Math.atan2(vy,vx)*R2D;
+    outer: for(const C of countries){
+      for(const p of C.polys) if(pip(p,lon,lat)){ found=C; break outer; }
+    }
+    if(!found){
+      // دول صغيرة: أقرب علامة
+      let bd=16;
+      for(const C of countries){
+        if(C.rhoMax*R>=12) continue;
+        const d=C.capVec[0]*B.cx+C.capVec[1]*B.cy+C.capVec[2]*B.cz; if(d<0.04) continue;
+        const X=cx+R*(C.capVec[0]*B.ex+C.capVec[1]*B.ey), Y=cy-R*(C.capVec[0]*B.nx+C.capVec[1]*B.ny+C.capVec[2]*B.nz);
+        const dd=Math.hypot(X-x,Y-y); if(dd<bd){ bd=dd; found=C; }
+      }
+    }
+  }
+  const tip=$('#tip');
+  if(found&&found.ar){
+    hl=found; clearTimeout(hlT);
+    tip.textContent=found.ar; tip.style.left=Math.max(50,Math.min(W-50,x))+'px'; tip.style.top=Math.max(40,y-14)+'px'; tip.classList.add('on');
+    hlT=setTimeout(()=>{ tip.classList.remove('on'); hl=null; draw(); },2300);
+    draw();
+  } else { tip.classList.remove('on'); hl=null; draw(); }
+}
 
-        // دالة إرسال الصورة لتوضيحها عبر Hugging Face في الـ Worker
-        async function enhanceImage() {
-            if (!selectedFileBlob) return;
+/* ====================== MQTT صغير (بدون مكتبات) ====================== */
+class MiniMQTT{
+  constructor(){ this.ws=null; this.buf=new Uint8Array(0); this.pid=1; this.onmessage=null; this.onclose=null; this.pingT=null; this.closed=false; }
+  _str(s){ const b=new TextEncoder().encode(s); const o=new Uint8Array(2+b.length); o[0]=b.length>>8; o[1]=b.length&255; o.set(b,2); return o; }
+  _len(n){ const o=[]; do{ let d=n%128; n=Math.floor(n/128); if(n>0) d|=128; o.push(d); }while(n>0); return o; }
+  _pkt(first,body){ const l=this._len(body.length); const o=new Uint8Array(1+l.length+body.length); o[0]=first; o.set(l,1); o.set(body,1+l.length); return o; }
+  _cat(...a){ const n=a.reduce((s,x)=>s+x.length,0); const o=new Uint8Array(n); let p=0; a.forEach(x=>{ o.set(x,p); p+=x.length; }); return o; }
+  connect(url,clientId,timeout){
+    timeout=timeout||8000;
+    return new Promise((resolve,reject)=>{
+      let done=false, ws;
+      try{ ws=new WebSocket(url,'mqtt'); }catch(e){ reject(e); return; }
+      ws.binaryType='arraybuffer'; this.ws=ws;
+      const timer=setTimeout(()=>{ if(!done){ done=true; try{ws.close();}catch(e){} reject(new Error('timeout')); } },timeout);
+      ws.onopen=()=>{
+        const vh=this._cat(Uint8Array.from([0,4,77,81,84,84,4,2,0,30]),this._str(clientId));
+        ws.send(this._pkt(0x10,vh));
+      };
+      ws.onerror=()=>{ if(!done){ done=true; clearTimeout(timer); reject(new Error('ws')); } };
+      ws.onclose=()=>{ clearInterval(this.pingT); if(!done){ done=true; clearTimeout(timer); reject(new Error('closed')); } else if(!this.closed&&this.onclose) this.onclose(); };
+      ws.onmessage=ev=>this._feed(new Uint8Array(ev.data));
+      this._connack=code=>{
+        if(done) return; done=true; clearTimeout(timer);
+        if(code===0){ this.pingT=setInterval(()=>{ try{ this.ws.send(Uint8Array.from([0xC0,0])); }catch(e){} },20000); resolve(); }
+        else reject(new Error('refused '+code));
+      };
+    });
+  }
+  _feed(chunk){
+    this.buf=this._cat(this.buf,chunk);
+    for(;;){
+      const b=this.buf; if(b.length<2) return;
+      let i=1,mul=1,len=0,x;
+      do{ if(i>=b.length) return; x=b[i++]; len+=(x&127)*mul; mul*=128; }while(x&128);
+      if(b.length<i+len) return;
+      const first=b[0], body=b.slice(i,i+len); this.buf=b.slice(i+len);
+      const type=first>>4;
+      if(type===2){ this._connack&&this._connack(body[1]); }
+      else if(type===3){
+        const tl=(body[0]<<8)|body[1], topic=new TextDecoder().decode(body.slice(2,2+tl));
+        let off=2+tl; const qos=(first>>1)&3; if(qos>0) off+=2;
+        const payload=new TextDecoder().decode(body.slice(off));
+        if(this.onmessage) this.onmessage(topic,payload);
+      }
+    }
+  }
+  subscribe(topic){
+    const id=this.pid; this.pid=this.pid%65535+1;
+    this.ws.send(this._pkt(0x82,this._cat(Uint8Array.from([id>>8,id&255]),this._str(topic),Uint8Array.from([0]))));
+  }
+  publish(topic,msg){
+    if(!this.ws||this.ws.readyState!==1) return false;
+    this.ws.send(this._pkt(0x30,this._cat(this._str(topic),new TextEncoder().encode(msg)))); return true;
+  }
+  close(){ this.closed=true; clearInterval(this.pingT); try{ this.ws.send(Uint8Array.from([0xE0,0])); }catch(e){} try{ this.ws.close(); }catch(e){} }
+}
 
-            const loader = document.getElementById('imgLoader');
-            const enhancedBox = document.getElementById('enhancedBox');
-            const enhancedImg = document.getElementById('enhancedImg');
-            
-            loader.style.display = 'block';
-            enhancedBox.style.display = 'none';
+/* ====================== الأونلاين ====================== */
+const NET={mq:null,room:null,id:rid(8),joined:0,peers:new Map(),names:{},scores:{},round:0,active:false,
+  status:'off',token:0,timer:null,tt:null,winSent:false,srv:'',turn:{k:0,id:null,last:null,dl:0,at:0},lastTurnSend:0};
+const TURN_MS=15000;
+const TOP=()=>TOPIC_PREFIX+NET.room;
+function netSend(o){ try{ return NET.mq&&NET.mq.publish(TOP(),JSON.stringify(o)); }catch(e){ return false; } }
+function alivePeers(){
+  const now=Date.now(), out=[];
+  NET.peers.forEach((p,id)=>{ if(id===NET.id||now-p.seen<26000) out.push([id,p]); });
+  return out;
+}
+function hostId(){
+  const a=alivePeers().sort((x,y)=>(x[1].joined-y[1].joined)||(x[0]<y[0]?-1:1));
+  return a.length?a[0][0]:NET.id;
+}
+function amHost(){ return G.mode==='online'&&hostId()===NET.id; }
+function touchPeer(id,name,joined){
+  if(!id) return;
+  const p=NET.peers.get(id)||{};
+  p.name=String(name||p.name||'لاعب').slice(0,14); p.joined=Number(joined)||p.joined||Date.now(); p.seen=Date.now();
+  NET.peers.set(id,p); NET.names[id]=p.name;
+}
+function sendHello(){ touchPeer(NET.id,S.name,NET.joined); netSend({t:'hello',id:NET.id,n:S.name,j:NET.joined}); }
+function sendPing(){ touchPeer(NET.id,S.name,NET.joined); netSend({t:'ping',id:NET.id,n:S.name,j:NET.joined}); }
 
-            try {
-                // إرسال الصورة كـ Binary مباشر للسيرفر المدمج
-                const response = await fetch(WORKER_URL, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': selectedFileBlob.type || 'image/jpeg' 
-                    },
-                    body: selectedFileBlob
-                });
+async function openLink(token){
+  for(let k=0;k<SERVERS.length;k++){
+    if(token!==NET.token) return false;
+    const idx=(S.server+k)%SERVERS.length;
+    const mq=new MiniMQTT();
+    try{ await mq.connect(SERVERS[idx][1],'gba-'+NET.id+'-'+rid(4)); }catch(e){ continue; }
+    if(token!==NET.token){ mq.close(); return false; }
+    NET.mq=mq; NET.srv=SERVERS[idx][0];
+    mq.onmessage=onNetMsg;
+    mq.onclose=()=>{ if(NET.mq===mq&&token===NET.token) onNetClose(token); };
+    mq.subscribe(TOP());
+    return true;
+  }
+  return false;
+}
+function onNetClose(token){
+  if(token!==NET.token) return;
+  NET.status='reconnecting'; renderLobby(); updateUI();
+  setTimeout(async()=>{
+    if(token!==NET.token) return;
+    const ok=await openLink(token);
+    if(token!==NET.token) return;
+    if(ok){ NET.status='online'; sendHello(); renderLobby(); updateUI(); } else onNetClose(token);
+  },3000);
+}
+async function joinRoom(code){
+  code=(code||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8);
+  if(code.length<3){ netNote('اكتب رمز الغرفة (3 أحرف أو أكثر)'); return; }
+  leaveRoom(true);
+  S.name=($('#sName').value||S.name).trim().slice(0,14)||S.name; saveS();
+  const token=++NET.token;
+  NET.room=code; NET.status='connecting'; NET.joined=Date.now(); NET.peers=new Map(); NET.scores={}; NET.names={};
+  NET.round=0; NET.active=false; NET.winSent=false;
+  G.mode='online'; resetRound(null); $('#inp').value='';
+  renderLobby(); updateUI();
+  const ok=await openLink(token);
+  if(token!==NET.token) return;
+  if(!ok){ NET.status='failed'; renderLobby(); return; }
+  NET.status='online';
+  sendHello();
+  clearInterval(NET.timer);
+  NET.timer=setInterval(netTick,8000);
+  clearInterval(NET.tt); NET.tt=setInterval(turnTick,250);
+  setTimeout(()=>{ if(token===NET.token){ renderLobby(); updateUI(); } },2500);
+  renderLobby(); updateUI();
+}
+function leaveRoom(silent){
+  if(NET.mq){ try{ netSend({t:'bye',id:NET.id}); }catch(e){} try{ NET.mq.close(); }catch(e){} }
+  NET.mq=null; NET.room=null; NET.status='off'; NET.token++; clearInterval(NET.timer); clearInterval(NET.tt); NET.active=false; NET.turn={k:0,id:null,last:null,dl:0,at:0};
+  if(!silent){ G.mode='solo'; newSolo(); renderLobby(); updateUI(); }
+}
+function netTick(){
+  if(NET.status!=='online') return;
+  sendPing();
+  const now=Date.now();
+  NET.peers.forEach((p,id)=>{ if(id!==NET.id&&now-p.seen>60000) NET.peers.delete(id); });
+  hostDuty();
+  renderLobby(); updateUI();
+}
+function hostDuty(){
+  if(!amHost()||!NET.active||NET.winSent) return;
+  const tg=G.target; const g=G.guesses.find(x=>x.key===tg);
+  if(g){ NET.winSent=true; netSend({t:'win',r:NET.round,id:g.by?g.by.id:NET.id,n:g.by?g.by.n:S.name}); }
+}
+function hostNextTurn(first){
+  const order=alivePeers().sort((x,y)=>(x[1].joined-y[1].joined)||(x[0]<y[0]?-1:1)).map(x=>x[0]);
+  if(!order.length) return;
+  const cur=NET.turn.id||NET.turn.last;
+  let idx=first?-1:order.indexOf(cur);
+  if(!first&&idx<0){ // اللاعب الحالي طلع: ناخذ أول واحد
+    idx=-1;
+  }
+  const id=order[(idx+1)%order.length];
+  NET.lastTurnSend=Date.now();
+  netSend({t:'turn',r:NET.round,k:NET.turn.k+1,id});
+}
+function turnTick(){
+  renderTurn();
+  if(!amHost()||!NET.active||NET.status!=='online') return;
+  const t=NET.turn, now=Date.now();
+  if(now-NET.lastTurnSend<1800) return;
+  if(t.id){
+    const alive=alivePeers().some(x=>x[0]===t.id);
+    if(now>t.dl+1500||!alive) hostNextTurn(false);
+  } else if(now-t.at>2500) hostNextTurn(false);
+}
+function hostStart(){
+  if(!amHost()) { netNote('بس المضيف يقدر يبدي الجولة'); return; }
+  netSend({t:'start',r:NET.round+1,tg:pickTarget()});
+}
+function hostGiveUp(){ if(amHost()&&NET.active) netSend({t:'giveup',r:NET.round}); }
 
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const imageUrl = URL.createObjectURL(blob);
-                    enhancedImg.src = imageUrl;
-                    enhancedBox.style.display = 'block';
-                } else {
-                    const errText = await response.text();
-                    alert('فشل توضيح الصورة: ' + errText);
-                }
-            } catch (err) {
-                alert('خطأ في الاتصال: ' + err.message);
-            } finally {
-                loader.style.display = 'none';
-            }
-        }
-    </script>
+function onNetMsg(topic,text){
+  let m; try{ m=JSON.parse(text); }catch(e){ return; }
+  if(!m||typeof m!=='object') return;
+  switch(m.t){
+    case 'hello':
+      if(m.id===NET.id) return;
+      touchPeer(m.id,m.n,m.j); sendPing();
+      if(amHost()) netSend({t:'state',to:m.id,r:NET.round,tg:G.target,a:NET.active,
+        g:G.guesses.map(x=>({c:x.key,id:x.by?x.by.id:'',n:x.by?x.by.n:''})),sc:NET.scores,nm:NET.names,ov:G.over,w:G.winner,tn:{k:NET.turn.k,id:NET.turn.id,l:Math.max(0,NET.turn.dl-Date.now())}});
+      break;
+    case 'ping': if(m.id!==NET.id) touchPeer(m.id,m.n,m.j); break;
+    case 'bye': NET.peers.delete(m.id); break;
+    case 'state':
+      if(m.to!==NET.id||amHost()&&NET.round>=m.r&&NET.active) return;
+      if(!(m.r>=NET.round)) return;
+      NET.round=m.r; NET.active=!!m.a; NET.winSent=false;
+      NET.scores=m.sc&&typeof m.sc==='object'?m.sc:{}; if(m.nm&&typeof m.nm==='object') Object.assign(NET.names,m.nm);
+      resetRound(m.tg&&byKey[m.tg]?m.tg:null);
+      if(m.tn&&typeof m.tn==='object') NET.turn={k:Number(m.tn.k)||0,id:m.tn.id?String(m.tn.id):null,last:m.tn.id?String(m.tn.id):null,dl:Date.now()+(Number(m.tn.l)||0),at:Date.now()};
+      (Array.isArray(m.g)?m.g:[]).forEach(x=>{ const c=byKey[x.c]; if(c&&G.target&&!guessMap.has(c.key)){ const d=distKm(c,byKey[G.target]); G.guesses.push({key:c.key,d,by:x.id?{id:x.id,n:x.n}:null}); guessMap.set(c.key,d); } });
+      if(m.ov){ G.over=true; G.revealed=!!G.target; netShowEnd(m.w); }
+      renderList(); draw(); updateUI(); renderLobby();
+      break;
+    case 'start':
+      if(!(m.r>NET.round)||!byKey[m.tg]) return;
+      NET.round=m.r; NET.active=true; NET.winSent=false;
+      NET.turn={k:0,id:null,last:null,dl:0,at:Date.now()};
+      resetRound(m.tg); setMsg('بدت جولة جديدة! كل واحد عنده تخمين بدوره (15 ثانية) 🏁',true);
+      if(amHost()) hostNextTurn(true);
+      renderLobby(); updateUI(); $('#inp').focus&&0;
+      break;
+    case 'turn':
+      if(m.r!==NET.round||!NET.active||!(m.k>NET.turn.k)) return;
+      NET.turn={k:m.k,id:String(m.id),last:String(m.id),dl:Date.now()+TURN_MS,at:Date.now()};
+      renderTurn(); break;
+    case 'guess': {
+      if(m.r!==NET.round||!NET.active) return;
+      if(m.k!==NET.turn.k||m.id!==NET.turn.id) return;
+      const c=byKey[m.c]; if(!c||guessMap.has(c.key)) return;
+      touchPeer(m.id,m.n);
+      const by={id:String(m.id),n:String(m.n||'لاعب').slice(0,14)};
+      NET.turn.last=NET.turn.id; NET.turn.id=null; NET.turn.at=Date.now();
+      const d=addGuess(c,by);
+      if(m.id!==NET.id) setMsg(by.n+' خمّن '+c.ar+' ('+fmtDist(d)+')',true);
+      if(amHost()&&c.key===G.target&&!NET.winSent){ NET.winSent=true; netSend({t:'win',r:NET.round,id:by.id,n:by.n}); }
+      else if(amHost()&&c.key!==G.target) hostNextTurn(false);
+      break; }
+    case 'win':
+      if(m.r!==NET.round||!NET.active) return;
+      NET.active=false; NET.turn.id=null; G.over=true; G.revealed=true; G.winner={id:m.id,n:String(m.n||'لاعب').slice(0,14)};
+      NET.scores[m.id]=(NET.scores[m.id]||0)+1; NET.names[m.id]=G.winner.n;
+      netShowEnd(G.winner); draw(); updateUI(); renderLobby();
+      break;
+    case 'giveup':
+      if(m.r!==NET.round||!NET.active) return;
+      NET.active=false; NET.turn.id=null; G.over=true; G.revealed=true; G.winner=null; netShowEnd(null);
+      if(G.target) flyTo(byKey[G.target].cen[0],byKey[G.target].cen[1]);
+      draw(); updateUI(); renderLobby();
+      break;
+  }
+}
+function netShowEnd(w){
+  const c=G.target?byKey[G.target]:null; if(!c) return;
+  const btns=amHost()?[el('button',{class:'btn',onclick:hostStart,text:'جولة جديدة'})]:[];
+  if(w) showBanner('🏆 '+w.n+(w.id===NET.id?' (إنت)':'')+' فاز!','الدولة: '+c.ar+' '+flag(c.a2),btns);
+  else showBanner('الدولة كانت: '+c.ar+' '+flag(c.a2),'',btns);
+}
+function netNote(t){ const n=$('#netNote'); if(n) n.textContent=t; else setMsg(t); }
+
+function renderRoomBar(){
+  const rb=$('#roomBar'); if(G.mode!=='online'){ rb.hidden=true; return; }
+  rb.hidden=false;
+  const peers=alivePeers();
+  const st=NET.status==='online'?'':(NET.status==='reconnecting'?' · ⚠️ جاري إعادة الاتصال':(NET.status==='connecting'?' · جاري الاتصال…':' · ❌ فشل الاتصال'));
+  const chips=peers.map(([id,p])=>el('span',{class:'chip',style:'background:'+plColor(id)},(id===hostId()?'👑 ':'')+p.name+' · '+(NET.scores[id]||0)));
+  rb.replaceChildren(el('div',{class:'t',text:'🌐 غرفة '+NET.room+' · '+peers.length+' لاعب'+st}),el('div',{class:'chips'},chips));
+}
+function renderLobby(){
+  if(G.mode==='online') renderRoomBar();
+  const body=$('#netBody'); if(!body||$('#mNet').hidden) return;
+  body.replaceChildren();
+  if(!NET.room){
+    body.append(
+      el('div',{class:'sub',text:'العب مع أصدقائك: الكل يشوف نفس الكوكب ونفس التخمينات، وأول واحد يلكي الدولة يفوز. السيرفرات عامة ومجانية (EMQX).'}),
+      el('div',{class:'sub',text:'اسمك'}),
+      el('input',{type:'text',id:'nName',maxlength:'14',value:S.name}),
+      el('div',{class:'sub',style:'margin-top:14px',text:'رمز الغرفة (اكتب رمز صديقك أو سوّي غرفة جديدة)'}),
+      el('input',{type:'text',id:'nCode',maxlength:'8',class:'ltr',style:'text-transform:uppercase;text-align:center;font-size:24px;letter-spacing:4px',autocomplete:'off'}),
+      el('div',{class:'fr'},
+        el('button',{class:'btn',onclick:()=>{ S.name=($('#nName').value||S.name).trim().slice(0,14); $('#sName').value=S.name; saveS(); joinRoom($('#nCode').value); },text:'دخول'}),
+        el('button',{class:'btn alt',onclick:()=>{ const a='ABCDEFGHJKMNPQRSTUVWXYZ23456789'; let c=''; for(let i=0;i<5;i++) c+=a[Math.floor(Math.random()*a.length)]; $('#nCode').value=c; },text:'رمز عشوائي'})),
+      el('div',{id:'netNote',class:'sub',style:'color:#a33'})
+    );
+    return;
+  }
+  const peers=alivePeers().sort((x,y)=>(x[1].joined-y[1].joined));
+  const statusTxt={connecting:'جاري الاتصال بالسيرفر…',online:'متصل ✅ ('+NET.srv+')',reconnecting:'انقطع الاتصال، جاري المحاولة…',failed:'ما قدرت أتصل بأي سيرفر ❌ (تأكد من الإنترنت أو غيّر السيرفر من الإعدادات)'}[NET.status]||'';
+  body.append(
+    el('div',{class:'sub',text:'رمز الغرفة (دوس للنسخ)'}),
+    el('div',{class:'code',onclick:()=>{ try{ navigator.clipboard.writeText(NET.room); netNote('اننسخ ✅'); }catch(e){} },text:NET.room}),
+    el('div',{class:'sub',text:statusTxt}),
+    el('div',{style:'font-weight:800;margin-top:6px',text:'اللاعبين ('+peers.length+')'}),
+    peers.map(([id,p])=>el('div',{class:'pl'},el('span',{class:'chip',style:'background:'+plColor(id)},p.name),id===hostId()?'👑 المضيف':'',id===NET.id?'(إنت)':'',el('span',{class:'sc',text:String(NET.scores[id]||0)}))),
+  );
+  const fr=el('div',{class:'fr'});
+  if(NET.status==='online'){
+    if(amHost()){
+      if(!NET.active) fr.append(el('button',{class:'btn',onclick:()=>{ hostStart(); $('#mNet').hidden=true; },text:G.over||NET.round>0?'جولة جديدة':'ابدأ اللعبة'}));
+      else fr.append(el('button',{class:'btn red',onclick:()=>{ hostGiveUp(); $('#mNet').hidden=true; },text:'تخطي الجولة'}));
+    } else fr.append(el('div',{class:'sub',text:NET.active?'الجولة شغالة… خمّن!':'بانتظار المضيف يبدي الجولة…'}));
+  }
+  fr.append(el('button',{class:'btn alt',onclick:()=>{ leaveRoom(false); },text:'خروج من الغرفة'}));
+  body.append(fr,el('div',{id:'netNote',class:'sub'}));
+}
+
+/* ====================== نوافذ ====================== */
+function openModal(id){ $(id).hidden=false; }
+document.querySelectorAll('.modal').forEach(m=>{
+  m.addEventListener('click',e=>{ if(e.target===m||e.target.classList.contains('x')) m.hidden=true; });
+});
+$('#bSet').onclick=()=>{
+  $('#sBorders').checked=S.borders; $('#sSmall').checked=S.small; $('#sMiles').checked=S.miles; $('#sServer').value=String(S.server); $('#sName').value=S.name;
+  openModal('#mSet');
+};
+SERVERS.forEach((s,i)=>$('#sServer').append(el('option',{value:String(i),text:s[0]})));
+$('#sBorders').onchange=e=>{ S.borders=e.target.checked; saveS(); draw(); };
+$('#sSmall').onchange=e=>{ S.small=e.target.checked; saveS(); };
+$('#sMiles').onchange=e=>{ S.miles=e.target.checked; saveS(); renderList(); };
+$('#sServer').onchange=e=>{ S.server=parseInt(e.target.value,10)||0; saveS(); };
+$('#sName').onchange=e=>{ S.name=(e.target.value||'لاعب').trim().slice(0,14); saveS(); };
+$('#bStats').onclick=()=>{
+  const st=LS.get('gbl_stats',{played:0,won:0,total:0,best:0});
+  const b=$('#statBody'); b.replaceChildren();
+  [['لعبت',st.played],['فزت',st.won],['المعدل',st.won?(st.total/st.won).toFixed(1):'-'],['أفضل نتيجة',st.best||'-']].forEach(x=>b.append(el('div',{},el('b',{text:String(x[1])}),x[0])));
+  openModal('#mStats');
+};
+$('#bNet').onclick=()=>{ openModal('#mNet'); renderLobby(); };
+$('#roomBar').onclick=()=>{ openModal('#mNet'); renderLobby(); };
+$('#bNew').onclick=()=>{
+  if(G.mode==='online'){ if(amHost()) hostStart(); else setMsg('بس المضيف يبدي جولة جديدة'); }
+  else newSolo();
+};
+$('#giveup').onclick=()=>{ if(G.mode==='online') hostGiveUp(); else soloGiveUp(); };
+$('#bEnter').onclick=submit;
+$('#inp').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); submit(); } });
+$('#zIn').onclick=()=>setZoom(view.zoom*1.4);
+$('#zOut').onclick=()=>setZoom(view.zoom/1.4);
+window.addEventListener('resize',resize);
+window.addEventListener('pagehide',()=>{ if(NET.mq) netSend({t:'bye',id:NET.id}); });
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden&&NET.room&&NET.status==='online'&&NET.mq&&NET.mq.ws&&NET.mq.ws.readyState!==1) onNetClose(NET.token); });
+
+/* ====================== تحميل الخريطة ====================== */
+async function loadTopo(){
+  try{ const c=localStorage.getItem('gbl_topo_v1'); if(c) return JSON.parse(c); }catch(e){}
+  for(const u of TOPO_URLS){
+    try{
+      const ctl=new AbortController(); const to=setTimeout(()=>ctl.abort(),30000);
+      const r=await fetch(u,{signal:ctl.signal}); clearTimeout(to);
+      if(!r.ok) continue;
+      const txt=await r.text(); const j=JSON.parse(txt);
+      if(u.indexOf('50m')>0){ try{ localStorage.setItem('gbl_topo_v1',txt); }catch(e){} }
+      return j;
+    }catch(e){}
+  }
+  throw new Error('load');
+}
+async function init(){
+  resize();
+  const ld=$('#loading');
+  ld.replaceChildren(el('div',{class:'spin'}),el('div',{text:'جاري تحميل الخريطة…'}));
+  try{
+    const topo=await loadTopo();
+    buildCountries(topo); buildNameIndex(); loaded=true;
+    ld.hidden=true; ld.style.display='none';
+    newSolo();
+  }catch(e){
+    ld.replaceChildren(el('div',{text:'ما كدرت أحمّل الخريطة. تأكد من الإنترنت.'}),el('button',{onclick:init,text:'إعادة المحاولة'}));
+  }
+}
+init();
+})();
+</script>
 </body>
 </html>
